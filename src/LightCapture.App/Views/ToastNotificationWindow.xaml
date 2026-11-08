@@ -1,0 +1,97 @@
+<Window x:Class="LightCapture.App.Views.ToastNotificationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Focusable="False"
+        Width="520"
+        Height="82"
+        ResizeMode="NoResize">
+    <Window.Resources>
+        <!-- Animación de titileo sutil / pulsación viva que llama la atención suavemente -->
+        <Storyboard x:Key="SubtlePulseStoryboard" RepeatBehavior="Forever" AutoReverse="True">
+            <!-- Pulsación suave de escala -->
+            <DoubleAnimation Storyboard.TargetName="ScaleTransform"
+                             Storyboard.TargetProperty="ScaleX"
+                             From="1.0" To="1.035"
+                             Duration="0:0:0.75">
+                <DoubleAnimation.EasingFunction>
+                    <SineEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="ScaleTransform"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="1.0" To="1.035"
+                             Duration="0:0:0.75">
+                <DoubleAnimation.EasingFunction>
+                    <SineEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <!-- Titileo suave del resplandor cian -->
+            <DoubleAnimation Storyboard.TargetName="GlowEffect"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.45" To="0.95"
+                             Duration="0:0:0.75">
+                <DoubleAnimation.EasingFunction>
+                    <SineEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <!-- Pulsación sutil de opacidad de borde -->
+            <DoubleAnimation Storyboard.TargetName="MainBorder"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.92" To="1.0"
+                             Duration="0:0:0.75"/>
+        </Storyboard>
+    </Window.Resources>
+
+    <Grid>
+        <Border x:Name="MainBorder"
+                Background="#090D16"
+                BorderBrush="#38BDF8"
+                BorderThickness="1.8"
+                CornerRadius="28"
+                Padding="20,10"
+                Margin="10"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <ScaleTransform x:Name="ScaleTransform" ScaleX="1.0" ScaleY="1.0"/>
+            </Border.RenderTransform>
+            <Border.Effect>
+                <DropShadowEffect x:Name="GlowEffect" BlurRadius="28" ShadowDepth="0" Color="#38BDF8" Opacity="0.65"/>
+            </Border.Effect>
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Icono de acción -->
+                <Image x:Name="ToastIcon" Grid.Column="0" Width="32" Height="32" Margin="0,0,14,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                <!-- Contenido estructurado -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="ToastTitle"
+                               Text="¡Captura copiada al portapapeles!"
+                               Foreground="#FFFFFF"
+                               FontSize="14"
+                               FontWeight="Bold"/>
+                    <StackPanel x:Name="ShortcutPanel" Orientation="Horizontal" Margin="0,3,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Presiona " Foreground="#CBD5E1" FontSize="12.5" VerticalAlignment="Center"/>
+                        <Border Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1.2" CornerRadius="4" Padding="6,1" Margin="3,0" VerticalAlignment="Center">
+                            <TextBlock Text="Ctrl + V" Foreground="#38BDF8" FontWeight="Bold" FontSize="11.5" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock x:Name="ToastActionSuffix"
+                                   Text=" en Gemini para pegarla ✨"
+                                   Foreground="#CBD5E1"
+                                   FontSize="12.5"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

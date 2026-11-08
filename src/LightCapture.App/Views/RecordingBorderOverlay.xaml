@@ -1,0 +1,32 @@
+<Window x:Class="LightCapture.App.Views.RecordingBorderOverlay"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Focusable="False">
+
+    <Window.Resources>
+        <Storyboard x:Key="BorderPulseStoryboard" RepeatBehavior="Forever" AutoReverse="True">
+            <DoubleAnimation Storyboard.TargetName="GlowBorder"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.45" To="1.0"
+                             Duration="0:0:0.75"/>
+        </Storyboard>
+    </Window.Resources>
+
+    <Grid>
+        <Border x:Name="GlowBorder"
+                BorderBrush="#EF4444"
+                BorderThickness="2.5"
+                CornerRadius="2"
+                Margin="0">
+            <Border.Effect>
+                <DropShadowEffect Color="#EF4444" BlurRadius="8" ShadowDepth="0" Opacity="0.8"/>
+            </Border.Effect>
+        </Border>
+    </Grid>
+</Window>

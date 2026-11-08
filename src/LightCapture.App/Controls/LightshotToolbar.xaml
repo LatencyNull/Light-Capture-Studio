@@ -1,0 +1,380 @@
+<UserControl x:Class="LightCapture.App.Controls.LightshotToolbar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d">
+    
+    <UserControl.Resources>
+        <!-- ToolTip moderno estilo One UI / iOS -->
+        <Style TargetType="ToolTip">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="HasDropShadow" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Botón estándar estilo Emoji -->
+        <Style x:Key="EmojiBtnStyle" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CBD5E1"/>
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.12" ScaleY="1.12"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#CBD5E1"/>
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.94" ScaleY="0.94"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Toggle RadioButton estilo Emoji con resaltado activo -->
+        <Style x:Key="EmojiToolToggleStyle" TargetType="RadioButton">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CBD5E1"/>
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.12" ScaleY="1.12"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#DBEAFE"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#CBD5E1"/>
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.94" ScaleY="0.94"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo moderno para MenuItem estilo Samsung One UI -->
+        <Style x:Key="ModernMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="6" Margin="2,1" Padding="6,4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="26" SharedSizeGroup="Icon"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" ContentSource="Icon" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#F1F5F9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#94A3B8"/>
+                                <Setter TargetName="ItemBorder" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo moderno para ContextMenu de Compartir estilo Samsung One UI -->
+        <Style x:Key="ModernShareMenuStyle" TargetType="ContextMenu">
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="HasDropShadow" Value="True"/>
+        </Style>
+
+        <!-- Aplica estilo moderno automáticamente a todos los MenuItem sin afectar a los Separators -->
+        <Style TargetType="MenuItem" BasedOn="{StaticResource ModernMenuItemStyle}"/>
+    </UserControl.Resources>
+
+    <!-- Canvas contenedor de ambas barras de herramientas posicionables -->
+    <Canvas x:Name="ToolbarRoot" Width="0" Height="0">
+
+        <!-- ============================================================== -->
+        <!-- 1. BARRA VERTICAL DERECHA (Herramientas Esenciales de Dibujo)  -->
+        <!-- ============================================================== -->
+        <Border x:Name="VerticalBar" Canvas.Left="0" Canvas.Top="0"
+                Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1"
+                CornerRadius="14" Padding="3" Margin="6,0,0,0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Opacity="0.18"/>
+            </Border.Effect>
+            <StackPanel Orientation="Vertical">
+                <!-- 1. ✏️ Pluma -->
+                <RadioButton x:Name="BtnPen" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Pluma de dibujo [✏️]" Click="BtnPen_Click" IsChecked="True">
+                    <Image Source="/Assets/Icons/pen.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </RadioButton>
+
+                <!-- 2. 🖍️ Marcador Fluorescente (uno debajo del otro) -->
+                <RadioButton x:Name="BtnMarker" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Marcador fluorescente [🖍️]" Click="BtnMarker_Click">
+                    <Image Source="/Assets/Icons/marker.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </RadioButton>
+
+                <!-- 3. ↗️ Flecha -->
+                <RadioButton x:Name="BtnArrow" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Flecha indicadora [↗️]" Click="BtnArrow_Click">
+                    <Image Source="/Assets/Icons/arrow.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </RadioButton>
+
+                <!-- 4. 🔲 Rectángulo -->
+                <RadioButton x:Name="BtnRect" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Marco rectangular [🔲]" Click="BtnRect_Click">
+                    <Image Source="/Assets/Icons/rect.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </RadioButton>
+
+                <!-- 5. 🔒 Censura Dual Knox (Clic izq: Bloque sólido / Clic der: Mosaico) -->
+                <RadioButton x:Name="BtnRedact" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Censura segura Knox [🔒] (Bloque sólido irreversible)&#x0a;Clic derecho para pixelado mosaico" Click="BtnRedact_Click" MouseRightButtonUp="BtnRedact_RightClick">
+                    <Image Source="/Assets/Icons/lock.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </RadioButton>
+
+                <!-- 6. 🔤 Texto Tipografía -->
+                <RadioButton x:Name="BtnText" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Añadir texto [🔤]" Click="BtnText_Click">
+                    <Image Source="/Assets/Icons/text.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </RadioButton>
+
+                <!-- Separador de grupo -->
+                <Rectangle Height="1" Fill="#E2E8F0" Margin="4,3"/>
+
+                <!-- 7. 🎨 Selector de Color de Artista (Paleta + Indicador de color activo) -->
+                <Button x:Name="BtnColor" Style="{StaticResource EmojiBtnStyle}" ToolTip="Color de trazo activo [🎨]" Click="BtnColor_Click">
+                    <Grid Width="26" Height="26">
+                        <Image Source="/Assets/Icons/palette.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="ColorBox" Width="9" Height="9" CornerRadius="4.5" Background="#EF4444" BorderBrush="#FFFFFF" BorderThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-1,-1">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.4"/>
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+                </Button>
+
+                <!-- 8. ↩️ Deshacer -->
+                <Button x:Name="BtnUndo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Deshacer trazo [↩️ Ctrl+Z]" Click="BtnUndo_Click">
+                    <Image Source="/Assets/Icons/undo.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- ============================================== -->
+        <!-- 2. BARRA HORIZONTAL INFERIOR (Acciones Clave)  -->
+        <!-- ============================================== -->
+        <Border x:Name="HorizontalBar" Canvas.Left="0" Canvas.Top="0"
+                Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1"
+                CornerRadius="14" Padding="3" Margin="0,6,0,0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Opacity="0.18"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal">
+                <!-- 1. ⭐ 🌐 GALAXY AI TRADUCIR (Alterna Traducción y Original) -->
+                <Button x:Name="BtnTranslate" Style="{StaticResource EmojiBtnStyle}" ToolTip="Galaxy AI Traducir [🌐 Ctrl+T]&#x0a;Alterna entre Traducción y Original&#x0a;Clic derecho: Copiar solo texto" Click="BtnTranslate_Click" MouseRightButtonUp="BtnTranslate_RightClick">
+                    <Grid Width="26" Height="26">
+                        <Image Source="/Assets/Icons/globe.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="TranslateIndicator" Width="7" Height="7" CornerRadius="3.5" Background="Transparent" BorderBrush="#FFFFFF" BorderThickness="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-1,-1,0" Visibility="Collapsed"/>
+                    </Grid>
+                </Button>
+
+                <!-- 2. 🔍 Búsqueda visual con Google Lens -->
+                <Button x:Name="BtnSearch" Style="{StaticResource EmojiBtnStyle}" ToolTip="Buscar imagen en Google Lens [🔍]" Click="BtnSearch_Click">
+                    <Image Source="/Assets/Icons/search.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+
+                <!-- 3. ✨ Buscar en Gemini / Preguntar con IA -->
+                <Button x:Name="BtnGemini" Style="{StaticResource EmojiBtnStyle}" ToolTip="Abrir en Gemini [✨ Ctrl+G]&#x0a;Copia la captura y abre gemini.google.com (Pega con Ctrl+V)&#x0a;Clic derecho: Menú de opciones de Gemini" Click="BtnGemini_Click" MouseRightButtonUp="BtnGemini_RightClick">
+                    <Image Source="/Assets/Icons/gemini.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="GeminiContextMenu" Style="{StaticResource ModernShareMenuStyle}">
+                            <MenuItem Header="Preguntar sobre imagen en Gemini (Pegar con Ctrl+V)" Click="GeminiWebChat_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/gemini.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Preguntar sobre texto en Gemini (OCR + Prompt)" Click="GeminiPrompt_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/text.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+
+                <!-- 4. 🎥 Grabar clip de video (MP4/GIF) -->
+                <Button x:Name="BtnRecordVideo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Grabar clip de video [🎥]&#x0a;Clic izquierdo: Con audio y micrófono&#x0a;Clic derecho: Opciones de audio y micrófono" Click="BtnRecordVideo_Click" MouseRightButtonUp="BtnRecordVideo_RightClick">
+                    <Image Source="/Assets/Icons/video.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="VideoRecordContextMenu" Style="{StaticResource ModernShareMenuStyle}">
+                            <MenuItem Header="🎙️ + 🔊 Con Micrófono y Audio del sistema" Click="RecordFullAudio_Click"/>
+                            <MenuItem Header="🎙️ Solo Micrófono (Voz / Narración)" Click="RecordMicOnly_Click"/>
+                            <MenuItem Header="🔊 Solo Audio del sistema" Click="RecordAudioOnly_Click"/>
+                            <MenuItem Header="🔇 Silencioso (tipo GIF)" Click="RecordMuted_Click"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+
+                <!-- Separador de grupo acciones 1 -->
+                <Rectangle Width="1" Fill="#E2E8F0" Margin="4,3"/>
+
+                <!-- 4. 📤 Compartir en Redes Sociales, WhatsApp, Facebook, Instagram, Email -->
+                <Button x:Name="BtnShare" Style="{StaticResource EmojiBtnStyle}" ToolTip="Compartir captura [📤]&#x0a;WhatsApp, Facebook, Instagram, Correo, Telegram, X, Nube..." Click="BtnShare_Click">
+                    <Image Source="/Assets/Icons/share.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="ShareContextMenu" Style="{StaticResource ModernShareMenuStyle}">
+                            <MenuItem Header="WhatsApp (App de Windows)" Click="ShareWhatsAppApp_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/whatsapp.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="WhatsApp Web" Click="ShareWhatsAppWeb_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/whatsapp.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Discord" Click="ShareDiscord_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/discord.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Telegram" Click="ShareTelegram_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/telegram.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Facebook" Click="ShareFacebook_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/facebook.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Instagram" Click="ShareInstagram_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/instagram.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="X (Twitter)" Click="ShareTwitter_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/x.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Correo electrónico" Click="ShareEmail_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/email.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator Background="#E2E8F0" Margin="4,2"/>
+                            <MenuItem Header="Subir a la nube y copiar enlace" Click="ShareCloud_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/cloud.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+
+                <!-- 5. 🖨️ Imprimir captura -->
+                <Button x:Name="BtnPrint" Style="{StaticResource EmojiBtnStyle}" ToolTip="Imprimir captura [🖨️ Ctrl+P]" Click="BtnPrint_Click">
+                    <Image Source="/Assets/Icons/print.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+
+                <!-- 6. 📋 Copiar Texto OCR -->
+                <Button x:Name="BtnCopyOcrText" Style="{StaticResource EmojiBtnStyle}" ToolTip="Copiar texto con OCR [📋 Ctrl+Shift+T]" Click="BtnCopyOcrText_Click">
+                    <Image Source="/Assets/Icons/ocr.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+
+                <!-- 5. 📑 Copiar imagen al portapapeles -->
+                <Button x:Name="BtnCopy" Style="{StaticResource EmojiBtnStyle}" ToolTip="Copiar imagen al portapapeles [📑 Ctrl+C]" Click="BtnCopy_Click">
+                    <Image Source="/Assets/Icons/copy.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+
+                <!-- 6. 💾 Guardar imagen a disco -->
+                <Button x:Name="BtnSave" Style="{StaticResource EmojiBtnStyle}" ToolTip="Guardar imagen en disco [💾 Ctrl+S]" Click="BtnSave_Click">
+                    <Image Source="/Assets/Icons/save.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+
+                <!-- Separador de grupo acciones 2 -->
+                <Rectangle Width="1" Fill="#E2E8F0" Margin="4,3"/>
+
+                <!-- 7. ❌ Cerrar / Cancelar -->
+                <Button x:Name="BtnClose" Style="{StaticResource EmojiBtnStyle}" ToolTip="Cancelar selección [❌ Esc]" Click="BtnClose_Click">
+                    <Image Source="/Assets/Icons/close.png" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+    </Canvas>
+</UserControl>

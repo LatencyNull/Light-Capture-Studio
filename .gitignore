@@ -1,0 +1,36 @@
+## .NET Core / C# gitignore
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+publish/
+publish-standalone/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+
+# Build results
+*.exe
+*.dll
+*.pdb
+*.mp4
+*.zip
+
+# Exception: keep embedded resources and pre-compiled native binaries needed for build/run
+!src/LightCapture.App/Resources/*
+!ScreenRecorderLib.dll
+!LightCapture.Recorder.exe
+
+# Temporary files & tests
+test_rec_run.*
+*.tmp
+*.log
+Thumbs.db
+[Dd]esktop.ini

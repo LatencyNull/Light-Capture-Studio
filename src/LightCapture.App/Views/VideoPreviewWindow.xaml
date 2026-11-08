@@ -1,0 +1,218 @@
+<Window x:Class="LightCapture.App.Views.VideoPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Previsualización del Clip - Light Capture"
+        Width="640" Height="520"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Window.Resources>
+        <!-- Estilo botones de acción rápida -->
+        <Style x:Key="ActionBtnStyle" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#334155"/>
+                                <Setter TargetName="b" Property="BorderBrush" Value="#475569"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#0F172A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Botón primario de guardado/copiado -->
+        <Style x:Key="PrimaryActionBtnStyle" TargetType="Button" BasedOn="{StaticResource ActionBtnStyle}">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="BorderBrush" Value="#3B82F6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="b" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#1D4ED8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="b" Property="Background" Value="#1E40AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- ContextMenu estilo Samsung One UI Dark -->
+        <Style x:Key="DarkContextMenuStyle" TargetType="ContextMenu">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="HasDropShadow" Value="True"/>
+        </Style>
+
+        <Style x:Key="DarkMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="8" Margin="2,1" Padding="8,5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="26" SharedSizeGroup="Icon"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" ContentSource="Icon" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#1E293B"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="MenuItem" BasedOn="{StaticResource DarkMenuItemStyle}"/>
+    </Window.Resources>
+
+    <!-- Contenedor exterior estilo Samsung One UI Dark -->
+    <Border Background="#090D16"
+            BorderBrush="#1E293B"
+            BorderThickness="1.5"
+            CornerRadius="18"
+            Padding="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="8" Direction="270" Opacity="0.5"/>
+        </Border.Effect>
+
+        <Grid Margin="18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Cabecera -->
+                <RowDefinition Height="*"/>    <!-- Reproductor de video -->
+                <RowDefinition Height="Auto"/> <!-- Barra de acciones -->
+            </Grid.RowDefinitions>
+
+            <!-- 1. Cabecera -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🎥" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Previsualización del Clip" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
+                    <Border Background="#1E293B" CornerRadius="6" Padding="6,2" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtVideoInfo" Text="00:00 • 0.0 MB" FontSize="11" FontWeight="Medium" Foreground="#38BDF8"/>
+                    </Border>
+                </StackPanel>
+
+                <Button Width="28" Height="28" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Foreground="#94A3B8" Cursor="Hand" Click="BtnClose_Click" ToolTip="Cerrar">
+                    <TextBlock Text="✕" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+            </Grid>
+
+            <!-- 2. Área de Reproducción de Video -->
+            <Border Grid.Row="1" Background="#000000" CornerRadius="12" ClipToBounds="True" Margin="0,0,0,16" MouseLeftButtonUp="VideoPlayer_MouseClick">
+                <Grid>
+                    <MediaElement x:Name="MediaVideoPlayer"
+                                  LoadedBehavior="Manual"
+                                  UnloadedBehavior="Close"
+                                  Stretch="Uniform"
+                                  MediaEnded="MediaVideoPlayer_MediaEnded"/>
+
+                    <!-- Indicador de Pausa en el centro -->
+                    <Border x:Name="PauseIndicator" Width="54" Height="54" CornerRadius="27" Background="#80000000" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                        <TextBlock Text="▶" FontSize="20" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3,0,0,0"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- 3. Barra de Acciones y Compartir -->
+            <Grid Grid.Row="2">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <!-- WhatsApp -->
+                    <Button x:Name="BtnWhatsApp" Style="{StaticResource ActionBtnStyle}" Margin="0,0,8,0" Click="BtnShareWhatsApp_Click" ToolTip="Compartir clip en WhatsApp (App o Web)">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Assets/Icons/whatsapp.png" Width="18" Height="18" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="WhatsApp ▾" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Button.ContextMenu>
+                            <ContextMenu Style="{StaticResource DarkContextMenuStyle}">
+                                <MenuItem Header="WhatsApp (App de Windows)" Click="ShareWhatsAppApp_Click">
+                                    <MenuItem.Icon>
+                                        <Image Source="/Assets/Icons/whatsapp.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="WhatsApp Web" Click="ShareWhatsAppWeb_Click">
+                                    <MenuItem.Icon>
+                                        <Image Source="/Assets/Icons/whatsapp.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+
+                    <!-- Discord -->
+                    <Button Style="{StaticResource ActionBtnStyle}" Margin="0,0,8,0" Click="BtnShareDiscord_Click" ToolTip="Copiar para pegar directo con Ctrl+V en Discord">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Assets/Icons/discord.png" Width="18" Height="18" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Discord" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Copiar Archivo Clip -->
+                    <Button Style="{StaticResource PrimaryActionBtnStyle}" Margin="0,0,8,0" Click="BtnCopyClip_Click" ToolTip="Copiar video al portapapeles (Ctrl+V en cualquier app)">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Assets/Icons/copy.png" Width="16" Height="16" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Copiar Clip" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Guardar MP4 -->
+                    <Button Style="{StaticResource ActionBtnStyle}" Click="BtnSaveClip_Click" ToolTip="Guardar archivo en disco (Ctrl+S)">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="/Assets/Icons/save.png" Width="16" Height="16" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Guardar..." VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Descartar / Eliminar -->
+                <Button HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Foreground="#EF4444" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Padding="8,4" Click="BtnDiscard_Click" ToolTip="Descartar este clip">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🗑️" FontSize="13" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Descartar" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
