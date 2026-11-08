@@ -9,7 +9,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20(x64)-0078D6.svg)](https://microsoft.com)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20WPF-512BD4.svg)](https://dotnet.microsoft.com/)
 
-[Features](#-key-features) • [Comparison](#-why-light-capture-studio-vs-legacy-tools) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Installation & Build](#-build-from-source) • [Privacy](#-privacy-first-architecture)
+[Features](#-key-features) • [Comparison](#-why-light-capture-studio-vs-classic-lightshot) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Portable Download](#-portable-version) • [Privacy](#-privacy-first-architecture)
 
 </div>
 
@@ -17,7 +17,7 @@
 
 ## 🚀 Overview
 
-**Light Capture Studio** reimagines what a modern desktop screenshot tool should be in 2026. While traditional tools like legacy Lightshot remain frozen in 2010—offering only basic static snips and insecure public image uploads—**Light Capture Studio** delivers a powerhouse productivity suite right to your desktop:
+**Light Capture Studio** reimagines what a modern desktop screenshot tool should be in 2026. While traditional tools like Classic Lightshot remain frozen in 2010—offering only basic static snips and insecure public image uploads—**Light Capture Studio** delivers a powerhouse productivity suite right to your desktop:
 
 - 🌐 **In-Place Live Translation**: Translate games, comics, foreign PDFs, or unselectable web content directly on your screen with a Google Lens-style overlay.
 - 🎥 **H.264 Screen Recording**: Record crisp MP4 video clips with system loopback audio and microphone voiceover in two clicks.
@@ -27,9 +27,9 @@
 
 ---
 
-## 🥊 Why Light Capture Studio? (vs. Legacy Lightshot)
+## 🥊 Why Light Capture Studio? (vs. Classic Lightshot)
 
-| Feature | ⚡ Light Capture Studio | 🐢 Legacy Lightshot |
+| Feature | ⚡ Light Capture Studio | 🐢 Classic Lightshot |
 |:---|:---:|:---:|
 | **Live In-Place Translation** | ✅ Google Lens-style overlay directly on screen | ❌ None |
 | **MP4 Video & Mic Recording** | ✅ Hardware-accelerated with audio + voiceover | ❌ Static screenshots only |
@@ -39,7 +39,7 @@
 | **Smart Censorship / Redaction**| ✅ Irreversible mosaic pixelation tool | ❌ Rough pen doodles |
 | **Pin to Screen (Picture-in-Picture)** | ✅ Floating always-on-top window (<kbd>Ctrl+P</kbd>) | ❌ Requires 3rd-party viewer |
 | **QR Code Recognition** | ✅ Instant link detection and one-click launch | ❌ Must scan with phone |
-| **Direct Instant Sharing** | ✅ Windows App & Web WhatsApp, Telegram | ❌ Broken / legacy social links |
+| **Direct Instant Sharing** | ✅ Windows App & Web WhatsApp, Telegram | ❌ Broken / outdated social links |
 | **UI Aesthetics** | ✅ Modern Samsung One UI Dark / Fluent | ❌ Win7 / XP era grey panels |
 
 ---
@@ -84,9 +84,20 @@ Share directly to **WhatsApp Desktop (Windows App)** or **WhatsApp Web**, as wel
 
 ---
 
+## 💾 Portable Version
+
+**Light Capture Studio is 100% portable out of the box.**
+- **Zero installation:** No setup wizard or administrative privileges required.
+- **Self-contained:** Built with all .NET 8 runtimes embedded into a single portable binary.
+- **Clean system footprint:** Leaves no registry bloat and runs straight from any folder or USB flash drive.
+
+Download the latest pre-built portable binary directly from the [**Releases**](https://github.com/LatencyNull/Light-Capture-Studio/releases) tab!
+
+---
+
 ## 🔒 Privacy-First Architecture
 
-Unlike legacy screenshot tools that upload images to publicly accessible URLs (where anyone can iterate sequential URLs to uncover private documents), **Light Capture Studio is strictly local-first**:
+Unlike Classic Lightshot and older screenshot tools that upload images to publicly accessible URLs (where anyone can iterate sequential URLs to uncover private documents), **Light Capture Studio is strictly local-first**:
 
 - Captures are saved exclusively in your personal `Documents\Light Capture Studio` directory.
 - OCR text recognition runs locally via Microsoft Windows native APIs (`Windows.Media.Ocr`).
