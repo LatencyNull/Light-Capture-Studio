@@ -17,10 +17,10 @@
 
 ## 🚀 Overview
 
-**Light Capture Studio** reimagines what a modern desktop screenshot tool should be in 2026. While traditional tools like Classic Lightshot remain frozen in 2010—offering only basic static snips and insecure public image uploads—**Light Capture Studio** delivers a powerhouse productivity suite right to your desktop:
+**Light Capture Studio** reimagines what a modern desktop capture suite should be in 2026. Inspired by the speed and intuitive workflow of classic tools like Lightshot, but rebuilt from the ground up for modern workflows. Where traditional tools focused solely on basic static captures, **Light Capture Studio** elevates your desktop experience with in-place live translation, smooth screen recording (**MP4 video & animated GIF** with system audio & microphone support), native Windows OCR, and uncompromising local privacy:
 
 - 🌐 **In-Place Live Translation**: Translate games, comics, foreign PDFs, or unselectable web content directly on your screen with a Google Lens-style overlay.
-- 🎥 **H.264 Screen Recording**: Record crisp MP4 video clips with system loopback audio and microphone voiceover in two clicks.
+- 🎥 **MP4 & Animated GIF Recording**: Capture crisp MP4 clips with system loopback audio and microphone voiceover, or lightweight animated GIFs ready for Discord, GitHub, and chat apps.
 - 🔍 **Native Windows OCR**: Extract locked text from YouTube videos, scanned documents, and images directly to your clipboard (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>).
 - 🕒 **Searchable Local History**: Automatically saves and indexes every capture to your `Documents\Light Capture Studio` folder. Search weeks later by words detected in the image!
 - 🔒 **100% Local Privacy**: Zero public cloud uploads. What happens on your screen stays on your computer.
@@ -32,7 +32,7 @@
 | Feature | ⚡ Light Capture Studio | 🐢 Classic Lightshot |
 |:---|:---:|:---:|
 | **Live In-Place Translation** | ✅ Google Lens-style overlay directly on screen | ❌ None |
-| **MP4 Video & Mic Recording** | ✅ Hardware-accelerated with audio + voiceover | ❌ Static screenshots only |
+| **Video & GIF Recording** | ✅ MP4 (audio + mic) & lightweight animated GIFs | ❌ Static screenshots only |
 | **OCR Text Extraction** | ✅ Instant clipboard extraction (<kbd>Ctrl+Shift+T</kbd>) | ❌ Impossible (pixels only) |
 | **Local Searchable History** | ✅ Search past captures by text contained inside | ❌ None (lost once closed) |
 | **Privacy & Security** | ✅ 100% Local offline storage (`Documents`) | ⚠️ Insecure public uploads |
@@ -49,8 +49,8 @@
 ### 1. 🌐 Live Overlay Translation (Lens Mode)
 Select any portion of your screen—in a video game, foreign article, or locked document—and click **Translate**. Text blocks are replaced seamlessly with translated text in-place, preserving font size and position, or copied instantly as formatted plain text.
 
-### 2. 🎥 Screen & Audio Video Recording
-Need to explain a bug, demonstrate a gameplay clip, or record a quick walkthrough? Switch to video mode to capture any region in smooth 30/60 FPS H.264 MP4 with system sound and microphone narration. An integrated mini-player lets you review, copy, or share right away.
+### 2. 🎥 Screen Video & Animated GIF Recording
+Need to explain a bug, demonstrate a gameplay clip, or share an animation? Capture any region in smooth 30/60 FPS H.264 MP4 with system sound and microphone narration, or export lightweight animated GIFs (up to 15s) tailored for Discord, GitHub issues, and chat apps. An integrated mini-player lets you review, copy, or share right away.
 
 ### 3. 🔍 Native Windows OCR Text Extraction
 Extract text from anywhere—even protected web pages, YouTube subtitles, or rasterized images. Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> and the extracted text is immediately ready to paste.
