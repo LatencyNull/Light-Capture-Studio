@@ -21,7 +21,7 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
     public event Action<string>? RecordingComplete;
     public event Action<string>? RecordingError;
 
-    public Task StartRecordingAsync(int x, int y, int width, int height, bool captureAudio, bool captureMic = true, CancellationToken ct = default)
+    public Task StartRecordingAsync(int x, int y, int width, int height, bool captureAudio, bool captureMic = true, bool isGif = false, CancellationToken ct = default)
     {
         if (IsRecording)
         {
@@ -43,7 +43,8 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
             Directory.CreateDirectory(tempFolder);
         }
 
-        _currentFilePath = Path.Combine(tempFolder, $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
+        string ext = isGif ? "gif" : "mp4";
+        _currentFilePath = Path.Combine(tempFolder, $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.{ext}");
         _isCancelled = false;
         _stopTcs = new TaskCompletionSource<string>();
 

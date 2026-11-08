@@ -40,6 +40,7 @@ public partial class LightshotToolbar : UserControl
 #pragma warning restore CS0067
     public event Action? SearchRequested;
     public event Action<bool, bool>? RecordVideoRequested;
+    public event Action? RecordGifRequested;
     public event Action? GeminiRequested;
     public event Action? GeminiPromptCopyRequested;
     public event Action? GeminiGoogleSearchRequested;
@@ -53,6 +54,7 @@ public partial class LightshotToolbar : UserControl
     public event Action? ShareWhatsAppWebRequested;
     public event Action? ShareDiscordRequested;
     public event Action? ShareFacebookRequested;
+    public event Action? ShareTikTokRequested;
     public event Action? ShareInstagramRequested;
     public event Action? ShareTelegramRequested;
     public event Action? ShareTwitterRequested;
@@ -176,6 +178,8 @@ public partial class LightshotToolbar : UserControl
     private void RecordMicOnly_Click(object sender, RoutedEventArgs e) => RecordVideoRequested?.Invoke(false, true);
     private void RecordAudioOnly_Click(object sender, RoutedEventArgs e) => RecordVideoRequested?.Invoke(true, false);
     private void RecordMuted_Click(object sender, RoutedEventArgs e) => RecordVideoRequested?.Invoke(false, false);
+    private void RecordGif_Click(object sender, RoutedEventArgs e) => RecordGifRequested?.Invoke();
+    private void BtnRecordGif_Click(object sender, RoutedEventArgs e) => RecordGifRequested?.Invoke();
 
     private void BtnShare_Click(object sender, RoutedEventArgs e)
     {
@@ -196,6 +200,7 @@ public partial class LightshotToolbar : UserControl
     private void ShareWhatsApp_Click(object sender, RoutedEventArgs e) => ShareWhatsAppAppRequested?.Invoke();
     private void ShareDiscord_Click(object sender, RoutedEventArgs e) => ShareDiscordRequested?.Invoke();
     private void ShareFacebook_Click(object sender, RoutedEventArgs e) => ShareFacebookRequested?.Invoke();
+    private void ShareTikTok_Click(object sender, RoutedEventArgs e) => ShareTikTokRequested?.Invoke();
     private void ShareInstagram_Click(object sender, RoutedEventArgs e) => ShareInstagramRequested?.Invoke();
     private void ShareTelegram_Click(object sender, RoutedEventArgs e) => ShareTelegramRequested?.Invoke();
     private void ShareTwitter_Click(object sender, RoutedEventArgs e) => ShareTwitterRequested?.Invoke();

@@ -213,7 +213,8 @@ public partial class OverlayWindow : Window
         MainToolbar.CopyRequested += CopyCaptureToClipboard;
         MainToolbar.SaveRequested += SaveCaptureToFile;
         MainToolbar.PrintRequested += PrintCapture;
-        MainToolbar.RecordVideoRequested += (audio, mic) => StartVideoRecording(audio, mic);
+        MainToolbar.RecordVideoRequested += (audio, mic) => StartVideoRecording(audio, mic, false);
+        MainToolbar.RecordGifRequested += () => StartVideoRecording(false, false, true);
         MainToolbar.SearchRequested += SearchOnGoogle;
         MainToolbar.GeminiRequested += AskGeminiAboutCapture;
         MainToolbar.GeminiPromptCopyRequested += CopyGeminiPromptToClipboard;
@@ -226,6 +227,7 @@ public partial class OverlayWindow : Window
         MainToolbar.ShareWhatsAppWebRequested += ShareOnWhatsAppWeb;
         MainToolbar.ShareDiscordRequested += ShareOnDiscord;
         MainToolbar.ShareFacebookRequested += ShareOnFacebook;
+        MainToolbar.ShareTikTokRequested += ShareOnTikTok;
         MainToolbar.ShareInstagramRequested += ShareOnInstagram;
         MainToolbar.ShareTelegramRequested += ShareOnTelegram;
         MainToolbar.ShareTwitterRequested += ShareOnTwitter;
@@ -899,7 +901,7 @@ public partial class OverlayWindow : Window
         }
     }
 
-    private async void StartVideoRecording(bool captureAudio, bool captureMic = true)
+    private async void StartVideoRecording(bool captureAudio, bool captureMic = true, bool isGif = false)
     {
         if (!_hasSelection) return;
 
@@ -922,7 +924,7 @@ public partial class OverlayWindow : Window
         _recordingBorder = new RecordingBorderOverlay(dipBounds);
         _recordingBorder.Show();
 
-        _recordingWidget = new RecordingControlWidget(captureAudio, captureMic, dipBounds);
+        _recordingWidget = new RecordingControlWidget(captureAudio, captureMic, dipBounds, isGif);
         _recordingWidget.AudioToggled += enabled => _videoRecorder.SetAudioEnabled(enabled);
         _recordingWidget.MicToggled += enabled => _videoRecorder.SetMicEnabled(enabled);
         _recordingWidget.StopRequested += async () => await StopVideoRecordingAsync();
@@ -947,7 +949,7 @@ public partial class OverlayWindow : Window
         try
         {
             App.EnsureNativeDependencies();
-            await _videoRecorder.StartRecordingAsync(pxX, pxY, pxW, pxH, captureAudio, captureMic);
+            await _videoRecorder.StartRecordingAsync(pxX, pxY, pxW, pxH, captureAudio, captureMic, isGif);
         }
         catch (Exception ex)
         {
@@ -1389,6 +1391,24 @@ public partial class OverlayWindow : Window
         catch { }
 
         ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en Facebook 🔵", "pack://application:,,,/Assets/Icons/facebook.png");
+        Close();
+    }
+
+    private void ShareOnTikTok()
+    {
+        if (!_hasSelection) return;
+
+        var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
+        ClipboardHelper.CopyImageToClipboard(flattened);
+        _historyService.SaveCapture(flattened, "Compartir en TikTok");
+
+        try
+        {
+            Process.Start(new ProcessStartInfo("https://www.tiktok.com/upload") { UseShellExecute = true });
+        }
+        catch { }
+
+        ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en TikTok 🎵", "/Assets/Icons/tiktok.png");
         Close();
     }
 

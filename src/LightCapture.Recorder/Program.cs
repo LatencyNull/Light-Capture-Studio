@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
@@ -43,6 +44,13 @@ namespace LightCapture.RecorderWorker
             else
             {
                 _outputPath = args[5];
+            }
+
+            // Modo GIF animado si la extensión es .gif
+            if (_outputPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+            {
+                RecordGifLoop(x, y, width, height, _outputPath);
+                return;
             }
 
             // Requisito de H.264: dimensiones pares
@@ -262,6 +270,162 @@ namespace LightCapture.RecorderWorker
             finally
             {
                 if (_recorder != null) _recorder.Dispose();
+            }
+        }
+
+        private static void RecordGifLoop(int x, int y, int width, int height, string outputPath)
+        {
+            var frames = new List<Bitmap>();
+            int maxFrames = 15 * 14; // 15s a ~14 FPS = ~210 frames
+            int frameDelayMs = 70;
+            short delayUnits = 7;    // 70ms en unidades de 10ms
+
+            int targetW = width;
+            int targetH = height;
+            if (targetW > 1280 || targetH > 720)
+            {
+                double scale = Math.Min(1280.0 / targetW, 720.0 / targetH);
+                targetW = (int)(targetW * scale);
+                targetH = (int)(targetH * scale);
+            }
+            if (targetW % 2 != 0) targetW++;
+            if (targetH % 2 != 0) targetH++;
+
+            try
+            {
+                string dir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                var inputThread = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        string line = Console.ReadLine();
+                        if (line == null) break;
+                        line = line.Trim();
+                        if (line.Equals("STOP", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _completeEvent.Set();
+                            break;
+                        }
+                        else if (line.Equals("CANCEL", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _isCancelled = true;
+                            _completeEvent.Set();
+                            break;
+                        }
+                    }
+                }) { IsBackground = true };
+                inputThread.Start();
+
+                Console.WriteLine("READY");
+                _stopwatch.Start();
+
+                long lastTickReport = 0;
+
+                while (!_completeEvent.WaitOne(0))
+                {
+                    long elapsed = _stopwatch.ElapsedMilliseconds;
+
+                    try
+                    {
+                        var bmp = new Bitmap(targetW, targetH, PixelFormat.Format32bppRgb);
+                        using (var g = Graphics.FromImage(bmp))
+                        {
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bilinear;
+                            g.CopyFromScreen(x, y, 0, 0, new Size(width, height), CopyPixelOperation.SourceCopy);
+                        }
+                        frames.Add(bmp);
+                    }
+                    catch { }
+
+                    if (elapsed - lastTickReport >= 500)
+                    {
+                        lastTickReport = elapsed;
+                        Console.WriteLine("TICK:" + elapsed);
+                    }
+
+                    // Máximo 15 segundos para el GIF
+                    if (elapsed >= 15000 || frames.Count >= maxFrames)
+                    {
+                        break;
+                    }
+
+                    Thread.Sleep(frameDelayMs);
+                }
+
+                _stopwatch.Stop();
+
+                if (_isCancelled)
+                {
+                    foreach (var f in frames) f.Dispose();
+                    Console.WriteLine("CANCELLED");
+                    return;
+                }
+
+                SaveAsAnimatedGif(frames, outputPath, delayUnits);
+                foreach (var f in frames) f.Dispose();
+                Console.WriteLine("COMPLETE:" + outputPath);
+            }
+            catch (Exception ex)
+            {
+                foreach (var f in frames) f.Dispose();
+                Console.WriteLine("ERROR:" + ex.Message);
+            }
+        }
+
+        private static void SaveAsAnimatedGif(List<Bitmap> frames, string outputPath, short delayUnits)
+        {
+            if (frames.Count == 0)
+            {
+                throw new InvalidOperationException("No se capturaron fotogramas.");
+            }
+
+            using (var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                for (int i = 0; i < frames.Count; i++)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        frames[i].Save(ms, System.Drawing.Imaging.ImageFormat.Gif);
+                        byte[] bytes = ms.ToArray();
+
+                        if (i == 0)
+                        {
+                            fs.Write(bytes, 0, 13);
+                            fs.Write(bytes, 13, 768);
+
+                            // Bloque Netscape 2.0 para bucle infinito
+                            byte[] loop = new byte[] {
+                                0x21, 0xFF, 0x0B,
+                                0x4E, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2E, 0x30,
+                                0x03, 0x01, 0x00, 0x00, 0x00
+                            };
+                            fs.Write(loop, 0, loop.Length);
+                        }
+
+                        // Extensión de Control Gráfico (delay por frame)
+                        byte[] gce = new byte[] {
+                            0x21, 0xF9, 0x04,
+                            0x08,
+                            (byte)(delayUnits & 0xFF),
+                            (byte)((delayUnits >> 8) & 0xFF),
+                            0x00,
+                            0x00
+                        };
+                        fs.Write(gce, 0, gce.Length);
+
+                        int imgLen = bytes.Length - 781 - 1;
+                        if (imgLen > 0)
+                        {
+                            fs.Write(bytes, 781, imgLen);
+                        }
+                    }
+                }
+                fs.WriteByte(0x3B); // Trailer
             }
         }
     }

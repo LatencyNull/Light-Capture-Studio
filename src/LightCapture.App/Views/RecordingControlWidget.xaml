@@ -32,6 +32,11 @@
             <!-- 🔴 Punto REC parpadeante -->
             <Ellipse x:Name="RecDot" Width="10" Height="10" Fill="#EF4444" Margin="2,0,8,0" VerticalAlignment="Center"/>
 
+            <!-- Badge GIF (si aplica) -->
+            <Border x:Name="BadgeGif" Background="#0284C7" CornerRadius="8" Padding="6,2" Margin="0,0,8,0" Visibility="Collapsed" VerticalAlignment="Center">
+                <TextBlock Text="GIF 15s" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF"/>
+            </Border>
+
             <!-- ⏱️ Contador de Tiempo -->
             <TextBlock x:Name="TxtTimer"
                        Text="00:00"

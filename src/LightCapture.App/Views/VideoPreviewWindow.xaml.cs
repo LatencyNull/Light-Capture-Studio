@@ -19,12 +19,20 @@ public partial class VideoPreviewWindow : Window
 
         _videoPath = videoPath;
 
+        bool isGif = _videoPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+        if (isGif)
+        {
+            TxtHeaderIcon.Text = "🎞️";
+            TxtHeaderTitle.Text = "Previsualización del GIF Animado";
+            Title = "Previsualización del GIF - Light Capture Studio";
+        }
+
         // Extraer peso del archivo
         try
         {
             var fileInfo = new FileInfo(_videoPath);
             double sizeMb = Math.Round((double)fileInfo.Length / (1024 * 1024), 2);
-            TxtVideoInfo.Text = $"{sizeMb} MB";
+            TxtVideoInfo.Text = isGif ? $"GIF • {sizeMb} MB" : $"{sizeMb} MB";
         }
         catch { }
 
@@ -37,7 +45,8 @@ public partial class VideoPreviewWindow : Window
                 var dur = MediaVideoPlayer.NaturalDuration.TimeSpan;
                 var fileInfo = new FileInfo(_videoPath);
                 double sizeMb = Math.Round((double)fileInfo.Length / (1024 * 1024), 2);
-                TxtVideoInfo.Text = $"{dur.Minutes:D2}:{dur.Seconds:D2} • {sizeMb} MB";
+                string formatTag = isGif ? "GIF • " : "";
+                TxtVideoInfo.Text = $"{formatTag}{dur.Minutes:D2}:{dur.Seconds:D2} • {sizeMb} MB";
             }
             MediaVideoPlayer.Play();
         };
@@ -168,13 +177,98 @@ public partial class VideoPreviewWindow : Window
         ).Show();
     }
 
+    private void BtnMoreSocial_Click(object sender, RoutedEventArgs e)
+    {
+        if (BtnMoreSocial.ContextMenu != null)
+        {
+            BtnMoreSocial.ContextMenu.PlacementTarget = BtnMoreSocial;
+            BtnMoreSocial.ContextMenu.IsOpen = true;
+        }
+    }
+
+    private void ShareTikTok_Click(object sender, RoutedEventArgs e)
+    {
+        CopyVideoFileToClipboard();
+        try
+        {
+            Process.Start(new ProcessStartInfo("https://www.tiktok.com/upload") { UseShellExecute = true });
+        }
+        catch { }
+
+        new ToastNotificationWindow(
+            "¡Clip copiado! Abriendo TikTok Web para subir... 🎵",
+            "/Assets/Icons/tiktok.png"
+        ).Show();
+    }
+
+    private void ShareInstagram_Click(object sender, RoutedEventArgs e)
+    {
+        CopyVideoFileToClipboard();
+        try
+        {
+            Process.Start(new ProcessStartInfo("https://www.instagram.com/") { UseShellExecute = true });
+        }
+        catch { }
+
+        new ToastNotificationWindow(
+            "¡Clip copiado! Abriendo Instagram... 📷",
+            "/Assets/Icons/instagram.png"
+        ).Show();
+    }
+
+    private void ShareFacebook_Click(object sender, RoutedEventArgs e)
+    {
+        CopyVideoFileToClipboard();
+        try
+        {
+            Process.Start(new ProcessStartInfo("https://www.facebook.com/") { UseShellExecute = true });
+        }
+        catch { }
+
+        new ToastNotificationWindow(
+            "¡Clip copiado! Abriendo Facebook... 📘",
+            "/Assets/Icons/facebook.png"
+        ).Show();
+    }
+
+    private void ShareTelegram_Click(object sender, RoutedEventArgs e)
+    {
+        CopyVideoFileToClipboard();
+        try
+        {
+            Process.Start(new ProcessStartInfo("https://web.telegram.org/") { UseShellExecute = true });
+        }
+        catch { }
+
+        new ToastNotificationWindow(
+            "¡Clip copiado para Telegram! Pega con Ctrl+V en tu chat ✈️",
+            "/Assets/Icons/telegram.png"
+        ).Show();
+    }
+
+    private void ShareTwitter_Click(object sender, RoutedEventArgs e)
+    {
+        CopyVideoFileToClipboard();
+        try
+        {
+            Process.Start(new ProcessStartInfo("https://x.com/compose/post") { UseShellExecute = true });
+        }
+        catch { }
+
+        new ToastNotificationWindow(
+            "¡Clip copiado! Abriendo X / Twitter... ✖️",
+            "/Assets/Icons/twitter.png"
+        ).Show();
+    }
+
     private void BtnSaveClip_Click(object sender, RoutedEventArgs e)
     {
+        bool isGif = _videoPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
         var sfd = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "Guardar clip de video",
-            Filter = "Video MP4 (*.mp4)|*.mp4",
-            FileName = $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
+            Title = isGif ? "Guardar GIF animado" : "Guardar clip de video",
+            Filter = isGif ? "GIF Animado (*.gif)|*.gif|Todos los archivos (*.*)|*.*" : "Video MP4 (*.mp4)|*.mp4|Todos los archivos (*.*)|*.*",
+            FileName = isGif ? $"Gif_{DateTime.Now:yyyyMMdd_HHmmss}.gif" : $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
         };
 
         if (sfd.ShowDialog() == true)
@@ -183,7 +277,7 @@ public partial class VideoPreviewWindow : Window
             {
                 File.Copy(_videoPath, sfd.FileName, true);
                 new ToastNotificationWindow(
-                    "¡Clip de video guardado con éxito! 💾",
+                    isGif ? "¡GIF animado guardado con éxito! 🎞️" : "¡Clip de video guardado con éxito! 💾",
                     "/Assets/Icons/save.png"
                 ).Show();
             }
