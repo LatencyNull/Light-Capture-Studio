@@ -23,7 +23,6 @@
 - 🎥 **H.264 Screen Recording**: Record crisp MP4 video clips with system loopback audio and microphone voiceover in two clicks.
 - 🔍 **Native Windows OCR**: Extract locked text from YouTube videos, scanned documents, and images directly to your clipboard (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>).
 - 🕒 **Searchable Local History**: Automatically saves and indexes every capture to your `Documents\Light Capture Studio` folder. Search weeks later by words detected in the image!
-- 🎨 **Studio Mockup Generator**: Beautify screenshots with 3D soft drop shadows, sleek rounded corners, and modern gradient backdrops for social media and presentations.
 - 🔒 **100% Local Privacy**: Zero public cloud uploads. What happens on your screen stays on your computer.
 
 ---
@@ -40,7 +39,6 @@
 | **Smart Censorship / Redaction**| ✅ Irreversible mosaic pixelation tool | ❌ Rough pen doodles |
 | **Pin to Screen (Picture-in-Picture)** | ✅ Floating always-on-top window (<kbd>Ctrl+P</kbd>) | ❌ Requires 3rd-party viewer |
 | **QR Code Recognition** | ✅ Instant link detection and one-click launch | ❌ Must scan with phone |
-| **Social Studio Mockups** | ✅ One-click 3D gradients and drop shadows | ❌ Plain flat 2000s snips |
 | **Direct Instant Sharing** | ✅ Windows App & Web WhatsApp, Telegram | ❌ Broken / legacy social links |
 | **UI Aesthetics** | ✅ Modern Samsung One UI Dark / Fluent | ❌ Win7 / XP era grey panels |
 

@@ -665,21 +665,6 @@ public partial class OverlayWindow : Window
         Close();
     }
 
-    private void BeautifyAndCopy()
-    {
-        if (!_hasSelection) return;
-
-        var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
-        var studioMockup = StudioMockupHelper.CreateStudioMockup(flattened, 40);
-
-        ClipboardHelper.CopyImageToClipboard(studioMockup);
-        _historyService.SaveCapture(studioMockup, "Studio Mockup " + _lastTranslatedPlainText);
-
-        var previewWin = new StudioMockupPreviewWindow(studioMockup);
-        previewWin.Show();
-        Close();
-    }
-
     private async Task CopyRawOcrTextToClipboardAsync()
     {
         if (!_hasSelection) return;
