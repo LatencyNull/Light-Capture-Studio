@@ -110,6 +110,18 @@ public class DrawingCanvas : FrameworkElement
         {
             _previewElement = new MarkerDrawingElement(CurrentColor, StrokeThickness, new List<Point> { point });
         }
+        else if (CurrentTool == DrawingToolType.Arrow)
+        {
+            _previewElement = new ArrowDrawingElement(CurrentColor, StrokeThickness, point, point);
+        }
+        else if (CurrentTool == DrawingToolType.Rectangle)
+        {
+            _previewElement = new RectangleDrawingElement(CurrentColor, StrokeThickness, new Rect(point.X, point.Y, 0, 0));
+        }
+        else if (CurrentTool == DrawingToolType.Line)
+        {
+            _previewElement = new LineDrawingElement(CurrentColor, StrokeThickness, point, point);
+        }
         else if (CurrentTool == DrawingToolType.Redact)
         {
             _previewElement = new RedactDrawingElement(new Rect(point.X, point.Y, 0, 0), Colors.Black);
@@ -210,9 +222,21 @@ public class DrawingCanvas : FrameworkElement
         DrawingChanged?.Invoke();
     }
 
+    protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
+    {
+        if (new Rect(0, 0, Math.Max(1, ActualWidth), Math.Max(1, ActualHeight)).Contains(hitTestParameters.HitPoint))
+        {
+            return new PointHitTestResult(this, hitTestParameters.HitPoint);
+        }
+        return base.HitTestCore(hitTestParameters);
+    }
+
     protected override void OnRender(DrawingContext dc)
     {
         base.OnRender(dc);
+
+        // Fondo transparente para asegurar hit testing interactivo en toda la superficie
+        dc.DrawRectangle(System.Windows.Media.Brushes.Transparent, null, new Rect(0, 0, Math.Max(1, ActualWidth), Math.Max(1, ActualHeight)));
 
         // 1. Renderizar bloques de Google Lens In-Place Translation si están activados
         if (ShowTranslations && _lensBlocks.Count > 0)
@@ -276,6 +300,42 @@ public class DrawingCanvas : FrameworkElement
         using (var dc = dv.RenderOpen())
         {
             dc.PushTransform(new ScaleTransform(scaleX, scaleY));
+            foreach (var element in _elements)
+            {
+                element.Render(dc);
+            }
+            dc.Pop();
+        }
+
+        rtb.Render(dv);
+        rtb.Freeze();
+
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(rtb));
+        using var stream = System.IO.File.Create(filePath);
+        encoder.Save(stream);
+    }
+
+    public void ExportVideoOverlayToPng(string filePath, int targetVidWidth, int targetVidHeight, double containerW, double containerH)
+    {
+        if (targetVidWidth <= 0 || targetVidHeight <= 0) return;
+        double cw = containerW > 0 ? containerW : targetVidWidth;
+        double ch = containerH > 0 ? containerH : targetVidHeight;
+
+        double s = Math.Min(cw / targetVidWidth, ch / targetVidHeight);
+        double offsetX = (cw - targetVidWidth * s) / 2.0;
+        double offsetY = (ch - targetVidHeight * s) / 2.0;
+
+        var rtb = new RenderTargetBitmap(targetVidWidth, targetVidHeight, 96, 96, PixelFormats.Pbgra32);
+        var dv = new DrawingVisual();
+
+        using (var dc = dv.RenderOpen())
+        {
+            var group = new TransformGroup();
+            group.Children.Add(new TranslateTransform(-offsetX, -offsetY));
+            group.Children.Add(new ScaleTransform(1.0 / s, 1.0 / s));
+            dc.PushTransform(group);
+
             foreach (var element in _elements)
             {
                 element.Render(dc);

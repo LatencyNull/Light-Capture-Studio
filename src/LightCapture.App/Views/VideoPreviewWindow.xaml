@@ -223,38 +223,40 @@
 
             <!-- 2. Área de Reproducción y Anotaciones de Video -->
             <Border Grid.Row="1" Background="#000000" CornerRadius="12" ClipToBounds="True" Margin="0,0,0,12">
-                <Grid x:Name="VideoContainer" SizeChanged="VideoContainer_SizeChanged">
-                    <!-- Viewport del video ajustado a la relación de aspecto exacta (sin zonas muertas de letterbox) -->
-                    <Grid x:Name="VideoViewport" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="True">
-                        <MediaElement x:Name="MediaVideoPlayer"
-                                      LoadedBehavior="Manual"
-                                      UnloadedBehavior="Close"
-                                      Stretch="Uniform"
-                                      MediaOpened="MediaVideoPlayer_MediaOpened"
-                                      MediaEnded="MediaVideoPlayer_MediaEnded"/>
+                <Grid x:Name="VideoContainer">
+                    <!-- Reproductor de video centrado con ajuste uniforme -->
+                    <MediaElement x:Name="MediaVideoPlayer"
+                                  LoadedBehavior="Manual"
+                                  UnloadedBehavior="Close"
+                                  Stretch="Uniform"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  MediaOpened="MediaVideoPlayer_MediaOpened"
+                                  MediaEnded="MediaVideoPlayer_MediaEnded"/>
 
-                        <!-- Capa vectorial de anotaciones acelerada por GPU -->
-                        <controls:DrawingCanvas x:Name="VideoDrawingCanvas"
-                                                ClipToBounds="True"
-                                                MouseDown="VideoDrawingCanvas_MouseDown"
-                                                MouseMove="VideoDrawingCanvas_MouseMove"
-                                                MouseUp="VideoDrawingCanvas_MouseUp"/>
+                    <!-- Capa vectorial de anotaciones acelerada por GPU sobre todo el marco -->
+                    <controls:DrawingCanvas x:Name="VideoDrawingCanvas"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            ClipToBounds="True"
+                                            MouseDown="VideoDrawingCanvas_MouseDown"
+                                            MouseMove="VideoDrawingCanvas_MouseMove"
+                                            MouseUp="VideoDrawingCanvas_MouseUp"/>
 
-                        <!-- Caja flotante de texto para escribir en el video -->
-                        <TextBox x:Name="VideoFloatingInput"
-                                 Visibility="Collapsed"
-                                 Background="#E60F172A"
-                                 BorderBrush="#38BDF8"
-                                 BorderThickness="1.5"
-                                 Foreground="#EF4444"
-                                 FontSize="15"
-                                 FontWeight="Bold"
-                                 Padding="6,3"
-                                 HorizontalAlignment="Left"
-                                 VerticalAlignment="Top"
-                                 KeyDown="VideoFloatingInput_KeyDown"
-                                 LostFocus="VideoFloatingInput_LostFocus"/>
-                    </Grid>
+                    <!-- Caja flotante de texto para escribir en el video -->
+                    <TextBox x:Name="VideoFloatingInput"
+                             Visibility="Collapsed"
+                             Background="#E60F172A"
+                             BorderBrush="#38BDF8"
+                             BorderThickness="1.5"
+                             Foreground="#EF4444"
+                             FontSize="15"
+                             FontWeight="Bold"
+                             Padding="6,3"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Top"
+                             KeyDown="VideoFloatingInput_KeyDown"
+                             LostFocus="VideoFloatingInput_LostFocus"/>
 
                     <!-- Indicador de Pausa en el centro -->
                     <Border x:Name="PauseIndicator" Width="54" Height="54" CornerRadius="27" Background="#80000000" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" IsHitTestVisible="False">
@@ -276,32 +278,32 @@
                         </Border.Effect>
                         <StackPanel Orientation="Horizontal">
                             <!-- 1. Modo Cursor / Reproducción -->
-                            <RadioButton x:Name="BtnToolPointer" Style="{StaticResource AnnotationToggleBtnStyle}" IsChecked="True" ToolTip="Modo Cursor / Reproducción&#x0a;Haz clic en el video para reproducir o pausar" Click="BtnToolPointer_Click">
+                            <RadioButton x:Name="BtnToolPointer" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" IsChecked="True" ToolTip="Modo Cursor / Reproducción&#x0a;Haz clic en el video para reproducir o pausar" Click="BtnToolPointer_Click">
                                 <TextBlock Text="👆" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </RadioButton>
 
                             <!-- 2. Flecha -->
-                            <RadioButton x:Name="BtnToolArrow" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Flecha indicadora [↗️]" Click="BtnToolArrow_Click">
+                            <RadioButton x:Name="BtnToolArrow" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Flecha indicadora [↗️]" Click="BtnToolArrow_Click">
                                 <Image Source="/Assets/Icons/arrow.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
                             <!-- 3. Texto -->
-                            <RadioButton x:Name="BtnToolText" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Añadir texto [🔤]&#x0a;Haz clic en el video para escribir" Click="BtnToolText_Click">
+                            <RadioButton x:Name="BtnToolText" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Añadir texto [🔤]&#x0a;Haz clic en el video para escribir" Click="BtnToolText_Click">
                                 <Image Source="/Assets/Icons/text.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
                             <!-- 4. Pluma libre -->
-                            <RadioButton x:Name="BtnToolPen" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Pluma de dibujo libre [✏️]" Click="BtnToolPen_Click">
+                            <RadioButton x:Name="BtnToolPen" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Pluma de dibujo libre [✏️]" Click="BtnToolPen_Click">
                                 <Image Source="/Assets/Icons/pen.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
                             <!-- 5. Rectángulo -->
-                            <RadioButton x:Name="BtnToolRect" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Marco rectangular [🔲]" Click="BtnToolRect_Click">
+                            <RadioButton x:Name="BtnToolRect" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Marco rectangular [🔲]" Click="BtnToolRect_Click">
                                 <Image Source="/Assets/Icons/rect.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
                             <!-- 6. Censura Knox -->
-                            <RadioButton x:Name="BtnToolRedact" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Censura Knox [🔒]&#x0a;Bloque sólido opaco para ocultar información privada" Click="BtnToolRedact_Click">
+                            <RadioButton x:Name="BtnToolRedact" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Censura Knox [🔒]&#x0a;Bloque sólido opaco para ocultar información privada" Click="BtnToolRedact_Click">
                                 <Image Source="/Assets/Icons/lock.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 

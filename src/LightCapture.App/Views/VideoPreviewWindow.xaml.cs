@@ -87,8 +87,6 @@ public partial class VideoPreviewWindow : Window
 
     private void MediaVideoPlayer_MediaOpened(object sender, RoutedEventArgs e)
     {
-        UpdateVideoViewportLayout();
-
         if (MediaVideoPlayer.NaturalDuration.HasTimeSpan)
         {
             _totalDuration = MediaVideoPlayer.NaturalDuration.TimeSpan;
@@ -430,33 +428,6 @@ public partial class VideoPreviewWindow : Window
         MediaVideoPlayer.Position = _trimEnd;
     }
 
-    private void VideoContainer_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        UpdateVideoViewportLayout();
-    }
-
-    private void UpdateVideoViewportLayout()
-    {
-        if (MediaVideoPlayer == null || VideoViewport == null || VideoContainer == null) return;
-        if (MediaVideoPlayer.NaturalVideoWidth <= 0 || MediaVideoPlayer.NaturalVideoHeight <= 0)
-        {
-            VideoViewport.Width = double.NaN;
-            VideoViewport.Height = double.NaN;
-            return;
-        }
-
-        double containerW = VideoContainer.ActualWidth;
-        double containerH = VideoContainer.ActualHeight;
-        if (containerW <= 0 || containerH <= 0) return;
-
-        double natW = MediaVideoPlayer.NaturalVideoWidth;
-        double natH = MediaVideoPlayer.NaturalVideoHeight;
-
-        double scale = Math.Min(containerW / natW, containerH / natH);
-        VideoViewport.Width = Math.Max(10, Math.Round(natW * scale));
-        VideoViewport.Height = Math.Max(10, Math.Round(natH * scale));
-    }
-
     private void SetVideoTool(DrawingToolType tool)
     {
         CommitFloatingText();
@@ -509,7 +480,7 @@ public partial class VideoPreviewWindow : Window
 
     private void VideoDrawingCanvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.LeftButton != MouseButtonState.Pressed) return;
+        if (e.ChangedButton != MouseButton.Left) return;
         Point p = e.GetPosition(VideoDrawingCanvas);
 
         if (_currentVideoTool == DrawingToolType.None)
@@ -526,13 +497,14 @@ public partial class VideoPreviewWindow : Window
         }
 
         CommitFloatingText();
+        VideoDrawingCanvas.CaptureMouse();
         VideoDrawingCanvas.StartDrawing(p);
     }
 
     private void VideoDrawingCanvas_MouseMove(object sender, MouseEventArgs e)
     {
         if (_currentVideoTool == DrawingToolType.None || _currentVideoTool == DrawingToolType.Text) return;
-        if (e.LeftButton == MouseButtonState.Pressed)
+        if (e.LeftButton == MouseButtonState.Pressed && VideoDrawingCanvas.IsMouseCaptured)
         {
             Point p = e.GetPosition(VideoDrawingCanvas);
             VideoDrawingCanvas.UpdateDrawing(p);
@@ -542,6 +514,10 @@ public partial class VideoPreviewWindow : Window
     private void VideoDrawingCanvas_MouseUp(object sender, MouseButtonEventArgs e)
     {
         if (_currentVideoTool == DrawingToolType.None || _currentVideoTool == DrawingToolType.Text) return;
+        if (VideoDrawingCanvas.IsMouseCaptured)
+        {
+            VideoDrawingCanvas.ReleaseMouseCapture();
+        }
         Point p = e.GetPosition(VideoDrawingCanvas);
         VideoDrawingCanvas.EndDrawing(p);
     }
@@ -549,8 +525,8 @@ public partial class VideoPreviewWindow : Window
     private void ShowFloatingTextInput(Point p)
     {
         _textInputPosition = p;
-        double maxLeft = Math.Max(0, VideoViewport.ActualWidth - 140);
-        double maxTop = Math.Max(0, VideoViewport.ActualHeight - 40);
+        double maxLeft = Math.Max(0, VideoContainer.ActualWidth - 140);
+        double maxTop = Math.Max(0, VideoContainer.ActualHeight - 40);
 
         VideoFloatingInput.Margin = new Thickness(
             Math.Min(maxLeft, Math.Max(0, p.X)),
@@ -656,14 +632,14 @@ public partial class VideoPreviewWindow : Window
             string? overlayPngPath = null;
             if (hasAnnotations)
             {
-                int natW = MediaVideoPlayer.NaturalVideoWidth > 0 ? MediaVideoPlayer.NaturalVideoWidth : (int)(VideoViewport?.ActualWidth ?? 640);
-                int natH = MediaVideoPlayer.NaturalVideoHeight > 0 ? MediaVideoPlayer.NaturalVideoHeight : (int)(VideoViewport?.ActualHeight ?? 360);
+                int natW = MediaVideoPlayer.NaturalVideoWidth > 0 ? MediaVideoPlayer.NaturalVideoWidth : (int)VideoContainer.ActualWidth;
+                int natH = MediaVideoPlayer.NaturalVideoHeight > 0 ? MediaVideoPlayer.NaturalVideoHeight : (int)VideoContainer.ActualHeight;
 
                 string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
                 if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
                 overlayPngPath = Path.Combine(tempDir, $"Overlay_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.png");
 
-                VideoDrawingCanvas?.ExportOverlayToPng(overlayPngPath, natW, natH);
+                VideoDrawingCanvas?.ExportVideoOverlayToPng(overlayPngPath, natW, natH, VideoContainer.ActualWidth, VideoContainer.ActualHeight);
             }
 
             string toastMsg = hasAnnotations && isTrimmed
