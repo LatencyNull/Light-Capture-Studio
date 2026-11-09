@@ -173,14 +173,14 @@ public partial class VideoPreviewWindow : Window
     private void UpdateTrimLabels()
     {
         var trimDuration = _trimEnd - _trimStart;
-        bool isTrimmed = _trimStart > TimeSpan.FromMilliseconds(150) || 
-                         (_totalDuration - _trimEnd) > TimeSpan.FromMilliseconds(150);
+        bool isTrimmed = _trimStart > TimeSpan.FromMilliseconds(250) || 
+                         (_totalDuration - _trimEnd) > TimeSpan.FromMilliseconds(250);
 
-        TxtTrimDuration.Text = isTrimmed 
-            ? $"{trimDuration.Minutes:D2}:{trimDuration.Seconds:D2}.{trimDuration.Milliseconds / 100}" 
-            : $"{_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
+        // Formato fijo invariable mm:ss (siempre exactamente 5 caracteres para ancho constante)
+        TxtTrimDuration.Text = $"{trimDuration.Minutes:D2}:{trimDuration.Seconds:D2}";
 
-        BtnResetTrim.Visibility = isTrimmed ? Visibility.Visible : Visibility.Collapsed;
+        // Usar Visibility.Hidden para que el espacio se preserve y la línea de tiempo permanezca 100% inmóvil
+        BtnResetTrim.Visibility = isTrimmed ? Visibility.Visible : Visibility.Hidden;
         BadgeTrimInfo.BorderBrush = isTrimmed 
             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248)) 
             : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 65, 85));

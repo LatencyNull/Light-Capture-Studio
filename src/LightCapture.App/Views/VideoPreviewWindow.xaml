@@ -178,10 +178,10 @@
             <Border Grid.Row="2" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="12" Padding="12,8" Margin="0,0,0,14">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/> <!-- Play/Pause -->
-                        <ColumnDefinition Width="Auto"/> <!-- Tiempo actual -->
+                        <ColumnDefinition Width="34"/>  <!-- Play/Pause -->
+                        <ColumnDefinition Width="110"/> <!-- Tiempo actual (Ancho fijo inmutable) -->
                         <ColumnDefinition Width="*"/>    <!-- Timeline interactiva con tiradores estilo Fotos -->
-                        <ColumnDefinition Width="Auto"/> <!-- Indicador sutil de duración / reset -->
+                        <ColumnDefinition Width="80"/>  <!-- Indicador de duración y reset (Ancho fijo inmutable) -->
                     </Grid.ColumnDefinitions>
 
                     <!-- Botón Play/Pause -->
@@ -189,8 +189,10 @@
                         <TextBlock x:Name="TxtPlayPauseIcon" Text="⏸" FontSize="14" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
 
-                    <!-- Tiempo de reproducción actual -->
-                    <TextBlock x:Name="TxtPlaybackPosition" Grid.Column="1" Text="00:00 / 00:00" FontFamily="Consolas, Segoe UI" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center" Margin="8,0,12,0"/>
+                    <!-- Tiempo de reproducción actual (Ancho fijo para evitar fluctuaciones) -->
+                    <Border Grid.Column="1" VerticalAlignment="Center" Margin="4,0,8,0">
+                        <TextBlock x:Name="TxtPlaybackPosition" Text="00:00 / 00:00" FontFamily="Consolas, Segoe UI" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
 
                     <!-- Línea de tiempo interactiva con Recorte tipo Fotos de Windows -->
                     <Grid x:Name="TimelineContainer" Grid.Column="2" Height="30" VerticalAlignment="Center" Margin="4,0" SizeChanged="TimelineContainer_SizeChanged">
@@ -229,13 +231,13 @@
                         </Canvas>
                     </Grid>
 
-                    <!-- Indicador sutil de duración y botón restablecer -->
-                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,4,0">
-                        <Border x:Name="BadgeTrimInfo" Background="{DynamicResource ActionBtnBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="6" Padding="6,2" VerticalAlignment="Center">
-                            <TextBlock x:Name="TxtTrimDuration" Text="00:00" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}"/>
+                    <!-- Indicador de duración y botón restablecer (Ancho fijo inmutable) -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Width="76">
+                        <Border x:Name="BadgeTrimInfo" Width="48" Height="24" Background="{DynamicResource ActionBtnBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="6" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtTrimDuration" Text="00:00" FontFamily="Consolas, Segoe UI" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <Button x:Name="BtnResetTrim" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SecondaryText}" Cursor="Hand" Padding="4,2" Click="BtnResetTrim_Click" ToolTip="Restablecer recorte a duración completa" Visibility="Collapsed">
-                            <TextBlock Text="↺" FontSize="13" FontWeight="Bold"/>
+                        <Button x:Name="BtnResetTrim" Width="22" Height="22" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SecondaryText}" Cursor="Hand" Margin="4,0,0,0" Click="BtnResetTrim_Click" ToolTip="Restablecer recorte a duración completa" Visibility="Hidden">
+                            <TextBlock Text="↺" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
                     </StackPanel>
                 </Grid>
