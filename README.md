@@ -21,6 +21,7 @@
 
 - 🌐 **In-Place Live Translation**: Translate games, comics, foreign PDFs, or unselectable web content directly on your screen with a Google Lens-style overlay.
 - 🎥 **MP4 & Animated GIF Recording**: Capture crisp MP4 clips with system loopback audio and microphone voiceover, or lightweight animated GIFs ready for Discord, GitHub, and chat apps.
+- 🎬 **In-Video Annotations & Object Timeline**: Add arrows, floating text labels, highlight rectangles, freehand drawings, and Knox censorship directly onto your video clips, complete with a visual timeline to customize when each element appears and how long it lasts.
 - 🔍 **Native Windows OCR**: Extract locked text from YouTube videos, scanned documents, and images directly to your clipboard (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>).
 - 🕒 **Searchable Local History**: Automatically saves and indexes every capture to your `Documents\Light Capture Studio` folder. Search weeks later by words detected in the image!
 - 🔒 **100% Local Privacy**: Zero public cloud uploads. What happens on your screen stays on your computer.
@@ -33,6 +34,8 @@
 |:---|:---:|:---:|
 | **Live In-Place Translation** | ✅ Google Lens-style overlay directly on screen | ❌ None |
 | **Video & GIF Recording** | ✅ MP4 (audio + mic) & lightweight animated GIFs | ❌ Static screenshots only |
+| **In-Video Annotations & Timeline** | ✅ Arrows, text, boxes, pen & blur with duration tracks | ❌ Impossible |
+| **Live Video Scrubbing Preview** | ✅ Real-time ~40fps frame preview, seeking & Stop button | ❌ None |
 | **OCR Text Extraction** | ✅ Instant clipboard extraction (<kbd>Ctrl+Shift+T</kbd>) | ❌ Impossible (pixels only) |
 | **Local Searchable History** | ✅ Search past captures by text contained inside | ❌ None (lost once closed) |
 | **Privacy & Security** | ✅ 100% Local offline storage (`Documents`) | ⚠️ Insecure public uploads |
@@ -49,8 +52,13 @@
 ### 1. 🌐 Live Overlay Translation (Lens Mode)
 Select any portion of your screen—in a video game, foreign article, or locked document—and click **Translate**. Text blocks are replaced seamlessly with translated text in-place, preserving font size and position, or copied instantly as formatted plain text.
 
-### 2. 🎥 Screen Video & Animated GIF Recording
-Need to explain a bug, demonstrate a gameplay clip, or share an animation? Capture any region in smooth 30/60 FPS H.264 MP4 with system sound and microphone narration, or export lightweight animated GIFs (up to 15s) tailored for Discord, GitHub issues, and chat apps. An integrated mini-player lets you review, copy, or share right away.
+### 2. 🎥 Screen Video & Animated GIF Recording with In-Video Annotations & Timeline
+Need to explain a bug, demonstrate a gameplay clip, or create an interactive tutorial? Capture any desktop region in smooth 30/60 FPS H.264 MP4 with system sound and microphone voiceover, or export lightweight animated GIFs (up to 15s) ready for Discord, GitHub issues, and chats:
+
+- ↗️ **In-Video Drawing Tools**: Overlay indicator arrows (`↗️`), floating customizable text (`🔤`), highlight rectangles (`🔲`), freehand drawings (`✏️`), and opaque Knox privacy blocks (`🔒`) directly onto the video.
+- ⏱️ **Visual Object Timeline**: An automatic timeline track is created for each annotation. Drag blocks horizontally to set when elements appear, and drag their edges to set their exact duration.
+- ⚡ **Real-Time Video Scrubbing & Trim Controls**: Fast-forward, rewind, or scrub across the timeline with smooth ~40 FPS frame previews even while paused. Easily trim the start and end of clips or tap the **Stop** (`⏹`) button to reset to the beginning.
+- 🎨 **Hardware-Accelerated Stamping**: Overlays and timed sequences are stamped with sub-second precision into the exported MP4 or GIF via hardware-accelerated FFmpeg / Windows Media pipelines.
 
 ### 3. 🔍 Native Windows OCR Text Extraction
 Extract text from anywhere—even protected web pages, YouTube subtitles, or rasterized images. Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> and the extracted text is immediately ready to paste.
