@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows.Media;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using LightCapture.App.Services;
 
@@ -24,6 +25,10 @@ public partial class VideoPreviewWindow : Window
 
     private bool _isDraggingStart;
     private bool _isDraggingEnd;
+    private double _dragOffsetX;
+    private DateTime _lastDragSeekTime = DateTime.MinValue;
+    private bool _isLooping = false;
+    private DateTime _lastLoopSeekTime = DateTime.MinValue;
     private DispatcherTimer? _playbackTimer;
     private DateTime _lastSocialMenuCloseTime = DateTime.MinValue;
 
@@ -91,20 +96,41 @@ public partial class VideoPreviewWindow : Window
 
             var pos = MediaVideoPlayer.Position;
 
-            // Bucle inteligente dentro del rango de recorte
-            if (pos >= _trimEnd || pos < _trimStart)
+            // Si estábamos en proceso de rebobinado por bucle, verificar si ya se completó el seek
+            if (_isLooping)
             {
-                MediaVideoPlayer.Position = _trimStart;
-                pos = _trimStart;
+                if (Math.Abs((pos - _trimStart).TotalMilliseconds) < 300 || 
+                    (DateTime.UtcNow - _lastLoopSeekTime).TotalMilliseconds > 400)
+                {
+                    _isLooping = false;
+                }
+                else
+                {
+                    return; // Esperar a que el decodificador termine el seek a _trimStart
+                }
             }
 
-            // Actualizar aguja de reproducción (playhead)
-            double trackWidth = TimelineContainer.ActualWidth;
-            if (trackWidth > 0)
+            // Bucle inteligente al alcanzar el límite final del recorte
+            if (pos >= _trimEnd)
             {
-                double ratio = pos.TotalSeconds / _totalDuration.TotalSeconds;
-                double x = Math.Max(0, Math.Min(ratio * trackWidth, trackWidth - 3));
-                Canvas.SetLeft(Playhead, x);
+                if (!_isLooping && (DateTime.UtcNow - _lastLoopSeekTime).TotalMilliseconds > 300)
+                {
+                    _isLooping = true;
+                    _lastLoopSeekTime = DateTime.UtcNow;
+                    MediaVideoPlayer.Position = _trimStart;
+                    pos = _trimStart;
+                }
+            }
+
+            // Actualizar aguja de reproducción (playhead) en el espacio del track
+            double trackWidth = TimelineContainer.ActualWidth;
+            double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+            double maxTravel = trackWidth - pinWidth;
+            if (maxTravel > 0)
+            {
+                double ratio = Math.Max(0, Math.Min(pos.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
+                double needleX = Math.Max(0, Math.Min(ratio * maxTravel + (pinWidth / 2) - 1, trackWidth - 3));
+                Canvas.SetLeft(Playhead, needleX);
             }
 
             TxtPlaybackPosition.Text = $"{pos.Minutes:D2}:{pos.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
@@ -122,17 +148,24 @@ public partial class VideoPreviewWindow : Window
         double trackWidth = TimelineContainer.ActualWidth;
         if (trackWidth <= 0 || _totalDuration.TotalSeconds <= 0) return;
 
-        double startRatio = _trimStart.TotalSeconds / _totalDuration.TotalSeconds;
-        double endRatio = _trimEnd.TotalSeconds / _totalDuration.TotalSeconds;
+        double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+        double maxTravel = trackWidth - pinWidth;
+        if (maxTravel <= 0) return;
 
-        double startX = Math.Max(0, startRatio * trackWidth);
-        double endX = Math.Min(trackWidth - PinEnd.ActualWidth, endRatio * trackWidth - PinEnd.ActualWidth);
+        double startRatio = Math.Max(0, Math.Min(_trimStart.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
+        double endRatio = Math.Max(0, Math.Min(_trimEnd.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
+
+        double startX = startRatio * maxTravel;
+        double endX = endRatio * maxTravel;
 
         Canvas.SetLeft(PinStart, startX);
-        Canvas.SetLeft(PinEnd, Math.Max(startX + 14, endX));
+        Canvas.SetLeft(PinEnd, Math.Max(startX + 20, endX));
 
         ActiveRangeTrack.Margin = new Thickness(startX, 0, 0, 0);
-        ActiveRangeTrack.Width = Math.Max(0, (endX + PinEnd.ActualWidth) - startX);
+        ActiveRangeTrack.Width = Math.Max(0, (endX + pinWidth) - startX);
+
+        double needleX = Math.Max(0, Math.Min(startX + (pinWidth / 2) - 1, trackWidth - 3));
+        Canvas.SetLeft(Playhead, needleX);
 
         UpdateTrimLabels();
     }
@@ -159,6 +192,7 @@ public partial class VideoPreviewWindow : Window
     private void PinStart_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         _isDraggingStart = true;
+        _dragOffsetX = e.GetPosition(PinStart).X;
         PinStart.CaptureMouse();
         MediaVideoPlayer.Pause();
         e.Handled = true;
@@ -167,6 +201,7 @@ public partial class VideoPreviewWindow : Window
     private void PinEnd_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         _isDraggingEnd = true;
+        _dragOffsetX = e.GetPosition(PinEnd).X;
         PinEnd.CaptureMouse();
         MediaVideoPlayer.Pause();
         e.Handled = true;
@@ -179,6 +214,7 @@ public partial class VideoPreviewWindow : Window
             _isDraggingStart = false;
             PinStart.ReleaseMouseCapture();
             _cachedTrimmedPath = null;
+            MediaVideoPlayer.Position = _trimStart;
         }
 
         if (_isDraggingEnd)
@@ -186,7 +222,23 @@ public partial class VideoPreviewWindow : Window
             _isDraggingEnd = false;
             PinEnd.ReleaseMouseCapture();
             _cachedTrimmedPath = null;
+            // Al soltar el corchete de fin, volver al inicio del recorte para reproducción continua limpia
+            MediaVideoPlayer.Position = _trimStart;
         }
+
+        _isLooping = false;
+
+        // Reposicionar aguja y medidor de tiempo con precisión
+        double trackWidth = TimelineContainer.ActualWidth;
+        double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+        double maxTravel = trackWidth - pinWidth;
+        if (maxTravel > 0 && _totalDuration.TotalSeconds > 0)
+        {
+            double ratio = _trimStart.TotalSeconds / _totalDuration.TotalSeconds;
+            double needleX = Math.Max(0, Math.Min(ratio * maxTravel + (pinWidth / 2) - 1, trackWidth - 3));
+            Canvas.SetLeft(Playhead, needleX);
+        }
+        TxtPlaybackPosition.Text = $"{_trimStart.Minutes:D2}:{_trimStart.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
 
         if (_isPlaying)
         {
@@ -200,20 +252,45 @@ public partial class VideoPreviewWindow : Window
         if (!_isDraggingStart || _totalDuration.TotalSeconds <= 0) return;
 
         double trackWidth = TimelineContainer.ActualWidth;
-        double curX = e.GetPosition(TimelineCanvas).X;
+        double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+        double maxTravel = trackWidth - pinWidth;
+        if (maxTravel <= 0) return;
+
+        double curX = e.GetPosition(TimelineCanvas).X - _dragOffsetX;
         double endX = Canvas.GetLeft(PinEnd);
 
-        double newStartX = Math.Max(0, Math.Min(curX, endX - 14));
+        // Distancia mínima de 20px entre corchetes
+        double newStartX = Math.Max(0, Math.Min(curX, endX - 20));
+
+        // Ajuste magnético suave al borde izquierdo
+        if (newStartX <= 4)
+        {
+            newStartX = 0;
+            _trimStart = TimeSpan.Zero;
+        }
+        else
+        {
+            _trimStart = TimeSpan.FromSeconds((newStartX / maxTravel) * _totalDuration.TotalSeconds);
+        }
+
         Canvas.SetLeft(PinStart, newStartX);
-
         ActiveRangeTrack.Margin = new Thickness(newStartX, 0, 0, 0);
-        ActiveRangeTrack.Width = Math.Max(0, (endX + PinEnd.ActualWidth) - newStartX);
+        ActiveRangeTrack.Width = Math.Max(0, (endX + pinWidth) - newStartX);
 
-        _trimStart = TimeSpan.FromSeconds((newStartX / trackWidth) * _totalDuration.TotalSeconds);
-        MediaVideoPlayer.Position = _trimStart;
-        Canvas.SetLeft(Playhead, newStartX);
+        // Aguja visual centrada en el corchete
+        double needleX = Math.Max(0, Math.Min(newStartX + (pinWidth / 2) - 1, trackWidth - 3));
+        Canvas.SetLeft(Playhead, needleX);
 
+        // Sincronización exacta en tiempo real del medidor de tiempo
+        TxtPlaybackPosition.Text = $"{_trimStart.Minutes:D2}:{_trimStart.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
         UpdateTrimLabels();
+
+        // Throttle para previsualización suave del fotograma sin saturar el decodificador
+        if ((DateTime.UtcNow - _lastDragSeekTime).TotalMilliseconds > 60)
+        {
+            _lastDragSeekTime = DateTime.UtcNow;
+            MediaVideoPlayer.Position = _trimStart;
+        }
     }
 
     private void PinEnd_MouseMove(object sender, MouseEventArgs e)
@@ -221,19 +298,44 @@ public partial class VideoPreviewWindow : Window
         if (!_isDraggingEnd || _totalDuration.TotalSeconds <= 0) return;
 
         double trackWidth = TimelineContainer.ActualWidth;
-        double curX = e.GetPosition(TimelineCanvas).X;
+        double pinWidth = PinEnd.ActualWidth > 0 ? PinEnd.ActualWidth : 14;
+        double maxTravel = trackWidth - pinWidth;
+        if (maxTravel <= 0) return;
+
+        double curX = e.GetPosition(TimelineCanvas).X - _dragOffsetX;
         double startX = Canvas.GetLeft(PinStart);
 
-        double newEndX = Math.Max(startX + 14, Math.Min(curX, trackWidth - PinEnd.ActualWidth));
+        // Distancia mínima de 20px entre corchetes
+        double newEndX = Math.Max(startX + 20, Math.Min(curX, maxTravel));
+
+        // Ajuste magnético suave al borde derecho
+        if (newEndX >= maxTravel - 4)
+        {
+            newEndX = maxTravel;
+            _trimEnd = _totalDuration;
+        }
+        else
+        {
+            _trimEnd = TimeSpan.FromSeconds((newEndX / maxTravel) * _totalDuration.TotalSeconds);
+        }
+
         Canvas.SetLeft(PinEnd, newEndX);
+        ActiveRangeTrack.Width = Math.Max(0, (newEndX + pinWidth) - startX);
 
-        ActiveRangeTrack.Width = Math.Max(0, (newEndX + PinEnd.ActualWidth) - startX);
+        // Aguja visual centrada en el corchete
+        double needleX = Math.Max(0, Math.Min(newEndX + (pinWidth / 2) - 1, trackWidth - 3));
+        Canvas.SetLeft(Playhead, needleX);
 
-        _trimEnd = TimeSpan.FromSeconds(((newEndX + PinEnd.ActualWidth) / trackWidth) * _totalDuration.TotalSeconds);
-        MediaVideoPlayer.Position = _trimEnd;
-        Canvas.SetLeft(Playhead, newEndX);
-
+        // Sincronización exacta en tiempo real del medidor de tiempo
+        TxtPlaybackPosition.Text = $"{_trimEnd.Minutes:D2}:{_trimEnd.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
         UpdateTrimLabels();
+
+        // Throttle para previsualización suave del fotograma sin saturar el decodificador
+        if ((DateTime.UtcNow - _lastDragSeekTime).TotalMilliseconds > 60)
+        {
+            _lastDragSeekTime = DateTime.UtcNow;
+            MediaVideoPlayer.Position = _trimEnd;
+        }
     }
 
     private void TimelineCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -241,17 +343,25 @@ public partial class VideoPreviewWindow : Window
         if (_totalDuration.TotalSeconds <= 0) return;
 
         double trackWidth = TimelineContainer.ActualWidth;
-        double clickX = e.GetPosition(TimelineCanvas).X;
+        double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+        double maxTravel = trackWidth - pinWidth;
+        if (maxTravel <= 0) return;
 
-        double ratio = Math.Max(0, Math.Min(clickX / trackWidth, 1.0));
+        double clickX = e.GetPosition(TimelineCanvas).X;
+        double ratio = Math.Max(0, Math.Min(clickX / maxTravel, 1.0));
         var targetTime = TimeSpan.FromSeconds(ratio * _totalDuration.TotalSeconds);
 
         // Clamp dentro del rango recortado
         if (targetTime < _trimStart) targetTime = _trimStart;
         if (targetTime > _trimEnd) targetTime = _trimEnd;
 
+        _isLooping = false;
         MediaVideoPlayer.Position = targetTime;
-        Canvas.SetLeft(Playhead, Math.Max(0, Math.Min(clickX, trackWidth - 3)));
+
+        double needleRatio = targetTime.TotalSeconds / _totalDuration.TotalSeconds;
+        double needleX = Math.Max(0, Math.Min(needleRatio * maxTravel + (pinWidth / 2) - 1, trackWidth - 3));
+        Canvas.SetLeft(Playhead, needleX);
+        TxtPlaybackPosition.Text = $"{targetTime.Minutes:D2}:{targetTime.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
     }
 
     private void BtnPlayPause_Click(object sender, RoutedEventArgs e)
@@ -291,6 +401,8 @@ public partial class VideoPreviewWindow : Window
 
     private void MediaVideoPlayer_MediaEnded(object sender, RoutedEventArgs e)
     {
+        _isLooping = true;
+        _lastLoopSeekTime = DateTime.UtcNow;
         MediaVideoPlayer.Position = _trimStart;
         MediaVideoPlayer.Play();
     }
@@ -300,11 +412,30 @@ public partial class VideoPreviewWindow : Window
         TogglePlayPause();
     }
 
-    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ButtonState == MouseButtonState.Pressed)
+        if (e.ButtonState != MouseButtonState.Pressed) return;
+
+        System.Windows.Point pos = e.GetPosition(this);
+        // Zona superior de la ventana (estilo barra de título de Windows, primeros 65 píxeles)
+        if (pos.Y <= 65)
         {
-            DragMove();
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                DependencyObject? current = dep;
+                while (current != null && current != this)
+                {
+                    if (current is System.Windows.Controls.Primitives.ButtonBase)
+                        return; // Permitir que los botones (como el botón ✕) procesen su clic
+                    current = VisualTreeHelper.GetParent(current);
+                }
+            }
+
+            try
+            {
+                DragMove();
+            }
+            catch { }
         }
     }
 

@@ -7,7 +7,8 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Topmost="True">
+        Topmost="True"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
     <Window.Resources>
         <!-- Estilo botones de acción rápida -->
@@ -142,8 +143,8 @@
                 <RowDefinition Height="Auto"/> <!-- Barra de acciones -->
             </Grid.RowDefinitions>
 
-            <!-- 1. Cabecera (Arrastrar ventana estilo Explorador de Windows) -->
-            <Grid Grid.Row="0" Margin="0,0,0,12" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <!-- 1. Cabecera -->
+            <Grid Grid.Row="0" Margin="0,0,0,12" Background="Transparent">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtHeaderIcon" Text="🎥" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
                     <TextBlock x:Name="TxtHeaderTitle" Text="Previsualización del Clip" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
@@ -202,7 +203,7 @@
                         <!-- Canvas para los cursores y pines -->
                         <Canvas x:Name="TimelineCanvas" ClipToBounds="False" MouseLeftButtonDown="TimelineCanvas_MouseLeftButtonDown">
                             <!-- Pin de Inicio (Izquierdo: cápsula vertical minimalista estilo Fotos) -->
-                            <Border x:Name="PinStart" Width="12" Height="24" Background="#FFFFFF" BorderBrush="#0284C7" BorderThickness="2" CornerRadius="6" Cursor="SizeWE" Canvas.Left="0" Canvas.Top="3" ToolTip="Inicio del recorte (arrastra para recortar)" MouseLeftButtonDown="PinStart_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinStart_MouseMove">
+                            <Border x:Name="PinStart" Width="14" Height="24" Background="#FFFFFF" BorderBrush="#0284C7" BorderThickness="2" CornerRadius="6" Cursor="SizeWE" Canvas.Left="0" Canvas.Top="3" ToolTip="Inicio del recorte (arrastra para recortar)" MouseLeftButtonDown="PinStart_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinStart_MouseMove">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.4"/>
                                 </Border.Effect>
@@ -211,7 +212,7 @@
                             </Border>
 
                             <!-- Pin de Fin (Derecho: cápsula vertical minimalista estilo Fotos) -->
-                            <Border x:Name="PinEnd" Width="12" Height="24" Background="#FFFFFF" BorderBrush="#0284C7" BorderThickness="2" CornerRadius="6" Cursor="SizeWE" Canvas.Left="100" Canvas.Top="3" ToolTip="Fin del recorte (arrastra para recortar)" MouseLeftButtonDown="PinEnd_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinEnd_MouseMove">
+                            <Border x:Name="PinEnd" Width="14" Height="24" Background="#FFFFFF" BorderBrush="#0284C7" BorderThickness="2" CornerRadius="6" Cursor="SizeWE" Canvas.Left="100" Canvas.Top="3" ToolTip="Fin del recorte (arrastra para recortar)" MouseLeftButtonDown="PinEnd_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinEnd_MouseMove">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.4"/>
                                 </Border.Effect>
