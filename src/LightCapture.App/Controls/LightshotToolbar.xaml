@@ -31,7 +31,7 @@
             </Setter>
         </Style>
 
-        <!-- Botón estándar estilo Emoji -->
+        <!-- Botón estándar estilo Emoji con zoom hover sutil en el icono -->
         <Style x:Key="EmojiBtnStyle" TargetType="Button">
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="32"/>
@@ -42,25 +42,27 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <ScaleTransform ScaleX="1" ScaleY="1"/>
-                            </Border.RenderTransform>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                            <Grid x:Name="iconContainer" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Grid.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Grid.RenderTransform>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ToolbarHover}"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToolbarBorder}"/>
-                                <Setter TargetName="border" Property="RenderTransform">
+                                <Setter TargetName="iconContainer" Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="1.12" ScaleY="1.12"/>
+                                        <ScaleTransform ScaleX="1.10" ScaleY="1.10"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ToolbarPressed}"/>
-                                <Setter TargetName="border" Property="RenderTransform">
+                                <Setter TargetName="iconContainer" Property="RenderTransform">
                                     <Setter.Value>
                                         <ScaleTransform ScaleX="0.94" ScaleY="0.94"/>
                                     </Setter.Value>
@@ -72,7 +74,7 @@
             </Setter>
         </Style>
 
-        <!-- Toggle RadioButton estilo Emoji con resaltado activo -->
+        <!-- Toggle RadioButton estilo Emoji con resaltado activo y zoom hover sutil en el icono -->
         <Style x:Key="EmojiToolToggleStyle" TargetType="RadioButton">
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="32"/>
@@ -83,19 +85,21 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <ScaleTransform ScaleX="1" ScaleY="1"/>
-                            </Border.RenderTransform>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                            <Grid x:Name="iconContainer" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Grid.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Grid.RenderTransform>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ToolbarHover}"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToolbarBorder}"/>
-                                <Setter TargetName="border" Property="RenderTransform">
+                                <Setter TargetName="iconContainer" Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="1.12" ScaleY="1.12"/>
+                                        <ScaleTransform ScaleX="1.10" ScaleY="1.10"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
@@ -106,7 +110,7 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ToolbarPressed}"/>
-                                <Setter TargetName="border" Property="RenderTransform">
+                                <Setter TargetName="iconContainer" Property="RenderTransform">
                                     <Setter.Value>
                                         <ScaleTransform ScaleX="0.94" ScaleY="0.94"/>
                                     </Setter.Value>

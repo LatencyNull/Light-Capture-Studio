@@ -7,7 +7,7 @@
         <!-- ESTILO UNIVERSAL MODERNO DE MENÚ (Samsung One UI / Windows 11 Dark/Light) -->
         <!-- ========================================================================= -->
 
-        <!-- Template para Items regulares de menú -->
+        <!-- Template para Items regulares de menú con zoom hover sutil en el icono -->
         <ControlTemplate x:Key="ModernSubmenuItemTemplate" TargetType="MenuItem">
             <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="8" Margin="2,1" Padding="8,6" SnapsToDevicePixels="True">
                 <Grid>
@@ -16,7 +16,12 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemGestureColumn"/>
                     </Grid.ColumnDefinitions>
-                    <ContentPresenter Grid.Column="0" ContentSource="Icon" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Grid x:Name="IconHost" Grid.Column="0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,6,0">
+                        <Grid.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Grid.RenderTransform>
+                        <ContentPresenter ContentSource="Icon" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
                     <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
                     <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" 
                                Foreground="{DynamicResource SecondaryText}" FontSize="11" FontWeight="Normal" 
@@ -26,6 +31,11 @@
             <ControlTemplate.Triggers>
                 <Trigger Property="IsHighlighted" Value="True">
                     <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource MenuHover}"/>
+                    <Setter TargetName="IconHost" Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1.12" ScaleY="1.12"/>
+                        </Setter.Value>
+                    </Setter>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Foreground" Value="{DynamicResource SecondaryText}"/>
@@ -43,7 +53,12 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <ContentPresenter Grid.Column="0" ContentSource="Icon" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Grid x:Name="IconHost" Grid.Column="0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,6,0">
+                        <Grid.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Grid.RenderTransform>
+                        <ContentPresenter ContentSource="Icon" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
                     <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
                     <Path Grid.Column="2" Data="M0 0 L4 4 L0 8" Stroke="{DynamicResource SecondaryText}" StrokeThickness="1.5" 
                           StrokeStartLineCap="Round" StrokeEndLineCap="Round"
@@ -70,6 +85,11 @@
             <ControlTemplate.Triggers>
                 <Trigger Property="IsHighlighted" Value="True">
                     <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource MenuHover}"/>
+                    <Setter TargetName="IconHost" Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1.12" ScaleY="1.12"/>
+                        </Setter.Value>
+                    </Setter>
                 </Trigger>
                 <Trigger Property="IsSubmenuOpen" Value="True">
                     <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource MenuHover}"/>
@@ -80,6 +100,33 @@
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
+
+        <!-- Estilo exclusivo para encabezado no cliqueable de menús (Evita bug de recorte) -->
+        <Style x:Key="ModernMenuTitleStyle" TargetType="MenuItem">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border Background="Transparent" Padding="8,4,8,6" Margin="0,0,0,4" BorderBrush="{DynamicResource MenuSeparator}" BorderThickness="0,0,0,1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" ContentSource="Icon" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center"/>
+                                <Border Grid.Column="2" Background="{DynamicResource MenuHover}" CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
+                                    <TextBlock Text="{TemplateBinding InputGestureText}" FontSize="9.5" FontWeight="SemiBold" Foreground="{DynamicResource SecondaryText}"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <!-- Estilo base para MenuItem -->
         <Style x:Key="ModernMenuItemStyle" TargetType="MenuItem">

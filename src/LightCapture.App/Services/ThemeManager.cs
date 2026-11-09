@@ -33,6 +33,10 @@ public static class ThemeManager
     public static void Initialize()
     {
         ApplyTheme(CurrentTheme);
+        if (!File.Exists(SettingsFile))
+        {
+            SaveThemePreference();
+        }
     }
 
     public static void SetTheme(AppTheme theme)

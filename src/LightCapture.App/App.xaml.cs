@@ -236,38 +236,29 @@ public partial class App : Application
             }
         };
 
-        // 1. Header elegante con nombre y versión
-        var headerBorder = new System.Windows.Controls.Border
+        // 1. Header elegante con logo, nombre y versión (sin bug de recorte)
+        var headerItem = new WpfMenuItem
         {
-            Padding = new Thickness(8, 4, 8, 6),
-            BorderBrush = (System.Windows.Media.Brush)FindResource("MenuSeparator"),
-            BorderThickness = new Thickness(0, 0, 0, 1),
-            Margin = new Thickness(0, 0, 0, 4)
+            Style = (Style)FindResource("ModernMenuTitleStyle"),
+            Header = new WpfTextBlock
+            {
+                Text = "Light Capture Studio",
+                FontWeight = FontWeights.Bold,
+                FontSize = 12,
+                Foreground = (System.Windows.Media.Brush)FindResource("PrimaryText"),
+                VerticalAlignment = VerticalAlignment.Center
+            },
+            InputGestureText = "v2.0"
         };
-        var headerGrid = new System.Windows.Controls.Grid();
-        headerGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        headerGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = GridLength.Auto });
-
-        var headerTitle = new WpfTextBlock
+        var appLogo = new WpfImage
         {
-            Text = "Light Capture Studio",
-            FontWeight = FontWeights.Bold,
-            FontSize = 12,
-            Foreground = (System.Windows.Media.Brush)FindResource("PrimaryText")
+            Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/Icons/gemini.png")),
+            Width = 15,
+            Height = 15
         };
-        var headerBadge = new WpfTextBlock
-        {
-            Text = "v2.0",
-            FontSize = 10,
-            Foreground = (System.Windows.Media.Brush)FindResource("SecondaryText"),
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        System.Windows.Controls.Grid.SetColumn(headerTitle, 0);
-        System.Windows.Controls.Grid.SetColumn(headerBadge, 1);
-        headerGrid.Children.Add(headerTitle);
-        headerGrid.Children.Add(headerBadge);
-        headerBorder.Child = headerGrid;
-        _trayContextMenu.Items.Add(headerBorder);
+        System.Windows.Media.RenderOptions.SetBitmapScalingMode(appLogo, System.Windows.Media.BitmapScalingMode.HighQuality);
+        headerItem.Icon = appLogo;
+        _trayContextMenu.Items.Add(headerItem);
 
         // 2. 📸 Capturar pantalla (F9)
         var captureItem = new WpfMenuItem
@@ -409,13 +400,13 @@ public partial class App : Application
         if (_menuItemTheme != null && _themeIconPath != null)
         {
             bool isDark = ThemeManager.CurrentTheme == AppTheme.Dark;
-            _menuItemTheme.Header = isDark ? "Cambiar a Tema Claro" : "Cambiar a Tema Oscuro";
+            _menuItemTheme.Header = isDark ? "Tema: Oscuro (Cambiar a Claro)" : "Tema: Claro (Cambiar a Oscuro)";
             _themeIconPath.Data = isDark
-                ? System.Windows.Media.Geometry.Parse("M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zm10-9a1 1 0 0 1-1 1h-2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1zM5 12a1 1 0 0 1-1 1H2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1z")
-                : System.Windows.Media.Geometry.Parse("M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z");
+                ? System.Windows.Media.Geometry.Parse("M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z") // Luna cuando está en modo oscuro
+                : System.Windows.Media.Geometry.Parse("M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zm10-9a1 1 0 0 1-1 1h-2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1zM5 12a1 1 0 0 1-1 1H2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1z"); // Sol cuando está en modo claro
             _themeIconPath.Fill = isDark
-                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 158, 11))
-                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248));
+                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248))
+                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 158, 11));
         }
 
         if (_checkLangEs != null && _checkLangEn != null)
