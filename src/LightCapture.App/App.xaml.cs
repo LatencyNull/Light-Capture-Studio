@@ -115,6 +115,22 @@ public partial class App : Application
             }
         );
 
+        var langMenu = new ToolStripMenuItem("🌐 Idioma de traducción");
+        var langEsItem = new ToolStripMenuItem("🇪🇸 Español (Predeterminado)", null, (s, e) =>
+        {
+            TranslationLanguageManager.SetLanguage(TranslationLanguageManager.Spanish);
+            UpdateTrayLanguageMenu(langMenu);
+        });
+        var langEnItem = new ToolStripMenuItem("🇺🇸 Inglés (English)", null, (s, e) =>
+        {
+            TranslationLanguageManager.SetLanguage(TranslationLanguageManager.English);
+            UpdateTrayLanguageMenu(langMenu);
+        });
+        langMenu.DropDownItems.Add(langEsItem);
+        langMenu.DropDownItems.Add(langEnItem);
+        UpdateTrayLanguageMenu(langMenu);
+        TranslationLanguageManager.LanguageChanged += _ => UpdateTrayLanguageMenu(langMenu);
+
         var infoItem = new ToolStripMenuItem("🌐 Modo: Lightshot + Google Lens + Censura + QR", null, (s, e) => { });
         infoItem.Enabled = false;
 
@@ -123,6 +139,7 @@ public partial class App : Application
         contextMenu.Items.Add(captureItem);
         contextMenu.Items.Add(historyItem);
         contextMenu.Items.Add(themeItem);
+        contextMenu.Items.Add(langMenu);
         contextMenu.Items.Add(infoItem);
         contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add(exitItem);
@@ -173,6 +190,20 @@ public partial class App : Application
         };
 
         _notifyIcon.BalloonTipClicked += (s, e) => StartCapture();
+    }
+
+    private static void UpdateTrayLanguageMenu(ToolStripMenuItem langMenu)
+    {
+        if (langMenu.DropDownItems.Count < 2) return;
+        bool isEs = TranslationLanguageManager.CurrentLanguage == TranslationLanguageManager.Spanish;
+        if (langMenu.DropDownItems[0] is ToolStripMenuItem esItem)
+        {
+            esItem.Checked = isEs;
+        }
+        if (langMenu.DropDownItems[1] is ToolStripMenuItem enItem)
+        {
+            enItem.Checked = !isEs;
+        }
     }
 
     public static void ShowNotification(string title, string message, ToolTipIcon icon = ToolTipIcon.Info)

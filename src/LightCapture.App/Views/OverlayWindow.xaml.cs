@@ -206,6 +206,7 @@ public partial class OverlayWindow : Window
         MainToolbar.TranslateRequested += async () => await OnTranslateButtonClickedAsync();
         MainToolbar.TranslateTextCopyRequested += CopyTranslatedTextToClipboard;
         MainToolbar.CopyOcrTextRequested += async () => await CopyRawOcrTextToClipboardAsync();
+        MainToolbar.TargetLanguageChanged += async (lang) => await OnTargetLanguageChangedAsync(lang);
 
         MainToolbar.SpeakRequested += SpeakCurrentText;
         MainToolbar.PinRequested += PinCaptureToScreen;
@@ -729,6 +730,23 @@ public partial class OverlayWindow : Window
         await ExecuteTranslationAsync();
     }
 
+    private async Task OnTargetLanguageChangedAsync(string newLang)
+    {
+        string langName = TranslationLanguageManager.CurrentLanguageDisplayName;
+
+        if (MainDrawingCanvas.HasTranslatedBlocks)
+        {
+            ShowToast($"🌐 Cambiando traducción a {langName}...");
+            MainDrawingCanvas.ClearTranslations();
+            MainToolbar.SetTranslateActiveState(false, false);
+            await ExecuteTranslationAsync();
+        }
+        else
+        {
+            ShowToast($"🌐 Idioma de destino: {langName}");
+        }
+    }
+
     private async Task ExecuteTranslationAsync()
     {
         if (!_hasSelection) return;
@@ -751,11 +769,14 @@ public partial class OverlayWindow : Window
                 return;
             }
 
-            ShowToast($"Traduciendo {blocks.Count} bloques en paralelo...");
+            string targetLang = TranslationLanguageManager.CurrentLanguage;
+            string targetName = TranslationLanguageManager.CurrentLanguageDisplayName;
+
+            ShowToast($"Traduciendo a {targetName} ({blocks.Count} bloques en paralelo)...");
 
             var tasks = blocks.Select(async block =>
             {
-                var tr = await _translationService.TranslateAsync(block.Text, targetLang: "es", sourceLang: "auto");
+                var tr = await _translationService.TranslateAsync(block.Text, targetLang: targetLang, sourceLang: "auto");
                 return (Block: block, Result: tr);
             }).ToList();
 
@@ -809,7 +830,7 @@ public partial class OverlayWindow : Window
 
             if (successCount > 0)
             {
-                ShowToast($"¡Traducción lista! ({successCount}/{blocks.Count}) - Clic para alternar a original");
+                ShowToast($"¡Traducción a {targetName} lista! ({successCount}/{blocks.Count}) - Clic para alternar a original");
             }
             else
             {
@@ -1535,7 +1556,13 @@ public partial class OverlayWindow : Window
         }
         else if (e.Key == Key.T && Keyboard.Modifiers == ModifierKeys.Control)
         {
-            _ = ExecuteTranslationAsync();
+            _ = OnTranslateButtonClickedAsync();
+        }
+        else if (e.Key == Key.L && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            string next = TranslationLanguageManager.ToggleLanguage();
+            MainToolbar.UpdateLanguageUi();
+            _ = OnTargetLanguageChangedAsync(next);
         }
         else if (e.Key == Key.G && Keyboard.Modifiers == ModifierKeys.Control)
         {

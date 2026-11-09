@@ -67,4 +67,77 @@ public class TranslationServiceTests
             Assert.Equal("Screen capture with instant translation", result.TranslatedText);
         }
     }
+
+    [Fact]
+    public void TranslationLanguageManager_DefaultsToSpanish()
+    {
+        // Assert: solo español e inglés por defecto, arrancando en español
+        TranslationLanguageManager.SetLanguage(TranslationLanguageManager.Spanish);
+        Assert.Equal("es", TranslationLanguageManager.CurrentLanguage);
+        Assert.Equal("ES", TranslationLanguageManager.CurrentLanguageBadge);
+        Assert.Equal("Español", TranslationLanguageManager.CurrentLanguageDisplayName);
+    }
+
+    [Fact]
+    public void TranslationLanguageManager_SetToEnglish_UpdatesLanguageAndBadge()
+    {
+        // Act
+        TranslationLanguageManager.SetLanguage(TranslationLanguageManager.English);
+
+        // Assert
+        Assert.Equal("en", TranslationLanguageManager.CurrentLanguage);
+        Assert.Equal("EN", TranslationLanguageManager.CurrentLanguageBadge);
+        Assert.Equal("Inglés (English)", TranslationLanguageManager.CurrentLanguageDisplayName);
+
+        // Cleanup: volver a español
+        TranslationLanguageManager.SetLanguage(TranslationLanguageManager.Spanish);
+    }
+
+    [Fact]
+    public void TranslationLanguageManager_NormalizeLanguage_RejectsUnsupportedLanguages()
+    {
+        // Solo español e inglés permitidos por defecto
+        Assert.Equal("es", TranslationLanguageManager.NormalizeLanguage("fr"));
+        Assert.Equal("es", TranslationLanguageManager.NormalizeLanguage("de"));
+        Assert.Equal("es", TranslationLanguageManager.NormalizeLanguage("ja"));
+        Assert.Equal("es", TranslationLanguageManager.NormalizeLanguage(""));
+        Assert.Equal("es", TranslationLanguageManager.NormalizeLanguage(null));
+
+        Assert.Equal("en", TranslationLanguageManager.NormalizeLanguage("en"));
+        Assert.Equal("en", TranslationLanguageManager.NormalizeLanguage("English"));
+        Assert.Equal("en", TranslationLanguageManager.NormalizeLanguage("inglés"));
+        Assert.Equal("es", TranslationLanguageManager.NormalizeLanguage("es"));
+        Assert.Equal("es", TranslationLanguageManager.NormalizeLanguage("español"));
+    }
+
+    [Fact]
+    public void TranslationLanguageManager_ToggleLanguage_SwitchesCorrectly()
+    {
+        TranslationLanguageManager.SetLanguage(TranslationLanguageManager.Spanish);
+        string toggled = TranslationLanguageManager.ToggleLanguage();
+        Assert.Equal("en", toggled);
+        Assert.Equal("EN", TranslationLanguageManager.CurrentLanguageBadge);
+
+        string toggledBack = TranslationLanguageManager.ToggleLanguage();
+        Assert.Equal("es", toggledBack);
+        Assert.Equal("ES", TranslationLanguageManager.CurrentLanguageBadge);
+    }
+
+    [Fact]
+    public async Task TranslateAsync_RealEndpoint_TranslatesSpanishToEnglish()
+    {
+        // Arrange
+        var service = new GoogleTranslationService();
+
+        // Act
+        var result = await service.TranslateAsync("Captura de pantalla con traducción instantánea", targetLang: "en", sourceLang: "es");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(string.IsNullOrWhiteSpace(result.TranslatedText));
+        if (result.IsSuccess)
+        {
+            Assert.Contains("translation", result.TranslatedText, StringComparison.OrdinalIgnoreCase);
+        }
+    }
 }

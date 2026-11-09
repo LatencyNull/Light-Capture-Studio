@@ -322,11 +322,41 @@
                 </Button>
 
                 <!-- 2. ⭐ 🌐 GALAXY AI TRADUCIR (Alterna Traducción y Original) -->
-                <Button x:Name="BtnTranslate" Style="{StaticResource EmojiBtnStyle}" ToolTip="Galaxy AI Traducir [🌐 Ctrl+T]&#x0a;Alterna entre Traducción y Original&#x0a;Clic derecho: Copiar solo texto" Click="BtnTranslate_Click" MouseRightButtonUp="BtnTranslate_RightClick">
-                    <Grid Width="26" Height="26">
-                        <Image Source="/Assets/Icons/globe.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Border x:Name="TranslateIndicator" Width="7" Height="7" CornerRadius="3.5" Background="Transparent" BorderBrush="#FFFFFF" BorderThickness="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-1,-1,0" Visibility="Collapsed"/>
+                <Button x:Name="BtnTranslate" Style="{StaticResource EmojiBtnStyle}" ToolTip="Galaxy AI Traducir [🌐 Ctrl+T]&#x0a;Destino: Español (Clic para traducir / alternar original)&#x0a;Clic derecho: Cambiar idioma a Inglés o copiar" Click="BtnTranslate_Click" MouseRightButtonUp="BtnTranslate_RightClick">
+                    <Grid Width="28" Height="28">
+                        <Image Source="/Assets/Icons/globe.png" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <!-- Badge de idioma activo (ES / EN) -->
+                        <Border x:Name="BadgeLanguage" Background="#2563EB" CornerRadius="3" Padding="2.5,0.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,-2">
+                            <TextBlock x:Name="TxtLangBadge" Text="ES" FontSize="8" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <!-- Indicador de estado de traducción (naranja/azul) -->
+                        <Border x:Name="TranslateIndicator" Width="7" Height="7" CornerRadius="3.5" Background="Transparent" BorderBrush="#FFFFFF" BorderThickness="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,-2,0" Visibility="Collapsed"/>
                     </Grid>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="TranslateContextMenu" Style="{StaticResource ModernShareMenuStyle}">
+                            <MenuItem x:Name="MenuLangEs" Header="🇪🇸  Español (Predeterminado)" Click="MenuLangEs_Click">
+                                <MenuItem.Icon>
+                                    <TextBlock x:Name="CheckLangEs" Text="✔" FontWeight="Bold" FontSize="13" Foreground="#3B82F6" HorizontalAlignment="Center"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="MenuLangEn" Header="🇺🇸  Inglés (English)" Click="MenuLangEn_Click">
+                                <MenuItem.Icon>
+                                    <TextBlock x:Name="CheckLangEn" Text="✔" FontWeight="Bold" FontSize="13" Foreground="#3B82F6" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator Background="{DynamicResource ToolbarSeparator}" Margin="4,2"/>
+                            <MenuItem Header="📋  Copiar texto traducido" Click="MenuCopyTranslated_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/copy.png" Width="16" Height="16" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="📝  Copiar texto original (OCR)" Click="MenuCopyOcr_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/text.png" Width="16" Height="16" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
                 </Button>
 
                 <!-- 3. 🔍 Búsqueda visual con Google Lens -->

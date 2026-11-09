@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using LightCapture.Core.Models;
+using LightCapture.Core.Services;
 using Color = System.Windows.Media.Color;
 using Brush = System.Windows.Media.Brush;
 using UserControl = System.Windows.Controls.UserControl;
@@ -48,6 +49,7 @@ public partial class LightshotToolbar : UserControl
     public event Action? TranslateRequested;
     public event Action? TranslateTextCopyRequested;
     public event Action? CopyOcrTextRequested;
+    public event Action<string>? TargetLanguageChanged;
     public event Action? ShareWhatsAppRequested;
     public event Action? ShareWhatsAppAppRequested;
     public event Action? ShareWhatsAppWebRequested;
@@ -63,9 +65,15 @@ public partial class LightshotToolbar : UserControl
     public event Action? SaveRequested;
     public event Action? CloseRequested;
 
+    private bool _lastIsTranslated = false;
+    private bool _lastIsShowingTranslation = false;
+
     public LightshotToolbar()
     {
         InitializeComponent();
+        Loaded += (s, e) => UpdateLanguageUi();
+        TranslationLanguageManager.LanguageChanged += _ => Dispatcher.Invoke(UpdateLanguageUi);
+
         if (BtnShare.ContextMenu != null)
         {
             BtnShare.ContextMenu.Closed += (s, e) => _lastShareMenuCloseTime = DateTime.UtcNow;
@@ -74,22 +82,76 @@ public partial class LightshotToolbar : UserControl
 
     public void SetTranslateActiveState(bool isTranslated, bool isShowingTranslation)
     {
+        _lastIsTranslated = isTranslated;
+        _lastIsShowingTranslation = isShowingTranslation;
+
         if (!isTranslated)
         {
-            BtnTranslate.ToolTip = "Galaxy AI Traducir [🌐 Ctrl+T] (Alterna entre Original y Traducción)";
             TranslateIndicator.Visibility = Visibility.Collapsed;
         }
         else if (isShowingTranslation)
         {
-            BtnTranslate.ToolTip = "Mostrando Traducción. Haz clic para volver al texto Original.";
             TranslateIndicator.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
             TranslateIndicator.Visibility = Visibility.Visible;
         }
         else
         {
-            BtnTranslate.ToolTip = "Mostrando Original. Haz clic para ver el texto Traducido.";
             TranslateIndicator.Background = new SolidColorBrush(Color.FromRgb(245, 158, 11));
             TranslateIndicator.Visibility = Visibility.Visible;
+        }
+
+        UpdateTranslateTooltip();
+    }
+
+    public void SetTargetLanguage(string lang)
+    {
+        TranslationLanguageManager.SetLanguage(lang);
+        UpdateLanguageUi();
+    }
+
+    public void UpdateLanguageUi()
+    {
+        string lang = TranslationLanguageManager.CurrentLanguage;
+        bool isEs = lang == TranslationLanguageManager.Spanish;
+
+        if (TxtLangBadge != null)
+        {
+            TxtLangBadge.Text = isEs ? "ES" : "EN";
+        }
+        if (BadgeLanguage != null)
+        {
+            BadgeLanguage.Background = isEs
+                ? new SolidColorBrush(Color.FromRgb(37, 99, 235)) // Azul #2563EB para Español
+                : new SolidColorBrush(Color.FromRgb(16, 185, 129)); // Esmeralda #10B981 para Inglés
+        }
+        if (CheckLangEs != null)
+        {
+            CheckLangEs.Visibility = isEs ? Visibility.Visible : Visibility.Collapsed;
+        }
+        if (CheckLangEn != null)
+        {
+            CheckLangEn.Visibility = !isEs ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        UpdateTranslateTooltip();
+    }
+
+    private void UpdateTranslateTooltip()
+    {
+        string langName = TranslationLanguageManager.CurrentLanguageDisplayName;
+        string otherName = TranslationLanguageManager.OtherLanguageDisplayName;
+
+        if (_lastIsTranslated && _lastIsShowingTranslation)
+        {
+            BtnTranslate.ToolTip = $"Mostrando Traducción a {langName}. Haz clic para volver al texto Original.\nClic derecho: Cambiar idioma a {otherName} o copiar texto.";
+        }
+        else if (_lastIsTranslated && !_lastIsShowingTranslation)
+        {
+            BtnTranslate.ToolTip = $"Mostrando Original. Haz clic para ver el texto Traducido ({langName}).\nClic derecho: Cambiar idioma a {otherName} o copiar texto.";
+        }
+        else
+        {
+            BtnTranslate.ToolTip = $"Galaxy AI Traducir [🌐 Ctrl+T]\nDestino: {langName} (Clic para traducir / alternar original)\nClic derecho: Cambiar idioma a {otherName} o copiar texto.";
         }
     }
 
@@ -176,7 +238,37 @@ public partial class LightshotToolbar : UserControl
     private void BtnUndo_Click(object sender, RoutedEventArgs e) => UndoRequested?.Invoke();
 
     private void BtnTranslate_Click(object sender, RoutedEventArgs e) => TranslateRequested?.Invoke();
-    private void BtnTranslate_RightClick(object sender, MouseButtonEventArgs e) => TranslateTextCopyRequested?.Invoke();
+
+    private void BtnTranslate_RightClick(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        if (BtnTranslate.ContextMenu != null)
+        {
+            UpdateLanguageUi();
+            BtnTranslate.ContextMenu.PlacementTarget = BtnTranslate;
+            BtnTranslate.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
+            BtnTranslate.ContextMenu.IsOpen = true;
+        }
+        else
+        {
+            TranslateTextCopyRequested?.Invoke();
+        }
+    }
+
+    private void MenuLangEs_Click(object sender, RoutedEventArgs e)
+    {
+        SetTargetLanguage(TranslationLanguageManager.Spanish);
+        TargetLanguageChanged?.Invoke(TranslationLanguageManager.Spanish);
+    }
+
+    private void MenuLangEn_Click(object sender, RoutedEventArgs e)
+    {
+        SetTargetLanguage(TranslationLanguageManager.English);
+        TargetLanguageChanged?.Invoke(TranslationLanguageManager.English);
+    }
+
+    private void MenuCopyTranslated_Click(object sender, RoutedEventArgs e) => TranslateTextCopyRequested?.Invoke();
+    private void MenuCopyOcr_Click(object sender, RoutedEventArgs e) => CopyOcrTextRequested?.Invoke();
     private void BtnSearch_Click(object sender, RoutedEventArgs e) => SearchRequested?.Invoke();
     private void BtnGemini_Click(object sender, RoutedEventArgs e) => GeminiRequested?.Invoke();
     private void BtnGemini_RightClick(object sender, MouseButtonEventArgs e)
