@@ -2,151 +2,151 @@
 
 # ⚡ Light Capture Studio
 
-**The ultimate screen capture, live overlay translation, OCR & screen recording suite for Windows.**  
-*Engineered with .NET 8, modern Samsung One UI Dark aesthetics, and uncompromising local privacy.*
+**La suite definitiva de captura de pantalla, traducción en vivo, OCR y grabación de video para Windows.**  
+*Desarrollado en .NET 8, con interfaz moderna Samsung One UI Dark y privacidad 100% local.*
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20(x64)-0078D6.svg)](https://microsoft.com)
+[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-blue.svg)](LICENSE)
+[![Plataforma](https://img.shields.io/badge/Plataforma-Windows%2010%20%2F%2011%20(x64)-0078D6.svg)](https://microsoft.com)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20WPF-512BD4.svg)](https://dotnet.microsoft.com/)
 
-[Features](#-key-features) • [Comparison](#-why-light-capture-studio-vs-classic-lightshot) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Portable Download](#-portable-version) • [Privacy](#-privacy-first-architecture)
+[Características](#-características-principales) • [Comparativa](#-por-qué-light-capture-studio-vs-lightshot-clásico) • [Atajos de Teclado](#-atajos-de-teclado) • [Versión Portable](#-versión-portable) • [Privacidad](#-arquitectura-con-privacidad-primero)
 
 </div>
 
 ---
 
-## 🚀 Overview
+## 🚀 Descripción General
 
-**Light Capture Studio** reimagines what a modern desktop capture suite should be in 2026. Inspired by the speed and intuitive workflow of classic tools like Lightshot, but rebuilt from the ground up for modern workflows. Where traditional tools focused solely on basic static captures, **Light Capture Studio** elevates your desktop experience with in-place live translation, smooth screen recording (**MP4 video & animated GIF** with system audio & microphone support), native Windows OCR, and uncompromising local privacy:
+**Light Capture Studio** redefine la experiencia de captura en el escritorio en 2026. Inspirado en la agilidad y el flujo de trabajo intuitivo de herramientas clásicas como Lightshot, pero reconstruido desde cero para satisfacer las necesidades actuales. Mientras que las aplicaciones tradicionales se limitaban a capturas estáticas básicas, **Light Capture Studio** eleva la productividad con traducción en vivo sobre la pantalla, grabación fluida de pantalla (**video MP4 y GIF animado** con audio del sistema y micrófono), OCR nativo de Windows y privacidad local absoluta:
 
-- 🌐 **In-Place Live Translation**: Translate games, comics, foreign PDFs, or unselectable web content directly on your screen with a Google Lens-style overlay.
-- 🎥 **MP4 & Animated GIF Recording**: Capture crisp MP4 clips with system loopback audio and microphone voiceover, or lightweight animated GIFs ready for Discord, GitHub, and chat apps.
-- 🎬 **In-Video Annotations & Object Timeline**: Add arrows, floating text labels, highlight rectangles, freehand drawings, and Knox censorship directly onto your video clips, complete with a visual timeline to customize when each element appears and how long it lasts.
-- 🔍 **Native Windows OCR**: Extract locked text from YouTube videos, scanned documents, and images directly to your clipboard (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>).
-- 🕒 **Searchable Local History**: Automatically saves and indexes every capture to your `Documents\Light Capture Studio` folder. Search weeks later by words detected in the image!
-- 🔒 **100% Local Privacy**: Zero public cloud uploads. What happens on your screen stays on your computer.
+- 🌐 **Traducción en Vivo en Pantalla**: Traduce videojuegos, cómics, PDFs o textos no seleccionables directamente sobre la pantalla con una capa estilo Google Lens.
+- 🎥 **Grabación de Video MP4 y GIF Animado**: Graba clips MP4 nítidos con sonido del sistema y narración por micrófono, o genera GIFs animados ligeros listos para Discord, GitHub y chats.
+- 🎬 **Anotaciones en Video y Línea de Tiempo de Objetos**: Dibuja flechas, inserta textos explicativos, rectángulos resaltadores, trazos libres y censura Knox directamente sobre tus videos, con una línea de tiempo visual interactiva para controlar cuándo aparece cada elemento y cuánto tiempo dura.
+- 🔍 **OCR Nativo de Windows**: Extrae texto bloqueado de videos de YouTube, documentos escaneados e imágenes directamente al portapapeles (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>).
+- 🕒 **Historial Local con Búsqueda Inteligente**: Guarda e indexa automáticamente cada captura en tu carpeta `Documentos\Light Capture Studio`. ¡Busca semanas después por cualquier palabra que aparezca en la imagen!
+- 🔒 **Privacidad 100% Local**: Sin subidas a nubes públicas ni enlaces expuestos. Todo lo que ocurre en tu pantalla se queda en tu computadora.
 
 ---
 
-## 🥊 Why Light Capture Studio? (vs. Classic Lightshot)
+## 🥊 ¿Por qué Light Capture Studio? (vs. Lightshot Clásico)
 
-| Feature | ⚡ Light Capture Studio | 🐢 Classic Lightshot |
+| Característica | ⚡ Light Capture Studio | 🐢 Lightshot Clásico |
 |:---|:---:|:---:|
-| **Live In-Place Translation** | ✅ Google Lens-style overlay directly on screen | ❌ None |
-| **Video & GIF Recording** | ✅ MP4 (audio + mic) & lightweight animated GIFs | ❌ Static screenshots only |
-| **In-Video Annotations & Timeline** | ✅ Arrows, text, boxes, pen & blur with duration tracks | ❌ Impossible |
-| **Live Video Scrubbing Preview** | ✅ Real-time ~40fps frame preview, seeking & Stop button | ❌ None |
-| **OCR Text Extraction** | ✅ Instant clipboard extraction (<kbd>Ctrl+Shift+T</kbd>) | ❌ Impossible (pixels only) |
-| **Local Searchable History** | ✅ Search past captures by text contained inside | ❌ None (lost once closed) |
-| **Privacy & Security** | ✅ 100% Local offline storage (`Documents`) | ⚠️ Insecure public uploads |
-| **Smart Censorship / Redaction**| ✅ Irreversible mosaic pixelation tool | ❌ Rough pen doodles |
-| **Pin to Screen (Picture-in-Picture)** | ✅ Floating always-on-top window (<kbd>Ctrl+P</kbd>) | ❌ Requires 3rd-party viewer |
-| **QR Code Recognition** | ✅ Instant link detection and one-click launch | ❌ Must scan with phone |
-| **Direct Instant Sharing** | ✅ Windows App & Web WhatsApp, Telegram | ❌ Broken / outdated social links |
-| **UI Aesthetics** | ✅ Modern Samsung One UI Dark / Fluent | ❌ Win7 / XP era grey panels |
+| **Traducción en Vivo en Pantalla** | ✅ Capa estilo Google Lens integrada | ❌ No disponible |
+| **Grabación de Video y GIF** | ✅ MP4 (audio + micrófono) y GIFs animados ligeros | ❌ Solo capturas estáticas |
+| **Anotaciones en Video y Línea de Tiempo** | ✅ Flechas, texto, cajas, pluma y censura con pistas de duración | ❌ Imposible |
+| **Previsualización de Video en Tiempo Real** | ✅ Vista previa fluida a ~40 fps, búsqueda y botón Stop | ❌ No disponible |
+| **Extracción de Texto OCR** | ✅ Copiado instantáneo al portapapeles (<kbd>Ctrl+Shift+T</kbd>) | ❌ Imposible (solo píxeles) |
+| **Historial Local con Búsqueda** | ✅ Busca capturas anteriores por el texto que contienen | ❌ Inexistente (se pierde al cerrar) |
+| **Privacidad y Seguridad** | ✅ 100% almacenamiento local en `Documentos` | ⚠️ Subidas públicas inseguras |
+| **Censura Inteligente / Privacidad** | ✅ Pincel de pixelado mosaico destructivo e irreversible | ❌ Garabatos toscos con pluma |
+| **Fijar en Pantalla (Picture-in-Picture)** | ✅ Ventana flotante siempre visible (<kbd>Ctrl+P</kbd>) | ❌ Requiere visor externo |
+| **Reconocimiento de Códigos QR** | ✅ Detección automática y apertura con un clic | ❌ Requiere escanear con el móvil |
+| **Compartir Directo e Instantáneo** | ✅ WhatsApp App (Windows) y Web, Telegram | ❌ Enlaces sociales rotos o anticuados |
+| **Diseño y Estética** | ✅ Moderno Samsung One UI Dark / Fluent | ❌ Paneles grises de la era Win7 / XP |
 
 ---
 
-## 🌟 Key Features
+## 🌟 Características Principales
 
-### 1. 🌐 Live Overlay Translation (Lens Mode)
-Select any portion of your screen—in a video game, foreign article, or locked document—and click **Translate**. Text blocks are replaced seamlessly with translated text in-place, preserving font size and position, or copied instantly as formatted plain text.
+### 1. 🌐 Traducción en Vivo en Pantalla (Modo Lens)
+Selecciona cualquier área de la pantalla —en un videojuego, artículo en otro idioma o documento protegido— y presiona **Traducir**. Los bloques de texto se reemplazan directamente en pantalla conservando el tamaño de fuente y la posición original, o se copian al portapapeles con formato listo para pegar.
 
-### 2. 🎥 Screen Video & Animated GIF Recording with In-Video Annotations & Timeline
-Need to explain a bug, demonstrate a gameplay clip, or create an interactive tutorial? Capture any desktop region in smooth 30/60 FPS H.264 MP4 with system sound and microphone voiceover, or export lightweight animated GIFs (up to 15s) ready for Discord, GitHub issues, and chats:
+### 2. 🎥 Grabación de Video MP4 y GIF con Anotaciones y Línea de Tiempo
+¿Necesitas reportar un bug, demostrar una partida o crear un tutorial interactivo? Graba cualquier región del escritorio a 30/60 FPS en H.264 MP4 con sonido del sistema y voz por micrófono, o exporta GIFs animados ligeros (de hasta 15 segundos) ideales para chats y foros:
 
-- ↗️ **In-Video Drawing Tools**: Overlay indicator arrows (`↗️`), floating customizable text (`🔤`), highlight rectangles (`🔲`), freehand drawings (`✏️`), and opaque Knox privacy blocks (`🔒`) directly onto the video.
-- ⏱️ **Visual Object Timeline**: An automatic timeline track is created for each annotation. Drag blocks horizontally to set when elements appear, and drag their edges to set their exact duration.
-- ⚡ **Real-Time Video Scrubbing & Trim Controls**: Fast-forward, rewind, or scrub across the timeline with smooth ~40 FPS frame previews even while paused. Easily trim the start and end of clips or tap the **Stop** (`⏹`) button to reset to the beginning.
-- 🎨 **Hardware-Accelerated Stamping**: Overlays and timed sequences are stamped with sub-second precision into the exported MP4 or GIF via hardware-accelerated FFmpeg / Windows Media pipelines.
+- ↗️ **Herramientas de Anotación en Video**: Coloca flechas indicadoras (`↗️`), textos flotantes personalizados (`🔤`), rectángulos (`🔲`), trazos libres (`✏️`) y bloques sólidos de censura Knox (`🔒`) directamente sobre el video.
+- ⏱️ **Línea de Tiempo de Objetos**: Se genera automáticamente una pista visual por cada elemento añadido. Arrastra los bloques horizontalmente para fijar en qué segundo aparecen y ajusta sus extremos para definir su duración exacta.
+- ⚡ **Previsualización y Fregado en Tiempo Real**: Adelanta, atrasa o arrastra el cabezal de reproducción con vista previa en vivo a ~40 FPS incluso mientras está en pausa. Recorta el inicio y el final con precisión o presiona el botón **Stop** (`⏹`) para reiniciar la reproducción al instante.
+- 🎨 **Estampado por Hardware**: Todas las anotaciones y pistas temporales se procesan y se integran al video final MP4 o GIF mediante aceleración por hardware (FFmpeg / Windows Media).
 
-### 3. 🔍 Native Windows OCR Text Extraction
-Extract text from anywhere—even protected web pages, YouTube subtitles, or rasterized images. Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> and the extracted text is immediately ready to paste.
+### 3. 🔍 Extracción de Texto OCR Nativo de Windows
+Copia texto desde cualquier lugar: videos de YouTube, subtítulos, páginas web protegidas o documentos escaneados. Presiona <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> y el texto detectado quedará listo en tu portapapeles.
 
-### 4. 🕒 Smart Local History with Search
-Every time you copy (<kbd>Ctrl</kbd> + <kbd>C</kbd>, <kbd>Enter</kbd>, or toolbar), your capture is saved to `Documents\Light Capture Studio` and its recognized text is indexed. Open the history gallery (<kbd>F9</kbd> → Clock icon) to search by keyword, copy thumbnails, or open the folder with a single click.
+### 4. 🕒 Historial Local Inteligente con Búsqueda
+Cada vez que copias (<kbd>Ctrl</kbd> + <kbd>C</kbd>, <kbd>Enter</kbd> o desde la barra), tu captura se guarda automáticamente en `Documentos\Light Capture Studio` y su contenido de texto se indexa. Abre la galería del historial (<kbd>F9</kbd> → icono de reloj) para buscar por palabras clave, copiar miniaturas o abrir la carpeta con un solo clic.
 
-### 5. 🛡️ Destructive Pixelation Censorship
-Easily mask passwords, API keys, faces, or credit card details. The censorship brush applies an irreversible mosaic pixelation directly to the underlying bitmap.
+### 5. 🛡️ Censura Destructiva por Pixelado
+Oculta contraseñas, números de tarjeta, rostros o datos confidenciales con total tranquilidad. El pincel de censura aplica un mosaico irreversible directamente sobre los píxeles de la imagen.
 
-### 6. 📌 Pin to Screen (Picture-in-Picture)
-Keep a snip floating above other windows while coding, designing, or researching. Resize it, move it anywhere, or dismiss it when done.
+### 6. 📌 Fijar en Pantalla (Picture-in-Picture)
+Mantén una captura flotando siempre encima de otras ventanas mientras programas, diseñas o investigas. Puedes redimensionarla, moverla por la pantalla o cerrarla cuando ya no la necesites.
 
-### 7. 📱 Direct WhatsApp & Telegram Sharing
-Share directly to **WhatsApp Desktop (Windows App)** or **WhatsApp Web**, as well as Telegram and visual Google Lens search.
+### 7. 📱 Compartir Directo en WhatsApp y Telegram
+Envía capturas y videos directamente a **WhatsApp Desktop (App de Windows)**, **WhatsApp Web**, Telegram o realiza búsquedas visuales inversas con Google Lens.
 
 ---
 
-## ⌨️ Keyboard Shortcuts
+## ⌨️ Atajos de Teclado
 
-| Shortcut | Description |
+| Atajo | Descripción |
 |---|---|
-| <kbd>F9</kbd> or <kbd>PrintScreen</kbd> | Activate screen capture overlay anywhere |
-| <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>C</kbd> | Copy capture to clipboard & save to history |
-| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> | Extract and copy raw OCR text to clipboard |
-| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> | Copy translated text to clipboard |
-| <kbd>Ctrl</kbd> + <kbd>S</kbd> | Open save dialog (defaults to `Documents\Light Capture Studio`) |
-| <kbd>Ctrl</kbd> + <kbd>P</kbd> | Pin capture as floating always-on-top window |
-| <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Undo last annotation stroke |
-| <kbd>Esc</kbd> | Cancel capture / Close overlay |
+| <kbd>F9</kbd> o <kbd>ImprPant</kbd> | Activar el selector de captura en cualquier lugar |
+| <kbd>Enter</kbd> o <kbd>Ctrl</kbd> + <kbd>C</kbd> | Copiar captura al portapapeles y guardarla en el historial |
+| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> | Extraer y copiar texto OCR al portapapeles |
+| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> | Copiar texto traducido al portapapeles |
+| <kbd>Ctrl</kbd> + <kbd>S</kbd> | Abrir diálogo de guardar (carpeta predeterminada `Documentos\Light Capture Studio`) |
+| <kbd>Ctrl</kbd> + <kbd>P</kbd> | Fijar captura como ventana flotante siempre visible (Pin) |
+| <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Deshacer último trazo o anotación |
+| <kbd>Esc</kbd> | Cancelar captura / Cerrar panel |
 
 ---
 
-## 💾 Portable Version
+## 💾 Versión Portable
 
-**Light Capture Studio is 100% portable out of the box.**
-- **Zero installation:** No setup wizard or administrative privileges required.
-- **Self-contained:** Built with all .NET 8 runtimes embedded into a single portable binary.
-- **Clean system footprint:** Leaves no registry bloat and runs straight from any folder or USB flash drive.
+**Light Capture Studio es 100% portable y autónomo.**
+- **Sin instalación:** No requiere instalador, asistentes ni permisos de administrador.
+- **Autocontenido:** Desarrollado con todos los componentes de .NET 8 integrados en un único archivo ejecutable.
+- **Limpio y ligero:** No deja residuos en el registro de Windows y funciona directamente desde cualquier carpeta o memoria USB.
 
-Download the latest pre-built portable binary directly from the [**Releases**](https://github.com/LatencyNull/Light-Capture-Studio/releases) tab!
-
----
-
-## 🔒 Privacy-First Architecture
-
-Unlike Classic Lightshot and older screenshot tools that upload images to publicly accessible URLs (where anyone can iterate sequential URLs to uncover private documents), **Light Capture Studio is strictly local-first**:
-
-- Captures are saved exclusively in your personal `Documents\Light Capture Studio` directory.
-- OCR text recognition runs locally via Microsoft Windows native APIs (`Windows.Media.Ocr`).
-- No background telemetry, no forced account creation, and no third-party tracking.
+¡Descarga el ejecutable portable compilado directamente desde la sección de [**Releases**](https://github.com/LatencyNull/Light-Capture-Studio/releases)!
 
 ---
 
-## 🛠️ System Requirements & Tech Stack
+## 🔒 Arquitectura con Privacidad Primero
 
-- **Operating System:** Windows 10 (Build 19041+) or Windows 11 (64-bit)
-- **Runtime:** .NET 8.0 Desktop Runtime (or use the self-contained portable executable)
-- **Key Libraries:**
-  - `Windows.Media.Ocr` (Hardware-accelerated native Windows OCR engine)
-  - `ScreenRecorderLib` (DirectX & Media Foundation H.264 video encoding)
-  - `ZXing.Net` (High-performance barcode & QR code decoding)
+A diferencia de Lightshot clásico y herramientas antiguas que suben las capturas a enlaces web públicos (donde cualquiera puede adivinar URLs consecutivas y ver documentos privados), **Light Capture Studio opera con un modelo 100% local**:
+
+- Las capturas se guardan exclusivamente en tu carpeta personal `Documentos\Light Capture Studio`.
+- El reconocimiento óptico de caracteres (OCR) se ejecuta localmente mediante las APIs nativas de Windows (`Windows.Media.Ocr`).
+- Sin telemetría oculta en segundo plano, sin cuentas obligatorias y sin rastreadores externos.
 
 ---
 
-## 📦 Build from Source
+## 🛠️ Requisitos del Sistema y Tecnologías
 
-Clone the repository and build the standalone portable executable using the .NET 8 SDK:
+- **Sistema Operativo:** Windows 10 (Compilación 19041+) o Windows 11 (64 bits)
+- **Entorno de Ejecución:** .NET 8.0 Desktop Runtime (o usar el ejecutable portable autocontenido)
+- **Bibliotecas Principales:**
+  - `Windows.Media.Ocr` (Motor OCR nativo acelerado por hardware de Windows)
+  - `ScreenRecorderLib` (Codificación de video H.264 por hardware con DirectX y Media Foundation)
+  - `ZXing.Net` (Lector de alta velocidad para códigos QR y códigos de barras)
+
+---
+
+## 📦 Compilación desde el Código Fuente
+
+Clona el repositorio y compila el ejecutable portable independiente utilizando el SDK de .NET 8:
 
 ```powershell
-# Clone the repository
+# Clonar el repositorio
 git clone https://github.com/LatencyNull/Light-Capture-Studio.git
 cd Light-Capture-Studio
 
-# Publish self-contained single-file binary (x64)
+# Publicar el ejecutable portable autocontenido (x64)
 dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish-standalone
 ```
 
-The resulting `publish-standalone\LightCapture.App.exe` is completely portable—no installer needed.
+El archivo resultante en `publish-standalone\LightCapture.App.exe` es totalmente portable y listo para ejecutarse sin instalación.
 
 ---
 
-## 📄 License
+## 📄 Licencia
 
-This project is licensed under the [MIT License](LICENSE) — free for personal, educational, and commercial use.
+Este proyecto está bajo la [Licencia MIT](LICENSE) — libre para uso personal, educativo y comercial.
 
 ---
 
 <div align="center">
-  <sub>Crafted with passion for modern Windows workflows. If you find this project useful, consider giving it a ⭐!</sub>
+  <sub>Desarrollado con dedicación para los flujos de trabajo modernos en Windows. Si este proyecto te resulta útil, ¡considera dejar una ⭐!</sub>
 </div>
