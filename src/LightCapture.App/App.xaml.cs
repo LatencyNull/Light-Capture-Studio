@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
@@ -9,6 +10,13 @@ using LightCapture.App.Views;
 using LightCapture.Core.Services;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
+using WpfContextMenu = System.Windows.Controls.ContextMenu;
+using WpfMenuItem = System.Windows.Controls.MenuItem;
+using WpfSeparator = System.Windows.Controls.Separator;
+using WpfPath = System.Windows.Shapes.Path;
+using WpfImage = System.Windows.Controls.Image;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
+using PlacementMode = System.Windows.Controls.Primitives.PlacementMode;
 
 namespace LightCapture.App;
 
@@ -19,6 +27,23 @@ public partial class App : Application
     private NotifyIcon? _notifyIcon;
     private HotkeyManager? _hotkeyManager;
     private HwndSource? _messageHwndSource;
+
+    private Window? _trayHelperWindow;
+    private WpfContextMenu? _trayContextMenu;
+    private WpfMenuItem? _menuItemTheme;
+    private WpfMenuItem? _menuLangEs;
+    private WpfMenuItem? _menuLangEn;
+    private WpfTextBlock? _checkLangEs;
+    private WpfTextBlock? _checkLangEn;
+    private WpfPath? _themeIconPath;
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+    private const uint WM_NULL = 0x0000;
 
     private readonly ICaptureService _captureService = new ScreenCaptureService();
     private readonly IOcrService _ocrService = new WindowsOcrService();
@@ -95,55 +120,6 @@ public partial class App : Application
 
     private void SetupTrayIcon()
     {
-        var contextMenu = new ContextMenuStrip();
-        
-        var captureItem = new ToolStripMenuItem("📸 Capturar pantalla (F9 o Ctrl+Shift+X)", null, (s, e) => StartCapture());
-        captureItem.Font = new Font(captureItem.Font, System.Drawing.FontStyle.Bold);
-
-        var historyItem = new ToolStripMenuItem("🕒 Historial de capturas con búsqueda...", null, (s, e) => OpenHistory());
-
-        var themeItem = new ToolStripMenuItem(
-            ThemeManager.CurrentTheme == AppTheme.Dark ? "☀️ Cambiar a Tema Claro" : "🌙 Cambiar a Tema Oscuro",
-            null,
-            (s, e) =>
-            {
-                ThemeManager.ToggleTheme();
-                if (s is ToolStripMenuItem mi)
-                {
-                    mi.Text = ThemeManager.CurrentTheme == AppTheme.Dark ? "☀️ Cambiar a Tema Claro" : "🌙 Cambiar a Tema Oscuro";
-                }
-            }
-        );
-
-        var langMenu = new ToolStripMenuItem("🌐 Idioma de traducción");
-        var langEsItem = new ToolStripMenuItem("🇪🇸 Español (Predeterminado)", null, (s, e) =>
-        {
-            TranslationLanguageManager.SetLanguage(TranslationLanguageManager.Spanish);
-            UpdateTrayLanguageMenu(langMenu);
-        });
-        var langEnItem = new ToolStripMenuItem("🇺🇸 Inglés (English)", null, (s, e) =>
-        {
-            TranslationLanguageManager.SetLanguage(TranslationLanguageManager.English);
-            UpdateTrayLanguageMenu(langMenu);
-        });
-        langMenu.DropDownItems.Add(langEsItem);
-        langMenu.DropDownItems.Add(langEnItem);
-        UpdateTrayLanguageMenu(langMenu);
-        TranslationLanguageManager.LanguageChanged += _ => UpdateTrayLanguageMenu(langMenu);
-
-        var infoItem = new ToolStripMenuItem("🌐 Modo: Lightshot + Google Lens + Censura + QR", null, (s, e) => { });
-        infoItem.Enabled = false;
-
-        var exitItem = new ToolStripMenuItem("❌ Salir", null, (s, e) => ExitApplication());
-
-        contextMenu.Items.Add(captureItem);
-        contextMenu.Items.Add(historyItem);
-        contextMenu.Items.Add(themeItem);
-        contextMenu.Items.Add(langMenu);
-        contextMenu.Items.Add(infoItem);
-        contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add(exitItem);
-
         Icon appIcon;
         try
         {
@@ -178,7 +154,7 @@ public partial class App : Application
             Icon = appIcon,
             Text = "Light Capture Studio - F9 para capturar pantalla",
             Visible = true,
-            ContextMenuStrip = contextMenu
+            ContextMenuStrip = null // Reemplazado por el menú flotante moderno WPF One UI
         };
 
         _notifyIcon.MouseClick += (s, e) =>
@@ -187,22 +163,266 @@ public partial class App : Application
             {
                 StartCapture();
             }
+            else if (e.Button == MouseButtons.Right)
+            {
+                ShowTrayContextMenu();
+            }
         };
 
         _notifyIcon.BalloonTipClicked += (s, e) => StartCapture();
     }
 
-    private static void UpdateTrayLanguageMenu(ToolStripMenuItem langMenu)
+    private void ShowTrayContextMenu()
     {
-        if (langMenu.DropDownItems.Count < 2) return;
-        bool isEs = TranslationLanguageManager.CurrentLanguage == TranslationLanguageManager.Spanish;
-        if (langMenu.DropDownItems[0] is ToolStripMenuItem esItem)
+        if (_trayHelperWindow == null)
         {
-            esItem.Checked = isEs;
+            _trayHelperWindow = new Window
+            {
+                Width = 0,
+                Height = 0,
+                WindowStyle = WindowStyle.None,
+                ShowInTaskbar = false,
+                ShowActivated = false,
+                Left = -10000,
+                Top = -10000,
+                Visibility = Visibility.Hidden
+            };
+            _trayHelperWindow.Show();
+            _trayHelperWindow.Hide();
+
+            _trayHelperWindow.Deactivated += (s, e) =>
+            {
+                if (_trayContextMenu != null && _trayContextMenu.IsOpen)
+                {
+                    _trayContextMenu.IsOpen = false;
+                }
+            };
         }
-        if (langMenu.DropDownItems[1] is ToolStripMenuItem enItem)
+
+        if (_trayContextMenu == null)
         {
-            enItem.Checked = !isEs;
+            BuildTrayContextMenu();
+        }
+
+        UpdateTrayMenuItems();
+
+        _trayHelperWindow.Show();
+        _trayHelperWindow.Activate();
+        var helper = new WindowInteropHelper(_trayHelperWindow);
+        SetForegroundWindow(helper.Handle);
+
+        if (_trayContextMenu != null)
+        {
+            _trayContextMenu.PlacementTarget = _trayHelperWindow;
+            _trayContextMenu.Placement = PlacementMode.MousePoint;
+            _trayContextMenu.IsOpen = true;
+        }
+    }
+
+    private void BuildTrayContextMenu()
+    {
+        _trayContextMenu = new WpfContextMenu
+        {
+            Style = (Style)FindResource("ModernContextMenuStyle")
+        };
+
+        _trayContextMenu.Closed += (s, e) =>
+        {
+            if (_trayHelperWindow != null)
+            {
+                _trayHelperWindow.Hide();
+                var helper = new WindowInteropHelper(_trayHelperWindow);
+                PostMessage(helper.Handle, WM_NULL, IntPtr.Zero, IntPtr.Zero);
+            }
+        };
+
+        // 1. Header elegante con nombre y versión
+        var headerBorder = new System.Windows.Controls.Border
+        {
+            Padding = new Thickness(8, 4, 8, 6),
+            BorderBrush = (System.Windows.Media.Brush)FindResource("MenuSeparator"),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Margin = new Thickness(0, 0, 0, 4)
+        };
+        var headerGrid = new System.Windows.Controls.Grid();
+        headerGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        headerGrid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition { Width = GridLength.Auto });
+
+        var headerTitle = new WpfTextBlock
+        {
+            Text = "Light Capture Studio",
+            FontWeight = FontWeights.Bold,
+            FontSize = 12,
+            Foreground = (System.Windows.Media.Brush)FindResource("PrimaryText")
+        };
+        var headerBadge = new WpfTextBlock
+        {
+            Text = "v2.0",
+            FontSize = 10,
+            Foreground = (System.Windows.Media.Brush)FindResource("SecondaryText"),
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        System.Windows.Controls.Grid.SetColumn(headerTitle, 0);
+        System.Windows.Controls.Grid.SetColumn(headerBadge, 1);
+        headerGrid.Children.Add(headerTitle);
+        headerGrid.Children.Add(headerBadge);
+        headerBorder.Child = headerGrid;
+        _trayContextMenu.Items.Add(headerBorder);
+
+        // 2. 📸 Capturar pantalla (F9)
+        var captureItem = new WpfMenuItem
+        {
+            Header = "Capturar pantalla",
+            InputGestureText = "F9",
+            FontWeight = FontWeights.SemiBold
+        };
+        var camPath = new WpfPath
+        {
+            Data = System.Windows.Media.Geometry.Parse("M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"),
+            Fill = (System.Windows.Media.Brush)FindResource("PrimaryText"),
+            Stretch = System.Windows.Media.Stretch.Uniform,
+            Width = 16,
+            Height = 16
+        };
+        captureItem.Icon = camPath;
+        captureItem.Click += (s, e) => StartCapture();
+        _trayContextMenu.Items.Add(captureItem);
+
+        // 3. 🕒 Historial de capturas...
+        var historyItem = new WpfMenuItem
+        {
+            Header = "Historial de capturas..."
+        };
+        var historyPath = new WpfPath
+        {
+            Data = System.Windows.Media.Geometry.Parse("M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm.5-13H11v6l5.2 3.1.8-1.3-4.5-2.7z"),
+            Fill = (System.Windows.Media.Brush)FindResource("PrimaryText"),
+            Stretch = System.Windows.Media.Stretch.Uniform,
+            Width = 16,
+            Height = 16
+        };
+        historyItem.Icon = historyPath;
+        historyItem.Click += (s, e) => OpenHistory();
+        _trayContextMenu.Items.Add(historyItem);
+
+        _trayContextMenu.Items.Add(new WpfSeparator());
+
+        // 4. ☀️ / 🌙 Tema Oscuro / Claro
+        _themeIconPath = new WpfPath
+        {
+            Stretch = System.Windows.Media.Stretch.Uniform,
+            Width = 16,
+            Height = 16
+        };
+        _menuItemTheme = new WpfMenuItem
+        {
+            Icon = _themeIconPath
+        };
+        _menuItemTheme.Click += (s, e) =>
+        {
+            ThemeManager.ToggleTheme();
+            UpdateTrayMenuItems();
+        };
+        _trayContextMenu.Items.Add(_menuItemTheme);
+
+        // 5. 🌐 Idioma de traducción (Submenú desplegable moderno)
+        var langMenu = new WpfMenuItem
+        {
+            Header = "Idioma de traducción"
+        };
+        var globeImg = new WpfImage
+        {
+            Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/Icons/globe.png")),
+            Width = 16,
+            Height = 16
+        };
+        System.Windows.Media.RenderOptions.SetBitmapScalingMode(globeImg, System.Windows.Media.BitmapScalingMode.HighQuality);
+        langMenu.Icon = globeImg;
+
+        _checkLangEs = new WpfTextBlock
+        {
+            Text = "✔",
+            FontWeight = FontWeights.Bold,
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246)),
+            FontSize = 13,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+        };
+        _menuLangEs = new WpfMenuItem
+        {
+            Header = "🇪🇸  Español (Predeterminado)",
+            Icon = _checkLangEs
+        };
+        _menuLangEs.Click += (s, e) =>
+        {
+            TranslationLanguageManager.SetLanguage(TranslationLanguageManager.Spanish);
+            UpdateTrayMenuItems();
+        };
+
+        _checkLangEn = new WpfTextBlock
+        {
+            Text = "✔",
+            FontWeight = FontWeights.Bold,
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246)),
+            FontSize = 13,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+        };
+        _menuLangEn = new WpfMenuItem
+        {
+            Header = "🇺🇸  Inglés (English)",
+            Icon = _checkLangEn
+        };
+        _menuLangEn.Click += (s, e) =>
+        {
+            TranslationLanguageManager.SetLanguage(TranslationLanguageManager.English);
+            UpdateTrayMenuItems();
+        };
+
+        langMenu.Items.Add(_menuLangEs);
+        langMenu.Items.Add(_menuLangEn);
+        _trayContextMenu.Items.Add(langMenu);
+
+        _trayContextMenu.Items.Add(new WpfSeparator());
+
+        // 6. ❌ Salir
+        var exitItem = new WpfMenuItem
+        {
+            Header = "Salir"
+        };
+        var exitPath = new WpfPath
+        {
+            Data = System.Windows.Media.Geometry.Parse("M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"),
+            Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68)),
+            Stretch = System.Windows.Media.Stretch.Uniform,
+            Width = 14,
+            Height = 14
+        };
+        exitItem.Icon = exitPath;
+        exitItem.Click += (s, e) => ExitApplication();
+        _trayContextMenu.Items.Add(exitItem);
+
+        ThemeManager.ThemeChanged += _ => Dispatcher.Invoke(UpdateTrayMenuItems);
+        TranslationLanguageManager.LanguageChanged += _ => Dispatcher.Invoke(UpdateTrayMenuItems);
+    }
+
+    private void UpdateTrayMenuItems()
+    {
+        if (_menuItemTheme != null && _themeIconPath != null)
+        {
+            bool isDark = ThemeManager.CurrentTheme == AppTheme.Dark;
+            _menuItemTheme.Header = isDark ? "Cambiar a Tema Claro" : "Cambiar a Tema Oscuro";
+            _themeIconPath.Data = isDark
+                ? System.Windows.Media.Geometry.Parse("M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zm10-9a1 1 0 0 1-1 1h-2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1zM5 12a1 1 0 0 1-1 1H2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1z")
+                : System.Windows.Media.Geometry.Parse("M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z");
+            _themeIconPath.Fill = isDark
+                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 158, 11))
+                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248));
+        }
+
+        if (_checkLangEs != null && _checkLangEn != null)
+        {
+            bool isEs = TranslationLanguageManager.CurrentLanguage == TranslationLanguageManager.Spanish;
+            _checkLangEs.Visibility = isEs ? Visibility.Visible : Visibility.Collapsed;
+            _checkLangEn.Visibility = !isEs ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 
