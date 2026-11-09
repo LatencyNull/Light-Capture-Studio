@@ -353,11 +353,49 @@
                     </Button.ContextMenu>
                 </Button>
 
-                <!-- 5. 🎥 Grabar clip de video (MP4 / GIF) con clásico icono de grabadora de cine -->
-                <Button x:Name="BtnRecordVideo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Grabar pantalla (MP4 o GIF) [🎥]&#x0a;Clic: Abrir menú de grabación para elegir formato e iniciar" Click="BtnRecordVideo_Click" MouseRightButtonUp="BtnRecordVideo_RightClick">
-                    <!-- Icono clásico de grabadora de cine (camera-movie con dos carretes) -->
-                    <Path Data="F0 M18 9H16V7a3 3 0 0 0-3-3 3 3 0 0 0-3 3H8a3 3 0 0 0-3-3 3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2l4 4V5l-4 4zM10 7a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1zM5 7a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1z"
-                          Fill="{DynamicResource PrimaryText}" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <!-- 5. 🎞️ Grabar clip de video (MP4 / GIF) con clásico carrete de cine con cinta marrón -->
+                <Button x:Name="BtnRecordVideo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Grabar pantalla (MP4 o GIF) [🎞️]&#x0a;Clic: Abrir menú de grabación para elegir formato e iniciar" Click="BtnRecordVideo_Click" MouseRightButtonUp="BtnRecordVideo_RightClick">
+                    <!-- Icono clásico de carrete de cine con cinta marrón -->
+                    <Viewbox Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Canvas Width="24" Height="24">
+                            <!-- 1. Tira de cinta de celuloide marrón saliendo del carrete -->
+                            <Path Data="M15 17 C17.5 20 20.5 21.5 23 20" Stroke="#9A3412" StrokeThickness="3.2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <!-- Perforaciones de la cinta saliente -->
+                            <Path Data="M15.5 17 C17.8 20 20.6 21.5 22.8 20" Stroke="#FBBF24" StrokeThickness="0.7" StrokeDashArray="1,2"/>
+
+                            <!-- 2. Masa de cinta de celuloide marrón enrollada en el carrete -->
+                            <Ellipse Canvas.Left="2.5" Canvas.Top="2.5" Width="19" Height="19" Fill="#854D0E"/>
+                            <Ellipse Canvas.Left="4" Canvas.Top="4" Width="16" Height="16" Fill="#9A3412"/>
+                            <!-- Anillo sutil de las espiras de cinta -->
+                            <Ellipse Canvas.Left="3.5" Canvas.Top="3.5" Width="17" Height="17" Stroke="#B45309" StrokeThickness="0.5" Fill="Transparent"/>
+
+                            <!-- 3. Chasis metálico del carrete de cine clásico (Aro exterior + 5 Radios + Eje) -->
+                            <!-- Aro exterior -->
+                            <Ellipse Canvas.Left="1.5" Canvas.Top="1.5" Width="21" Height="21" Stroke="{DynamicResource PrimaryText}" StrokeThickness="1.5" Fill="Transparent"/>
+
+                            <!-- 5 Radios metálicos del carrete a 72 grados -->
+                            <Rectangle Canvas.Left="11.2" Canvas.Top="2" Width="1.6" Height="10" Fill="{DynamicResource PrimaryText}" RadiusX="0.5" RadiusY="0.5" RenderTransformOrigin="0.5,1.0">
+                                <Rectangle.RenderTransform><RotateTransform Angle="0"/></Rectangle.RenderTransform>
+                            </Rectangle>
+                            <Rectangle Canvas.Left="11.2" Canvas.Top="2" Width="1.6" Height="10" Fill="{DynamicResource PrimaryText}" RadiusX="0.5" RadiusY="0.5" RenderTransformOrigin="0.5,1.0">
+                                <Rectangle.RenderTransform><RotateTransform Angle="72"/></Rectangle.RenderTransform>
+                            </Rectangle>
+                            <Rectangle Canvas.Left="11.2" Canvas.Top="2" Width="1.6" Height="10" Fill="{DynamicResource PrimaryText}" RadiusX="0.5" RadiusY="0.5" RenderTransformOrigin="0.5,1.0">
+                                <Rectangle.RenderTransform><RotateTransform Angle="144"/></Rectangle.RenderTransform>
+                            </Rectangle>
+                            <Rectangle Canvas.Left="11.2" Canvas.Top="2" Width="1.6" Height="10" Fill="{DynamicResource PrimaryText}" RadiusX="0.5" RadiusY="0.5" RenderTransformOrigin="0.5,1.0">
+                                <Rectangle.RenderTransform><RotateTransform Angle="216"/></Rectangle.RenderTransform>
+                            </Rectangle>
+                            <Rectangle Canvas.Left="11.2" Canvas.Top="2" Width="1.6" Height="10" Fill="{DynamicResource PrimaryText}" RadiusX="0.5" RadiusY="0.5" RenderTransformOrigin="0.5,1.0">
+                                <Rectangle.RenderTransform><RotateTransform Angle="288"/></Rectangle.RenderTransform>
+                            </Rectangle>
+
+                            <!-- Eje central del carrete (Hub) -->
+                            <Ellipse Canvas.Left="8.5" Canvas.Top="8.5" Width="7" Height="7" Fill="{DynamicResource PrimaryText}"/>
+                            <Ellipse Canvas.Left="10.2" Canvas.Top="10.2" Width="3.6" Height="3.6" Fill="{DynamicResource ToolbarBackground}"/>
+                            <Ellipse Canvas.Left="11" Canvas.Top="11" Width="2" Height="2" Fill="{DynamicResource PrimaryText}"/>
+                        </Canvas>
+                    </Viewbox>
                     <Button.ContextMenu>
                         <ContextMenu x:Name="VideoRecordContextMenu" Style="{StaticResource ModernShareMenuStyle}">
                             <MenuItem Header="🎙️ + 🔊 Grabar con Micrófono y Audio del sistema" Click="RecordFullAudio_Click"/>
