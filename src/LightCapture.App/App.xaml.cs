@@ -315,16 +315,17 @@ public partial class App : Application
     {
         try
         {
-            if (!File.Exists(targetPath) || new FileInfo(targetPath).Length == 0)
-            {
-                var asm = typeof(App).Assembly;
-                string? resourceName = asm.GetManifestResourceNames()
-                    .FirstOrDefault(n => n.EndsWith(resourceSuffix, StringComparison.OrdinalIgnoreCase));
+            var asm = typeof(App).Assembly;
+            string? resourceName = asm.GetManifestResourceNames()
+                .FirstOrDefault(n => n.EndsWith(resourceSuffix, StringComparison.OrdinalIgnoreCase));
 
-                if (resourceName != null)
+            if (resourceName != null)
+            {
+                using var stream = asm.GetManifestResourceStream(resourceName);
+                if (stream != null)
                 {
-                    using var stream = asm.GetManifestResourceStream(resourceName);
-                    if (stream != null)
+                    bool needExtract = !File.Exists(targetPath) || new FileInfo(targetPath).Length != stream.Length;
+                    if (needExtract)
                     {
                         using var fileStream = File.Create(targetPath);
                         stream.CopyTo(fileStream);

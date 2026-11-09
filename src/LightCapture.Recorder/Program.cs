@@ -73,6 +73,7 @@ namespace LightCapture.RecorderWorker
                     new DisplayRecordingSource
                     {
                         DeviceName = deviceName,
+                        RecorderApi = RecorderApi.WindowsGraphicsCapture,
                         SourceRect = new ScreenRect(localX, localY, width, height)
                     }
                 };
@@ -146,9 +147,16 @@ namespace LightCapture.RecorderWorker
                     },
                     VideoEncoderOptions = new VideoEncoderOptions
                     {
-                        Framerate = 30,
-                        Quality = 80,
-                        IsFixedFramerate = true
+                        Framerate = 60,
+                        Quality = 90,
+                        Bitrate = 12000000,
+                        IsFixedFramerate = true,
+                        IsHardwareEncodingEnabled = true,
+                        Encoder = new H264VideoEncoder
+                        {
+                            BitrateMode = H264BitrateControlMode.Quality,
+                            EncoderProfile = H264Profile.High
+                        }
                     },
                     AudioOptions = new AudioOptions
                     {
