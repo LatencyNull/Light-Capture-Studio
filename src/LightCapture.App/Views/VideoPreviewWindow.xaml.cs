@@ -49,7 +49,6 @@ public partial class VideoPreviewWindow : Window
     private DispatcherTimer? _playbackTimer;
     private DateTime _lastSocialMenuCloseTime = DateTime.MinValue;
     private bool _isScrubbingTimeline;
-    private bool _wasPlayingBeforeScrub;
     private DateTime _lastScrubSeekTime = DateTime.MinValue;
 
     private readonly List<(DrawingElement Element, Border Pill, TextBlock TimeBadge, Border BadgeBorder, Canvas Canvas)> _trackPillBindings = new();
@@ -278,10 +277,10 @@ public partial class VideoPreviewWindow : Window
         }
         TxtPlaybackPosition.Text = $"{_trimStart.Minutes:D2}:{_trimStart.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
 
-        if (_isPlaying)
-        {
-            MediaVideoPlayer.Play();
-        }
+        MediaVideoPlayer.Pause();
+        _isPlaying = false;
+        TxtPlayPauseIcon.Text = "▶";
+        PauseIndicator.Visibility = Visibility.Visible;
         e.Handled = true;
     }
 
@@ -382,15 +381,11 @@ public partial class VideoPreviewWindow : Window
         if (_totalDuration.TotalSeconds <= 0) return;
 
         _isScrubbingTimeline = true;
-        _wasPlayingBeforeScrub = _isPlaying;
 
-        // Pausar temporalmente mientras se arrastra/friega para previsualización suave fotograma a fotograma
-        if (_isPlaying)
-        {
-            MediaVideoPlayer.Pause();
-            _isPlaying = false;
-            TxtPlayPauseIcon.Text = "▶";
-        }
+        // Pausar y mantener en pausa
+        MediaVideoPlayer.Pause();
+        _isPlaying = false;
+        TxtPlayPauseIcon.Text = "▶";
         PauseIndicator.Visibility = Visibility.Collapsed;
 
         TimelineCanvas.CaptureMouse();
@@ -423,21 +418,11 @@ public partial class VideoPreviewWindow : Window
             // Garantizar fotograma exacto en el punto de soltado
             SeekToTimelinePosition(e.GetPosition(TimelineCanvas).X);
 
-            // Si estaba reproduciendo antes de hacer clic o fregar, reanudar la reproducción
-            if (_wasPlayingBeforeScrub)
-            {
-                MediaVideoPlayer.Play();
-                _isPlaying = true;
-                TxtPlayPauseIcon.Text = "⏸";
-                PauseIndicator.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                MediaVideoPlayer.Pause();
-                _isPlaying = false;
-                TxtPlayPauseIcon.Text = "▶";
-                PauseIndicator.Visibility = Visibility.Visible;
-            }
+            // Mantenerse siempre en pausa ("quedar muerta" hasta que el usuario presione Play)
+            MediaVideoPlayer.Pause();
+            _isPlaying = false;
+            TxtPlayPauseIcon.Text = "▶";
+            PauseIndicator.Visibility = Visibility.Visible;
 
             e.Handled = true;
         }
