@@ -2,60 +2,83 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using MediaColor = System.Windows.Media.Color;
+using MediaBrushes = System.Windows.Media.Brushes;
+using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 
 namespace LightCapture.App.Views;
 
 public partial class RecordingControlWidget : Window
 {
+    private bool _isRecording;
     private bool _isAudioOn;
     private bool _isMicOn;
-    private readonly bool _isGif;
+    private bool _isGif;
 
+    public bool IsGif => _isGif;
+    public bool IsAudioOn => _isAudioOn;
+    public bool IsMicOn => _isMicOn;
+    public bool IsRecordingActive => _isRecording;
+
+    public event Action<bool, bool, bool>? StartRequested; // (captureAudio, captureMic, isGif)
     public event Action? StopRequested;
     public event Action? CancelRequested;
     public event Action<bool>? AudioToggled;
     public event Action<bool>? MicToggled;
 
-    public RecordingControlWidget(bool initialAudioOn, bool initialMicOn, Rect recordBounds, bool isGif = false)
+    public RecordingControlWidget(bool initialAudioOn, bool initialMicOn, Rect recordBounds, bool initialIsGif = false)
     {
         InitializeComponent();
 
         _isAudioOn = initialAudioOn;
         _isMicOn = initialMicOn;
-        _isGif = isGif;
+        _isGif = initialIsGif;
+        _isRecording = false;
 
+        UpdateFormatUi();
+        UpdateAudioUi();
+        UpdateMicUi();
+
+        // Posicionamiento inteligente fuera de la zona de grabación
+        double leftPos = recordBounds.Left + (recordBounds.Width - 400) / 2;
+        double topPos = recordBounds.Bottom + 12;
+
+        if (topPos + 75 > SystemParameters.VirtualScreenHeight)
+        {
+            topPos = Math.Max(10, recordBounds.Top - 75);
+        }
+
+        Left = Math.Max(10, Math.Min(leftPos, SystemParameters.VirtualScreenWidth - 420));
+        Top = Math.Max(10, topPos);
+    }
+
+    public void OnRecordingStarted()
+    {
+        _isRecording = true;
+
+        // Cambiar el botón principal de Iniciar (verde) a Detener (rojo)
+        BtnAction.Background = new SolidColorBrush(MediaColor.FromRgb(239, 68, 68)); // #EF4444
+        TxtActionIcon.Text = "⏹";
+        TxtActionText.Text = "Detener";
+        BtnAction.ToolTip = "Detener grabación y abrir previsualización";
+
+        // Bloquear cambio de formato durante la grabación activa
         if (_isGif)
         {
-            BadgeGif.Visibility = Visibility.Visible;
-            BtnAudioToggle.Visibility = Visibility.Collapsed;
-            BtnMicToggle.Visibility = Visibility.Collapsed;
-            TxtTimer.Text = "00s / 15s";
+            BtnFormatMp4.IsEnabled = false;
+            BtnFormatMp4.Opacity = 0.5;
         }
         else
         {
-            UpdateAudioUi();
-            UpdateMicUi();
+            // En MP4, el selector GIF sigue visible a menos que supere 15s
         }
 
-        // Posicionamiento inteligente fuera de la zona de grabación
-        double leftPos = recordBounds.Left + (recordBounds.Width - 320) / 2;
-        double topPos = recordBounds.Bottom + 12;
-
-        if (topPos + 70 > SystemParameters.VirtualScreenHeight)
+        // Activar pulso rojo en REC
+        RecDot.Fill = new SolidColorBrush(MediaColor.FromRgb(239, 68, 68));
+        if (TryFindResource("RecDotPulse") is Storyboard sb)
         {
-            topPos = Math.Max(10, recordBounds.Top - 70);
+            sb.Begin();
         }
-
-        Left = Math.Max(10, Math.Min(leftPos, SystemParameters.VirtualScreenWidth - 340));
-        Top = Math.Max(10, topPos);
-
-        Loaded += (s, e) =>
-        {
-            if (TryFindResource("RecDotPulse") is Storyboard sb)
-            {
-                sb.Begin();
-            }
-        };
     }
 
     public void UpdateDuration(TimeSpan duration)
@@ -66,20 +89,107 @@ public partial class RecordingControlWidget : Window
             {
                 int sec = (int)Math.Min(15, duration.TotalSeconds);
                 TxtTimer.Text = $"{sec:D2}s / 15s";
+
+                // Si es GIF y alcanza los 15 segundos, finalizar automáticamente
+                if (duration.TotalSeconds >= 15 && _isRecording)
+                {
+                    StopRequested?.Invoke();
+                    return;
+                }
             }
             else
             {
                 TxtTimer.Text = $"{duration.Minutes:D2}:{duration.Seconds:D2}";
             }
+
+            // Si el video supera los 15 segundos, la opción de GIF se sombrea/desactiva
+            if (duration.TotalSeconds > 15)
+            {
+                BtnFormatGif.IsEnabled = false;
+                BtnFormatGif.Opacity = 0.35;
+                BtnFormatGif.ToolTip = "Formato GIF no disponible: la grabación superó los 15 segundos permitidos.";
+            }
         });
+    }
+
+    private void BtnFormatMp4_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isRecording) return;
+
+        _isGif = false;
+        UpdateFormatUi();
+    }
+
+    private void BtnFormatGif_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isRecording) return;
+
+        _isGif = true;
+        UpdateFormatUi();
+    }
+
+    private void UpdateFormatUi()
+    {
+        if (!_isGif)
+        {
+            // MP4 seleccionado
+            BtnFormatMp4.Background = new SolidColorBrush(MediaColor.FromRgb(37, 99, 235)); // #2563EB
+            TxtFormatMp4.Foreground = MediaBrushes.White;
+
+            BtnFormatGif.Background = MediaBrushes.Transparent;
+            TxtFormatGif.Foreground = new SolidColorBrush(MediaColor.FromRgb(148, 163, 184)); // #94A3B8
+
+            // Mostrar controles de sonido para MP4
+            BtnAudioToggle.Visibility = Visibility.Visible;
+            BtnMicToggle.Visibility = Visibility.Visible;
+            SepAudio.Visibility = Visibility.Visible;
+
+            if (!_isRecording)
+            {
+                TxtTimer.Text = "00:00";
+            }
+        }
+        else
+        {
+            // GIF seleccionado
+            BtnFormatGif.Background = new SolidColorBrush(MediaColor.FromRgb(2, 132, 199)); // #0284C7
+            TxtFormatGif.Foreground = MediaBrushes.White;
+
+            BtnFormatMp4.Background = MediaBrushes.Transparent;
+            TxtFormatMp4.Foreground = new SolidColorBrush(MediaColor.FromRgb(148, 163, 184)); // #94A3B8
+
+            // Ocultar controles de sonido para GIF (formato visual sin audio)
+            BtnAudioToggle.Visibility = Visibility.Collapsed;
+            BtnMicToggle.Visibility = Visibility.Collapsed;
+            SepAudio.Visibility = Visibility.Collapsed;
+
+            if (!_isRecording)
+            {
+                TxtTimer.Text = "00s / 15s";
+            }
+        }
+    }
+
+    private void BtnAction_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_isRecording)
+        {
+            // Arrancar grabación
+            StartRequested?.Invoke(_isAudioOn, _isMicOn, _isGif);
+        }
+        else
+        {
+            // Detener grabación
+            StopRequested?.Invoke();
+        }
     }
 
     private void UpdateAudioUi()
     {
         TxtAudioIcon.Text = _isAudioOn ? "🔊" : "🔇";
         BtnAudioToggle.ToolTip = _isAudioOn
-            ? "Audio del sistema ACTIVADO. Haz clic para silenciar."
-            : "Audio del sistema SILENCIADO. Haz clic para activar.";
+            ? "Audio del sistema ACTIVADO. Clic para silenciar."
+            : "Audio del sistema SILENCIADO. Clic para activar.";
         BtnAudioToggle.Opacity = _isAudioOn ? 1.0 : 0.55;
     }
 
@@ -87,17 +197,9 @@ public partial class RecordingControlWidget : Window
     {
         TxtMicIcon.Text = _isMicOn ? "🎙️" : "🔇";
         BtnMicToggle.ToolTip = _isMicOn
-            ? "Micrófono ACTIVADO (Grabando tu voz). Haz clic para silenciar."
-            : "Micrófono SILENCIADO. Haz clic para activar.";
+            ? "Micrófono ACTIVADO. Clic para silenciar."
+            : "Micrófono SILENCIADO. Clic para activar.";
         BtnMicToggle.Opacity = _isMicOn ? 1.0 : 0.55;
-    }
-
-    private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.ButtonState == MouseButtonState.Pressed)
-        {
-            DragMove();
-        }
     }
 
     private void BtnAudioToggle_Click(object sender, RoutedEventArgs e)
@@ -114,7 +216,13 @@ public partial class RecordingControlWidget : Window
         MicToggled?.Invoke(_isMicOn);
     }
 
-    private void BtnStop_Click(object sender, RoutedEventArgs e) => StopRequested?.Invoke();
-
     private void BtnCancel_Click(object sender, RoutedEventArgs e) => CancelRequested?.Invoke();
+
+    private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
+    }
 }

@@ -901,7 +901,7 @@ public partial class OverlayWindow : Window
         }
     }
 
-    private async void StartVideoRecording(bool captureAudio, bool captureMic = true, bool isGif = false)
+    private void StartVideoRecording(bool captureAudio, bool captureMic = true, bool isGif = false)
     {
         if (!_hasSelection) return;
 
@@ -927,6 +927,24 @@ public partial class OverlayWindow : Window
         _recordingWidget = new RecordingControlWidget(captureAudio, captureMic, dipBounds, isGif);
         _recordingWidget.AudioToggled += enabled => _videoRecorder.SetAudioEnabled(enabled);
         _recordingWidget.MicToggled += enabled => _videoRecorder.SetMicEnabled(enabled);
+
+        // El usuario presiona "Iniciar" en el widget de control
+        _recordingWidget.StartRequested += async (audio, mic, gif) =>
+        {
+            try
+            {
+                App.EnsureNativeDependencies();
+                _recordingWidget.OnRecordingStarted();
+                await _videoRecorder.StartRecordingAsync(pxX, pxY, pxW, pxH, audio, mic, gif);
+            }
+            catch (Exception ex)
+            {
+                CloseRecordingOverlays();
+                System.Windows.MessageBox.Show($"No se pudo iniciar la grabación: {ex.Message}", "Grabador de Pantalla", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+            }
+        };
+
         _recordingWidget.StopRequested += async () => await StopVideoRecordingAsync();
         _recordingWidget.CancelRequested += async () => await CancelVideoRecordingAsync();
         _recordingWidget.Show();
@@ -941,22 +959,10 @@ public partial class OverlayWindow : Window
             Dispatcher.Invoke(() =>
             {
                 CloseRecordingOverlays();
-                System.Windows.MessageBox.Show($"Error al grabar video: {err}", "Grabador de Video", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Error al grabar: {err}", "Grabador de Pantalla", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
             });
         };
-
-        try
-        {
-            App.EnsureNativeDependencies();
-            await _videoRecorder.StartRecordingAsync(pxX, pxY, pxW, pxH, captureAudio, captureMic, isGif);
-        }
-        catch (Exception ex)
-        {
-            CloseRecordingOverlays();
-            System.Windows.MessageBox.Show($"No se pudo iniciar la grabación: {ex.Message}", "Grabador de Video", MessageBoxButton.OK, MessageBoxImage.Error);
-            Close();
-        }
     }
 
     private async Task StopVideoRecordingAsync()
@@ -965,16 +971,19 @@ public partial class OverlayWindow : Window
 
         try
         {
-            string videoPath = await _videoRecorder.StopRecordingAsync();
-            if (!string.IsNullOrEmpty(videoPath) && File.Exists(videoPath))
+            if (_videoRecorder.IsRecording)
             {
-                var previewWindow = new VideoPreviewWindow(videoPath);
-                previewWindow.Show();
+                string videoPath = await _videoRecorder.StopRecordingAsync();
+                if (!string.IsNullOrEmpty(videoPath) && File.Exists(videoPath))
+                {
+                    var previewWindow = new VideoPreviewWindow(videoPath);
+                    previewWindow.Show();
+                }
             }
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Error al procesar el video: {ex.Message}");
+            System.Windows.MessageBox.Show($"Error al procesar el archivo: {ex.Message}");
         }
 
         Close();
@@ -986,7 +995,10 @@ public partial class OverlayWindow : Window
 
         try
         {
-            await _videoRecorder.CancelRecordingAsync();
+            if (_videoRecorder.IsRecording)
+            {
+                await _videoRecorder.CancelRecordingAsync();
+            }
         }
         catch { }
 

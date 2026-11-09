@@ -107,15 +107,6 @@ public partial class VideoPreviewWindow : Window
         ).Show();
     }
 
-    private void BtnShareWhatsApp_Click(object sender, RoutedEventArgs e)
-    {
-        if (BtnWhatsApp.ContextMenu != null)
-        {
-            BtnWhatsApp.ContextMenu.PlacementTarget = BtnWhatsApp;
-            BtnWhatsApp.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
-            BtnWhatsApp.ContextMenu.IsOpen = true;
-        }
-    }
 
     private void ShareWhatsAppApp_Click(object sender, RoutedEventArgs e)
     {
