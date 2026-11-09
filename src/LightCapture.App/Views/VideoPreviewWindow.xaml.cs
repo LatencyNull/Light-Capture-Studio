@@ -2,16 +2,29 @@ using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
-using Microsoft.Win32;
+using System.Windows.Threading;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using LightCapture.App.Services;
 
 namespace LightCapture.App.Views;
 
 public partial class VideoPreviewWindow : Window
 {
     private readonly string _videoPath;
+    private string? _cachedTrimmedPath;
     private bool _isPlaying = true;
+
+    private TimeSpan _totalDuration = TimeSpan.Zero;
+    private TimeSpan _trimStart = TimeSpan.Zero;
+    private TimeSpan _trimEnd = TimeSpan.Zero;
+
+    private bool _isDraggingStart;
+    private bool _isDraggingEnd;
+    private DispatcherTimer? _playbackTimer;
 
     public VideoPreviewWindow(string videoPath)
     {
@@ -42,39 +55,238 @@ public partial class VideoPreviewWindow : Window
         {
             if (MediaVideoPlayer.NaturalDuration.HasTimeSpan)
             {
-                var dur = MediaVideoPlayer.NaturalDuration.TimeSpan;
+                _totalDuration = MediaVideoPlayer.NaturalDuration.TimeSpan;
+                _trimStart = TimeSpan.Zero;
+                _trimEnd = _totalDuration;
+
                 var fileInfo = new FileInfo(_videoPath);
                 double sizeMb = Math.Round((double)fileInfo.Length / (1024 * 1024), 2);
                 string formatTag = isGif ? "GIF • " : "";
-                TxtVideoInfo.Text = $"{formatTag}{dur.Minutes:D2}:{dur.Seconds:D2} • {sizeMb} MB";
+                TxtVideoInfo.Text = $"{formatTag}{_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2} • {sizeMb} MB";
+
+                UpdateTimelinePins();
+                StartPlaybackTimer();
             }
             MediaVideoPlayer.Play();
+            _isPlaying = true;
+            TxtPlayPauseIcon.Text = "⏸";
         };
 
         MediaVideoPlayer.Play();
     }
 
-    private void MediaVideoPlayer_MediaEnded(object sender, RoutedEventArgs e)
+    private void StartPlaybackTimer()
     {
-        // Bucle infinito fluido (efecto GIF)
-        MediaVideoPlayer.Position = TimeSpan.Zero;
-        MediaVideoPlayer.Play();
+        _playbackTimer?.Stop();
+        _playbackTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) };
+        _playbackTimer.Tick += (s, e) =>
+        {
+            if (!_isPlaying || _isDraggingStart || _isDraggingEnd || _totalDuration.TotalSeconds <= 0) return;
+
+            var pos = MediaVideoPlayer.Position;
+
+            // Bucle inteligente dentro del rango de recorte
+            if (pos >= _trimEnd || pos < _trimStart)
+            {
+                MediaVideoPlayer.Position = _trimStart;
+                pos = _trimStart;
+            }
+
+            // Actualizar aguja de reproducción (playhead)
+            double trackWidth = TimelineContainer.ActualWidth;
+            if (trackWidth > 0)
+            {
+                double ratio = pos.TotalSeconds / _totalDuration.TotalSeconds;
+                double x = Math.Max(0, Math.Min(ratio * trackWidth, trackWidth - 3));
+                Canvas.SetLeft(Playhead, x);
+            }
+
+            TxtPlaybackPosition.Text = $"{pos.Minutes:D2}:{pos.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
+        };
+        _playbackTimer.Start();
     }
 
-    private void VideoPlayer_MouseClick(object sender, MouseButtonEventArgs e)
+    private void TimelineContainer_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdateTimelinePins();
+    }
+
+    private void UpdateTimelinePins()
+    {
+        double trackWidth = TimelineContainer.ActualWidth;
+        if (trackWidth <= 0 || _totalDuration.TotalSeconds <= 0) return;
+
+        double startRatio = _trimStart.TotalSeconds / _totalDuration.TotalSeconds;
+        double endRatio = _trimEnd.TotalSeconds / _totalDuration.TotalSeconds;
+
+        double startX = Math.Max(0, startRatio * trackWidth);
+        double endX = Math.Min(trackWidth - PinEnd.ActualWidth, endRatio * trackWidth - PinEnd.ActualWidth);
+
+        Canvas.SetLeft(PinStart, startX);
+        Canvas.SetLeft(PinEnd, Math.Max(startX + 14, endX));
+
+        ActiveRangeTrack.Margin = new Thickness(startX, 0, 0, 0);
+        ActiveRangeTrack.Width = Math.Max(0, (endX + PinEnd.ActualWidth) - startX);
+
+        UpdateTrimLabels();
+    }
+
+    private void UpdateTrimLabels()
+    {
+        var trimDuration = _trimEnd - _trimStart;
+        TxtTrimDuration.Text = $"✂️ {trimDuration.Minutes:D2}:{trimDuration.Seconds:D2}.{trimDuration.Milliseconds / 100}";
+
+        bool isTrimmed = _trimStart > TimeSpan.FromMilliseconds(150) || 
+                         (_totalDuration - _trimEnd) > TimeSpan.FromMilliseconds(150);
+
+        BtnResetTrim.Visibility = isTrimmed ? Visibility.Visible : Visibility.Collapsed;
+        BadgeTrimInfo.BorderBrush = isTrimmed 
+            ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248)) 
+            : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 65, 85));
+    }
+
+    private void PinStart_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _isDraggingStart = true;
+        PinStart.CaptureMouse();
+        MediaVideoPlayer.Pause();
+        e.Handled = true;
+    }
+
+    private void PinEnd_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _isDraggingEnd = true;
+        PinEnd.CaptureMouse();
+        MediaVideoPlayer.Pause();
+        e.Handled = true;
+    }
+
+    private void Pin_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isDraggingStart)
+        {
+            _isDraggingStart = false;
+            PinStart.ReleaseMouseCapture();
+            _cachedTrimmedPath = null;
+        }
+
+        if (_isDraggingEnd)
+        {
+            _isDraggingEnd = false;
+            PinEnd.ReleaseMouseCapture();
+            _cachedTrimmedPath = null;
+        }
+
+        if (_isPlaying)
+        {
+            MediaVideoPlayer.Play();
+        }
+        e.Handled = true;
+    }
+
+    private void PinStart_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (!_isDraggingStart || _totalDuration.TotalSeconds <= 0) return;
+
+        double trackWidth = TimelineContainer.ActualWidth;
+        double curX = e.GetPosition(TimelineCanvas).X;
+        double endX = Canvas.GetLeft(PinEnd);
+
+        double newStartX = Math.Max(0, Math.Min(curX, endX - 16));
+        Canvas.SetLeft(PinStart, newStartX);
+
+        ActiveRangeTrack.Margin = new Thickness(newStartX, 0, 0, 0);
+        ActiveRangeTrack.Width = Math.Max(0, (endX + PinEnd.ActualWidth) - newStartX);
+
+        _trimStart = TimeSpan.FromSeconds((newStartX / trackWidth) * _totalDuration.TotalSeconds);
+        MediaVideoPlayer.Position = _trimStart;
+        Canvas.SetLeft(Playhead, newStartX);
+
+        UpdateTrimLabels();
+    }
+
+    private void PinEnd_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (!_isDraggingEnd || _totalDuration.TotalSeconds <= 0) return;
+
+        double trackWidth = TimelineContainer.ActualWidth;
+        double curX = e.GetPosition(TimelineCanvas).X;
+        double startX = Canvas.GetLeft(PinStart);
+
+        double newEndX = Math.Max(startX + 16, Math.Min(curX, trackWidth - PinEnd.ActualWidth));
+        Canvas.SetLeft(PinEnd, newEndX);
+
+        ActiveRangeTrack.Width = Math.Max(0, (newEndX + PinEnd.ActualWidth) - startX);
+
+        _trimEnd = TimeSpan.FromSeconds(((newEndX + PinEnd.ActualWidth) / trackWidth) * _totalDuration.TotalSeconds);
+        MediaVideoPlayer.Position = _trimEnd;
+        Canvas.SetLeft(Playhead, newEndX);
+
+        UpdateTrimLabels();
+    }
+
+    private void TimelineCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_totalDuration.TotalSeconds <= 0) return;
+
+        double trackWidth = TimelineContainer.ActualWidth;
+        double clickX = e.GetPosition(TimelineCanvas).X;
+
+        double ratio = Math.Max(0, Math.Min(clickX / trackWidth, 1.0));
+        var targetTime = TimeSpan.FromSeconds(ratio * _totalDuration.TotalSeconds);
+
+        // Clamp dentro del rango recortado
+        if (targetTime < _trimStart) targetTime = _trimStart;
+        if (targetTime > _trimEnd) targetTime = _trimEnd;
+
+        MediaVideoPlayer.Position = targetTime;
+        Canvas.SetLeft(Playhead, Math.Max(0, Math.Min(clickX, trackWidth - 3)));
+    }
+
+    private void BtnPlayPause_Click(object sender, RoutedEventArgs e)
+    {
+        TogglePlayPause();
+    }
+
+    private void BtnResetTrim_Click(object sender, RoutedEventArgs e)
+    {
+        _trimStart = TimeSpan.Zero;
+        _trimEnd = _totalDuration;
+        _cachedTrimmedPath = null;
+        UpdateTimelinePins();
+    }
+
+    private void TogglePlayPause()
     {
         if (_isPlaying)
         {
             MediaVideoPlayer.Pause();
             _isPlaying = false;
+            TxtPlayPauseIcon.Text = "▶";
             PauseIndicator.Visibility = Visibility.Visible;
         }
         else
         {
+            if (MediaVideoPlayer.Position >= _trimEnd || MediaVideoPlayer.Position < _trimStart)
+            {
+                MediaVideoPlayer.Position = _trimStart;
+            }
             MediaVideoPlayer.Play();
             _isPlaying = true;
+            TxtPlayPauseIcon.Text = "⏸";
             PauseIndicator.Visibility = Visibility.Collapsed;
         }
+    }
+
+    private void MediaVideoPlayer_MediaEnded(object sender, RoutedEventArgs e)
+    {
+        MediaVideoPlayer.Position = _trimStart;
+        MediaVideoPlayer.Play();
+    }
+
+    private void VideoPlayer_MouseClick(object sender, MouseButtonEventArgs e)
+    {
+        TogglePlayPause();
     }
 
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -85,12 +297,46 @@ public partial class VideoPreviewWindow : Window
         }
     }
 
-    private void CopyVideoFileToClipboard()
+    private async Task<string> GetEffectiveVideoPathAsync()
+    {
+        bool isTrimmed = _trimStart > TimeSpan.FromMilliseconds(150) || 
+                         (_totalDuration - _trimEnd) > TimeSpan.FromMilliseconds(150);
+
+        if (!isTrimmed)
+        {
+            return _videoPath;
+        }
+
+        if (!string.IsNullOrEmpty(_cachedTrimmedPath) && File.Exists(_cachedTrimmedPath))
+        {
+            return _cachedTrimmedPath;
+        }
+
+        try
+        {
+            new ToastNotificationWindow("✂️ Procesando recorte del clip...", "/Assets/Icons/save.png").Show();
+            _cachedTrimmedPath = await VideoTrimmerService.TrimAsync(_videoPath, _trimStart, _trimEnd);
+            return _cachedTrimmedPath;
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"No se pudo recortar el clip: {ex.Message}. Se usará el video original.", "Recorte de Clip");
+            return _videoPath;
+        }
+    }
+
+    private async void BtnCopyClip_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            var files = new StringCollection { _videoPath };
+            string path = await GetEffectiveVideoPathAsync();
+            var files = new StringCollection { path };
             System.Windows.Clipboard.SetFileDropList(files);
+
+            new ToastNotificationWindow(
+                "¡Clip de video copiado! Pega con Ctrl+V en tu chat 💬",
+                "/Assets/Icons/video.png"
+            ).Show();
         }
         catch (Exception ex)
         {
@@ -98,19 +344,14 @@ public partial class VideoPreviewWindow : Window
         }
     }
 
-    private void BtnCopyClip_Click(object sender, RoutedEventArgs e)
+    private async void ShareWhatsAppApp_Click(object sender, RoutedEventArgs e)
     {
-        CopyVideoFileToClipboard();
-        new ToastNotificationWindow(
-            "¡Clip de video copiado! Pega con Ctrl+V en tu chat 💬",
-            "/Assets/Icons/video.png"
-        ).Show();
-    }
-
-
-    private void ShareWhatsAppApp_Click(object sender, RoutedEventArgs e)
-    {
-        CopyVideoFileToClipboard();
+        string path = await GetEffectiveVideoPathAsync();
+        try
+        {
+            System.Windows.Clipboard.SetFileDropList(new StringCollection { path });
+        }
+        catch { }
 
         bool appOpened = false;
         try
@@ -120,34 +361,18 @@ public partial class VideoPreviewWindow : Window
         }
         catch { }
 
-        if (appOpened)
-        {
-            new ToastNotificationWindow(
-                "¡Clip copiado! Pega con Ctrl+V en WhatsApp App 💬",
-                "/Assets/Icons/whatsapp.png"
-            ).Show();
-        }
-        else
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo("https://web.whatsapp.com/") { UseShellExecute = true });
-            }
-            catch { }
-
-            new ToastNotificationWindow(
-                "WhatsApp App no detectado. Abriendo WhatsApp Web... 💬",
-                "/Assets/Icons/whatsapp.png"
-            ).Show();
-        }
+        new ToastNotificationWindow(
+            appOpened ? "¡Clip copiado! Pega con Ctrl+V en WhatsApp App 💬" : "Abriendo WhatsApp Web... 💬",
+            "/Assets/Icons/whatsapp.png"
+        ).Show();
     }
 
-    private void ShareWhatsAppWeb_Click(object sender, RoutedEventArgs e)
+    private async void ShareWhatsAppWeb_Click(object sender, RoutedEventArgs e)
     {
-        CopyVideoFileToClipboard();
-
+        string path = await GetEffectiveVideoPathAsync();
         try
         {
+            System.Windows.Clipboard.SetFileDropList(new StringCollection { path });
             Process.Start(new ProcessStartInfo("https://web.whatsapp.com/") { UseShellExecute = true });
         }
         catch { }
@@ -158,9 +383,14 @@ public partial class VideoPreviewWindow : Window
         ).Show();
     }
 
-    private void BtnShareDiscord_Click(object sender, RoutedEventArgs e)
+    private async void BtnShareDiscord_Click(object sender, RoutedEventArgs e)
     {
-        CopyVideoFileToClipboard();
+        string path = await GetEffectiveVideoPathAsync();
+        try
+        {
+            System.Windows.Clipboard.SetFileDropList(new StringCollection { path });
+        }
+        catch { }
 
         new ToastNotificationWindow(
             "¡Clip copiado para Discord! Pega con Ctrl+V en tu canal 🎮",
@@ -179,11 +409,12 @@ public partial class VideoPreviewWindow : Window
         }
     }
 
-    private void ShareTikTok_Click(object sender, RoutedEventArgs e)
+    private async void ShareTikTok_Click(object sender, RoutedEventArgs e)
     {
-        CopyVideoFileToClipboard();
+        string path = await GetEffectiveVideoPathAsync();
         try
         {
+            System.Windows.Clipboard.SetFileDropList(new StringCollection { path });
             Process.Start(new ProcessStartInfo("https://www.tiktok.com/upload") { UseShellExecute = true });
         }
         catch { }
@@ -194,11 +425,12 @@ public partial class VideoPreviewWindow : Window
         ).Show();
     }
 
-    private void ShareInstagram_Click(object sender, RoutedEventArgs e)
+    private async void ShareInstagram_Click(object sender, RoutedEventArgs e)
     {
-        CopyVideoFileToClipboard();
+        string path = await GetEffectiveVideoPathAsync();
         try
         {
+            System.Windows.Clipboard.SetFileDropList(new StringCollection { path });
             Process.Start(new ProcessStartInfo("https://www.instagram.com/") { UseShellExecute = true });
         }
         catch { }
@@ -209,11 +441,12 @@ public partial class VideoPreviewWindow : Window
         ).Show();
     }
 
-    private void ShareFacebook_Click(object sender, RoutedEventArgs e)
+    private async void ShareFacebook_Click(object sender, RoutedEventArgs e)
     {
-        CopyVideoFileToClipboard();
+        string path = await GetEffectiveVideoPathAsync();
         try
         {
+            System.Windows.Clipboard.SetFileDropList(new StringCollection { path });
             Process.Start(new ProcessStartInfo("https://www.facebook.com/") { UseShellExecute = true });
         }
         catch { }
@@ -224,11 +457,12 @@ public partial class VideoPreviewWindow : Window
         ).Show();
     }
 
-    private void ShareTelegram_Click(object sender, RoutedEventArgs e)
+    private async void ShareTelegram_Click(object sender, RoutedEventArgs e)
     {
-        CopyVideoFileToClipboard();
+        string path = await GetEffectiveVideoPathAsync();
         try
         {
+            System.Windows.Clipboard.SetFileDropList(new StringCollection { path });
             Process.Start(new ProcessStartInfo("https://web.telegram.org/") { UseShellExecute = true });
         }
         catch { }
@@ -239,11 +473,12 @@ public partial class VideoPreviewWindow : Window
         ).Show();
     }
 
-    private void ShareTwitter_Click(object sender, RoutedEventArgs e)
+    private async void ShareTwitter_Click(object sender, RoutedEventArgs e)
     {
-        CopyVideoFileToClipboard();
+        string path = await GetEffectiveVideoPathAsync();
         try
         {
+            System.Windows.Clipboard.SetFileDropList(new StringCollection { path });
             Process.Start(new ProcessStartInfo("https://x.com/compose/post") { UseShellExecute = true });
         }
         catch { }
@@ -254,9 +489,11 @@ public partial class VideoPreviewWindow : Window
         ).Show();
     }
 
-    private void BtnSaveClip_Click(object sender, RoutedEventArgs e)
+    private async void BtnSaveClip_Click(object sender, RoutedEventArgs e)
     {
-        bool isGif = _videoPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+        string path = await GetEffectiveVideoPathAsync();
+        bool isGif = path.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+
         var sfd = new Microsoft.Win32.SaveFileDialog
         {
             Title = isGif ? "Guardar GIF animado" : "Guardar clip de video",
@@ -268,7 +505,7 @@ public partial class VideoPreviewWindow : Window
         {
             try
             {
-                File.Copy(_videoPath, sfd.FileName, true);
+                File.Copy(path, sfd.FileName, true);
                 new ToastNotificationWindow(
                     isGif ? "¡GIF animado guardado con éxito! 🎞️" : "¡Clip de video guardado con éxito! 💾",
                     "/Assets/Icons/save.png"
@@ -295,6 +532,7 @@ public partial class VideoPreviewWindow : Window
     {
         try
         {
+            _playbackTimer?.Stop();
             MediaVideoPlayer.Stop();
             MediaVideoPlayer.Close();
         }
