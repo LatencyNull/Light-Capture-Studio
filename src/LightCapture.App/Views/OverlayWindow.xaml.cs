@@ -214,7 +214,6 @@ public partial class OverlayWindow : Window
         MainToolbar.SaveRequested += SaveCaptureToFile;
         MainToolbar.PrintRequested += PrintCapture;
         MainToolbar.RecordVideoRequested += (audio, mic) => StartVideoRecording(audio, mic, false);
-        MainToolbar.RecordGifRequested += () => StartVideoRecording(false, false, true);
         MainToolbar.SearchRequested += SearchOnGoogle;
         MainToolbar.GeminiRequested += AskGeminiAboutCapture;
         MainToolbar.GeminiPromptCopyRequested += CopyGeminiPromptToClipboard;

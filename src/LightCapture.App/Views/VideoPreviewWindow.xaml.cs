@@ -173,6 +173,8 @@ public partial class VideoPreviewWindow : Window
         if (BtnMoreSocial.ContextMenu != null)
         {
             BtnMoreSocial.ContextMenu.PlacementTarget = BtnMoreSocial;
+            BtnMoreSocial.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
+            BtnMoreSocial.ContextMenu.VerticalOffset = -6;
             BtnMoreSocial.ContextMenu.IsOpen = true;
         }
     }

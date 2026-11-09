@@ -4,7 +4,9 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using MediaColor = System.Windows.Media.Color;
 using MediaBrushes = System.Windows.Media.Brushes;
+using MediaBrush = System.Windows.Media.Brush;
 using SolidColorBrush = System.Windows.Media.SolidColorBrush;
+using WpfApplication = System.Windows.Application;
 
 namespace LightCapture.App.Views;
 
@@ -130,6 +132,8 @@ public partial class RecordingControlWidget : Window
 
     private void UpdateFormatUi()
     {
+        MediaBrush secBrush = WpfApplication.Current?.Resources["SecondaryText"] as MediaBrush ?? new SolidColorBrush(MediaColor.FromRgb(148, 163, 184));
+
         if (!_isGif)
         {
             // MP4 seleccionado
@@ -137,7 +141,7 @@ public partial class RecordingControlWidget : Window
             TxtFormatMp4.Foreground = MediaBrushes.White;
 
             BtnFormatGif.Background = MediaBrushes.Transparent;
-            TxtFormatGif.Foreground = new SolidColorBrush(MediaColor.FromRgb(148, 163, 184)); // #94A3B8
+            TxtFormatGif.Foreground = secBrush;
 
             // Mostrar controles de sonido para MP4
             BtnAudioToggle.Visibility = Visibility.Visible;
@@ -156,7 +160,7 @@ public partial class RecordingControlWidget : Window
             TxtFormatGif.Foreground = MediaBrushes.White;
 
             BtnFormatMp4.Background = MediaBrushes.Transparent;
-            TxtFormatMp4.Foreground = new SolidColorBrush(MediaColor.FromRgb(148, 163, 184)); // #94A3B8
+            TxtFormatMp4.Foreground = secBrush;
 
             // Ocultar controles de sonido para GIF (formato visual sin audio)
             BtnAudioToggle.Visibility = Visibility.Collapsed;

@@ -4,7 +4,7 @@
         Title="Historial de Capturas - Light Capture Studio"
         Width="880" Height="620"
         WindowStartupLocation="CenterScreen"
-        Background="#121215" Foreground="#ECECEF"
+        Background="{DynamicResource WindowBackground}" Foreground="{DynamicResource PrimaryText}"
         FontFamily="Segoe UI">
 
     <Grid Margin="16">
@@ -23,17 +23,17 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="🕒 Historial de Capturas" FontSize="18" FontWeight="Bold" Foreground="#FFF" Margin="0,0,8,0"/>
+                <TextBlock Text="🕒 Historial de Capturas" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,8,0"/>
                 <Border x:Name="CountBadge" Background="#2E1065" BorderBrush="#7C3AED" BorderThickness="1" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtTotalCount" Text="0 capturas" FontSize="11" Foreground="#C4B5FD" FontWeight="SemiBold"/>
                 </Border>
             </StackPanel>
 
             <!-- Search box -->
-            <Border Grid.Column="1" Margin="20,0" Background="#1E1E24" BorderBrush="#3F3F46" BorderThickness="1" CornerRadius="6" Padding="8,4">
+            <Border Grid.Column="1" Margin="20,0" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="6" Padding="8,4">
                 <Grid>
-                    <TextBlock x:Name="SearchPlaceholder" Text="🔍 Buscar por palabras detectadas en pantalla..." Foreground="#71717A" VerticalAlignment="Center" Margin="4,0,0,0" IsHitTestVisible="False"/>
-                    <TextBox x:Name="TxtSearch" Background="Transparent" Foreground="#FFF" BorderThickness="0" FontSize="13" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="SearchPlaceholder" Text="🔍 Buscar por palabras detectadas en pantalla..." Foreground="{DynamicResource SecondaryText}" VerticalAlignment="Center" Margin="4,0,0,0" IsHitTestVisible="False"/>
+                    <TextBox x:Name="TxtSearch" Background="Transparent" Foreground="{DynamicResource PrimaryText}" BorderThickness="0" FontSize="13" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Center"/>
                 </Grid>
             </Border>
 

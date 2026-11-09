@@ -40,7 +40,6 @@ public partial class LightshotToolbar : UserControl
 #pragma warning restore CS0067
     public event Action? SearchRequested;
     public event Action<bool, bool>? RecordVideoRequested;
-    public event Action? RecordGifRequested;
     public event Action? GeminiRequested;
     public event Action? GeminiPromptCopyRequested;
     public event Action? GeminiGoogleSearchRequested;
@@ -178,8 +177,6 @@ public partial class LightshotToolbar : UserControl
     private void RecordMicOnly_Click(object sender, RoutedEventArgs e) => RecordVideoRequested?.Invoke(false, true);
     private void RecordAudioOnly_Click(object sender, RoutedEventArgs e) => RecordVideoRequested?.Invoke(true, false);
     private void RecordMuted_Click(object sender, RoutedEventArgs e) => RecordVideoRequested?.Invoke(false, false);
-    private void RecordGif_Click(object sender, RoutedEventArgs e) => RecordGifRequested?.Invoke();
-    private void BtnRecordGif_Click(object sender, RoutedEventArgs e) => RecordGifRequested?.Invoke();
 
     private void BtnShare_Click(object sender, RoutedEventArgs e)
     {

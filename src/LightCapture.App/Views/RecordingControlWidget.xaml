@@ -56,8 +56,8 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#0F172A"
-            BorderBrush="#334155"
+    <Border Background="{DynamicResource CardBackground}"
+            BorderBrush="{DynamicResource CardBorder}"
             BorderThickness="1.5"
             CornerRadius="22"
             Padding="12,6"
@@ -71,7 +71,7 @@
             <Ellipse x:Name="RecDot" Width="10" Height="10" Fill="#64748B" Margin="2,0,10,0" VerticalAlignment="Center"/>
 
             <!-- Selector de Formato: MP4 vs GIF -->
-            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="10" Padding="2" Margin="0,0,10,0" VerticalAlignment="Center">
+            <Border Background="{DynamicResource ActionBtnBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="10" Padding="2" Margin="0,0,10,0" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
                     <!-- Opción MP4 -->
                     <Button x:Name="BtnFormatMp4" Style="{StaticResource FormatToggleBtnStyle}" Click="BtnFormatMp4_Click" ToolTip="Grabar video MP4 con soporte de audio y micrófono">
@@ -80,7 +80,7 @@
 
                     <!-- Opción GIF (máx 15s) -->
                     <Button x:Name="BtnFormatGif" Style="{StaticResource FormatToggleBtnStyle}" Click="BtnFormatGif_Click" ToolTip="Grabar GIF Animado en bucle sin sonido (máximo 15 segundos)">
-                        <TextBlock x:Name="TxtFormatGif" Text="🎞️ GIF (≤15s)" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                        <TextBlock x:Name="TxtFormatGif" Text="🎞️ GIF (≤15s)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryText}"/>
                     </Button>
                 </StackPanel>
             </Border>
@@ -91,12 +91,12 @@
                        FontFamily="Consolas, Segoe UI"
                        FontSize="14"
                        FontWeight="Bold"
-                       Foreground="#F8FAFC"
+                       Foreground="{DynamicResource PrimaryText}"
                        VerticalAlignment="Center"
                        Margin="0,0,10,0"/>
 
             <!-- Separador Audio -->
-            <Rectangle x:Name="SepAudio" Width="1" Height="18" Fill="#334155" Margin="0,0,8,0" VerticalAlignment="Center"/>
+            <Rectangle x:Name="SepAudio" Width="1" Height="18" Fill="{DynamicResource ToolbarSeparator}" Margin="0,0,8,0" VerticalAlignment="Center"/>
 
             <!-- 🔊 Botón Audio Sistema (solo MP4) -->
             <Button x:Name="BtnAudioToggle"
@@ -123,7 +123,7 @@
             </Button>
 
             <!-- Separador Acción -->
-            <Rectangle Width="1" Height="18" Fill="#334155" Margin="0,0,10,0" VerticalAlignment="Center"/>
+            <Rectangle Width="1" Height="18" Fill="{DynamicResource ToolbarSeparator}" Margin="0,0,10,0" VerticalAlignment="Center"/>
 
             <!-- ▶ / ⏹ Botón Dinámico de Grabación (Iniciar / Detener) -->
             <Button x:Name="BtnAction"
@@ -143,7 +143,7 @@
                     Width="28" Height="28"
                     Background="Transparent"
                     BorderThickness="0"
-                    Foreground="#94A3B8"
+                    Foreground="{DynamicResource SecondaryText}"
                     Cursor="Hand"
                     ToolTip="Cancelar (Descartar)"
                     Click="BtnCancel_Click">

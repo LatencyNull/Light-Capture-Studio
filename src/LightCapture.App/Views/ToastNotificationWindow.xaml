@@ -50,7 +50,7 @@
 
     <Grid>
         <Border x:Name="MainBorder"
-                Background="#090D16"
+                Background="{DynamicResource WindowBackground}"
                 BorderBrush="#38BDF8"
                 BorderThickness="1.8"
                 CornerRadius="28"
@@ -76,17 +76,17 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock x:Name="ToastTitle"
                                Text="¡Captura copiada al portapapeles!"
-                               Foreground="#FFFFFF"
+                               Foreground="{DynamicResource PrimaryText}"
                                FontSize="14"
                                FontWeight="Bold"/>
                     <StackPanel x:Name="ShortcutPanel" Orientation="Horizontal" Margin="0,3,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Presiona " Foreground="#CBD5E1" FontSize="12.5" VerticalAlignment="Center"/>
-                        <Border Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1.2" CornerRadius="4" Padding="6,1" Margin="3,0" VerticalAlignment="Center">
+                        <TextBlock Text="Presiona " Foreground="{DynamicResource SecondaryText}" FontSize="12.5" VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource CardBackground}" BorderBrush="#38BDF8" BorderThickness="1.2" CornerRadius="4" Padding="6,1" Margin="3,0" VerticalAlignment="Center">
                             <TextBlock Text="Ctrl + V" Foreground="#38BDF8" FontWeight="Bold" FontSize="11.5" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock x:Name="ToastActionSuffix"
                                    Text=" en Gemini para pegarla ✨"
-                                   Foreground="#CBD5E1"
+                                   Foreground="{DynamicResource SecondaryText}"
                                    FontSize="12.5"
                                    VerticalAlignment="Center"/>
                     </StackPanel>

@@ -32,6 +32,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        ThemeManager.Initialize();
         EnsureNativeDependencies();
 
         DispatcherUnhandledException += (s, args) =>
@@ -101,6 +102,19 @@ public partial class App : Application
 
         var historyItem = new ToolStripMenuItem("🕒 Historial de capturas con búsqueda...", null, (s, e) => OpenHistory());
 
+        var themeItem = new ToolStripMenuItem(
+            ThemeManager.CurrentTheme == AppTheme.Dark ? "☀️ Cambiar a Tema Claro" : "🌙 Cambiar a Tema Oscuro",
+            null,
+            (s, e) =>
+            {
+                ThemeManager.ToggleTheme();
+                if (s is ToolStripMenuItem mi)
+                {
+                    mi.Text = ThemeManager.CurrentTheme == AppTheme.Dark ? "☀️ Cambiar a Tema Claro" : "🌙 Cambiar a Tema Oscuro";
+                }
+            }
+        );
+
         var infoItem = new ToolStripMenuItem("🌐 Modo: Lightshot + Google Lens + Censura + QR", null, (s, e) => { });
         infoItem.Enabled = false;
 
@@ -108,6 +122,7 @@ public partial class App : Application
 
         contextMenu.Items.Add(captureItem);
         contextMenu.Items.Add(historyItem);
+        contextMenu.Items.Add(themeItem);
         contextMenu.Items.Add(infoItem);
         contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add(exitItem);
