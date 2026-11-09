@@ -118,17 +118,48 @@ public partial class LightshotToolbar : UserControl
         Canvas.SetTop(HorizontalBar, horizY);
     }
 
-    private void BtnPen_Click(object sender, RoutedEventArgs e) => ToolSelected?.Invoke(DrawingToolType.Pen);
-    private void BtnArrow_Click(object sender, RoutedEventArgs e) => ToolSelected?.Invoke(DrawingToolType.Arrow);
-    private void BtnRect_Click(object sender, RoutedEventArgs e) => ToolSelected?.Invoke(DrawingToolType.Rectangle);
-    private void BtnMarker_Click(object sender, RoutedEventArgs e) => ToolSelected?.Invoke(DrawingToolType.Marker);
-    private void BtnRedact_Click(object sender, RoutedEventArgs e) => ToolSelected?.Invoke(DrawingToolType.Redact);
+    private DrawingToolType _currentActiveTool = DrawingToolType.None;
+
+    public void ResetToolSelection()
+    {
+        _currentActiveTool = DrawingToolType.None;
+        BtnPen.IsChecked = false;
+        BtnArrow.IsChecked = false;
+        BtnRect.IsChecked = false;
+        BtnMarker.IsChecked = false;
+        BtnRedact.IsChecked = false;
+        BtnText.IsChecked = false;
+    }
+
+    private void ToggleTool(RadioButton btn, DrawingToolType tool)
+    {
+        if (_currentActiveTool == tool)
+        {
+            // Deseleccionar herramienta activa al hacer clic nuevamente
+            btn.IsChecked = false;
+            _currentActiveTool = DrawingToolType.None;
+            ToolSelected?.Invoke(DrawingToolType.None);
+        }
+        else
+        {
+            _currentActiveTool = tool;
+            btn.IsChecked = true;
+            ToolSelected?.Invoke(tool);
+        }
+    }
+
+    private void BtnPen_Click(object sender, RoutedEventArgs e) => ToggleTool(BtnPen, DrawingToolType.Pen);
+    private void BtnArrow_Click(object sender, RoutedEventArgs e) => ToggleTool(BtnArrow, DrawingToolType.Arrow);
+    private void BtnRect_Click(object sender, RoutedEventArgs e) => ToggleTool(BtnRect, DrawingToolType.Rectangle);
+    private void BtnMarker_Click(object sender, RoutedEventArgs e) => ToggleTool(BtnMarker, DrawingToolType.Marker);
+    private void BtnRedact_Click(object sender, RoutedEventArgs e) => ToggleTool(BtnRedact, DrawingToolType.Redact);
     private void BtnRedact_RightClick(object sender, MouseButtonEventArgs e)
     {
+        _currentActiveTool = DrawingToolType.Pixelate;
         BtnRedact.IsChecked = true;
         ToolSelected?.Invoke(DrawingToolType.Pixelate);
     }
-    private void BtnText_Click(object sender, RoutedEventArgs e) => ToolSelected?.Invoke(DrawingToolType.Text);
+    private void BtnText_Click(object sender, RoutedEventArgs e) => ToggleTool(BtnText, DrawingToolType.Text);
 
     private void BtnColor_Click(object sender, RoutedEventArgs e)
     {

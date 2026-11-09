@@ -35,11 +35,17 @@ namespace LightCapture.RecorderWorker
             int height = int.Parse(args[3]);
             bool captureAudio = bool.Parse(args[4]);
             bool captureMic = false;
+            int fps = 60;
 
             if (args.Length >= 7)
             {
                 captureMic = bool.Parse(args[5]);
                 _outputPath = args[6];
+                int parsedFps;
+                if (args.Length >= 8 && int.TryParse(args[7], out parsedFps) && parsedFps > 0)
+                {
+                    fps = parsedFps;
+                }
             }
             else
             {
@@ -147,9 +153,9 @@ namespace LightCapture.RecorderWorker
                     },
                     VideoEncoderOptions = new VideoEncoderOptions
                     {
-                        Framerate = 60,
+                        Framerate = fps,
                         Quality = 90,
-                        Bitrate = 12000000,
+                        Bitrate = fps >= 60 ? 12000000 : 6000000,
                         IsFixedFramerate = true,
                         IsHardwareEncodingEnabled = true,
                         Encoder = new H264VideoEncoder

@@ -16,13 +16,15 @@ public partial class RecordingControlWidget : Window
     private bool _isAudioOn;
     private bool _isMicOn;
     private bool _isGif;
+    private int _fps = 60;
 
     public bool IsGif => _isGif;
     public bool IsAudioOn => _isAudioOn;
     public bool IsMicOn => _isMicOn;
+    public int Fps => _fps;
     public bool IsRecordingActive => _isRecording;
 
-    public event Action<bool, bool, bool>? StartRequested; // (captureAudio, captureMic, isGif)
+    public event Action<bool, bool, bool, int>? StartRequested; // (captureAudio, captureMic, isGif, fps)
     public event Action? StopRequested;
     public event Action? CancelRequested;
     public event Action<bool>? AudioToggled;
@@ -40,6 +42,7 @@ public partial class RecordingControlWidget : Window
         UpdateFormatUi();
         UpdateAudioUi();
         UpdateMicUi();
+        UpdateFpsUi();
 
         // Posicionamiento inteligente fuera de la zona de grabación
         double leftPos = recordBounds.Left + (recordBounds.Width - 400) / 2;
@@ -64,7 +67,10 @@ public partial class RecordingControlWidget : Window
         TxtActionText.Text = "Detener";
         BtnAction.ToolTip = "Detener grabación y abrir previsualización";
 
-        // Bloquear cambio de formato durante la grabación activa
+        // Bloquear cambio de formato y FPS durante la grabación activa
+        BtnFpsToggle.IsEnabled = false;
+        BtnFpsToggle.Opacity = 0.5;
+
         if (_isGif)
         {
             BtnFormatMp4.IsEnabled = false;
@@ -143,10 +149,11 @@ public partial class RecordingControlWidget : Window
             BtnFormatGif.Background = MediaBrushes.Transparent;
             TxtFormatGif.Foreground = secBrush;
 
-            // Mostrar controles de sonido para MP4
+            // Mostrar controles de sonido y FPS para MP4
             BtnAudioToggle.Visibility = Visibility.Visible;
             BtnMicToggle.Visibility = Visibility.Visible;
             SepAudio.Visibility = Visibility.Visible;
+            BorderFpsToggle.Visibility = Visibility.Visible;
 
             if (!_isRecording)
             {
@@ -162,10 +169,11 @@ public partial class RecordingControlWidget : Window
             BtnFormatMp4.Background = MediaBrushes.Transparent;
             TxtFormatMp4.Foreground = secBrush;
 
-            // Ocultar controles de sonido para GIF (formato visual sin audio)
+            // Ocultar controles de sonido y FPS para GIF (formato visual sin audio y con framerate propio)
             BtnAudioToggle.Visibility = Visibility.Collapsed;
             BtnMicToggle.Visibility = Visibility.Collapsed;
             SepAudio.Visibility = Visibility.Collapsed;
+            BorderFpsToggle.Visibility = Visibility.Collapsed;
 
             if (!_isRecording)
             {
@@ -174,12 +182,37 @@ public partial class RecordingControlWidget : Window
         }
     }
 
+    private void BtnFpsToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isRecording) return;
+        _fps = (_fps == 60) ? 30 : 60;
+        UpdateFpsUi();
+    }
+
+    private void UpdateFpsUi()
+    {
+        if (_fps == 60)
+        {
+            TxtFpsIcon.Text = "⚡";
+            TxtFps.Text = "60 FPS";
+            TxtFps.Foreground = new SolidColorBrush(MediaColor.FromRgb(56, 189, 248)); // #38BDF8
+            BtnFpsToggle.ToolTip = "60 FPS (Ultra fluido para juegos, videos y animaciones suaves). Clic para cambiar a 30 FPS.";
+        }
+        else
+        {
+            TxtFpsIcon.Text = "🎬";
+            TxtFps.Text = "30 FPS";
+            TxtFps.Foreground = new SolidColorBrush(MediaColor.FromRgb(251, 191, 36)); // #FBBF24 Ámbar
+            BtnFpsToggle.ToolTip = "30 FPS (Modo ligero para tutoriales y archivos más pequeños). Clic para cambiar a 60 FPS.";
+        }
+    }
+
     private void BtnAction_Click(object sender, RoutedEventArgs e)
     {
         if (!_isRecording)
         {
-            // Arrancar grabación
-            StartRequested?.Invoke(_isAudioOn, _isMicOn, _isGif);
+            // Arrancar grabación con FPS elegido
+            StartRequested?.Invoke(_isAudioOn, _isMicOn, _isGif, _fps);
         }
         else
         {

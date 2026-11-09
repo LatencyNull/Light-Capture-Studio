@@ -21,7 +21,7 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
     public event Action<string>? RecordingComplete;
     public event Action<string>? RecordingError;
 
-    public Task StartRecordingAsync(int x, int y, int width, int height, bool captureAudio, bool captureMic = true, bool isGif = false, CancellationToken ct = default)
+    public Task StartRecordingAsync(int x, int y, int width, int height, bool captureAudio, bool captureMic = true, bool isGif = false, int fps = 60, CancellationToken ct = default)
     {
         if (IsRecording)
         {
@@ -69,7 +69,7 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
         var psi = new ProcessStartInfo
         {
             FileName = workerExe,
-            Arguments = $"{x} {y} {width} {height} {captureAudio.ToString().ToLower()} {captureMic.ToString().ToLower()} \"{_currentFilePath}\"",
+            Arguments = $"{x} {y} {width} {height} {captureAudio.ToString().ToLower()} {captureMic.ToString().ToLower()} \"{_currentFilePath}\" {fps}",
             UseShellExecute = false,
             RedirectStandardInput = true,
             RedirectStandardOutput = true,

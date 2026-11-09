@@ -273,6 +273,8 @@ public partial class OverlayWindow : Window
             WindowSnapBorder.Visibility = Visibility.Collapsed;
             HandlesLayer.Visibility = Visibility.Collapsed;
             MainToolbar.Visibility = Visibility.Collapsed;
+            MainToolbar.ResetToolSelection();
+            MainDrawingCanvas.CurrentTool = DrawingToolType.None;
             DimensionTag.Visibility = Visibility.Visible;
             QrCodeBanner.Visibility = Visibility.Collapsed;
             MainDrawingCanvas.ClearTranslations();
@@ -928,13 +930,13 @@ public partial class OverlayWindow : Window
         _recordingWidget.MicToggled += enabled => _videoRecorder.SetMicEnabled(enabled);
 
         // El usuario presiona "Iniciar" en el widget de control
-        _recordingWidget.StartRequested += async (audio, mic, gif) =>
+        _recordingWidget.StartRequested += async (audio, mic, gif, fps) =>
         {
             try
             {
                 App.EnsureNativeDependencies();
                 _recordingWidget.OnRecordingStarted();
-                await _videoRecorder.StartRecordingAsync(pxX, pxY, pxW, pxH, audio, mic, gif);
+                await _videoRecorder.StartRecordingAsync(pxX, pxY, pxW, pxH, audio, mic, gif, fps);
             }
             catch (Exception ex)
             {

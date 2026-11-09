@@ -198,7 +198,7 @@
             </Border.Effect>
             <StackPanel Orientation="Vertical">
                 <!-- 1. ✏️ Pluma -->
-                <RadioButton x:Name="BtnPen" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Pluma de dibujo [✏️]" Click="BtnPen_Click" IsChecked="True">
+                <RadioButton x:Name="BtnPen" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Pluma de dibujo [✏️]" Click="BtnPen_Click">
                     <Image Source="/Assets/Icons/pen.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </RadioButton>
 

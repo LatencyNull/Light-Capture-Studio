@@ -116,11 +116,34 @@
                     Background="Transparent"
                     BorderThickness="0"
                     Cursor="Hand"
-                    Margin="0,0,10,0"
+                    Margin="0,0,6,0"
                     ToolTip="Alternar micrófono / voz"
                     Click="BtnMicToggle_Click">
                 <TextBlock x:Name="TxtMicIcon" Text="🎙️" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button>
+
+            <!-- ⚡ / 🎬 Selector de Tasa de Cuadros (60 FPS vs 30 FPS) -->
+            <Border x:Name="BorderFpsToggle"
+                    Background="{DynamicResource ActionBtnBackground}"
+                    BorderBrush="{DynamicResource CardBorder}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Center">
+                <Button x:Name="BtnFpsToggle"
+                        Height="26"
+                        Padding="8,2"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        ToolTip="Tasa de fotogramas (60 FPS ultra fluido o 30 FPS ligero). Clic para alternar."
+                        Click="BtnFpsToggle_Click">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtFpsIcon" Text="⚡" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtFps" Text="60 FPS" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Border>
 
             <!-- Separador Acción -->
             <Rectangle Width="1" Height="18" Fill="{DynamicResource ToolbarSeparator}" Margin="0,0,10,0" VerticalAlignment="Center"/>

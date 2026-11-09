@@ -123,7 +123,7 @@ public partial class VideoPreviewWindow : Window
         double endX = Math.Min(trackWidth - PinEnd.ActualWidth, endRatio * trackWidth - PinEnd.ActualWidth);
 
         Canvas.SetLeft(PinStart, startX);
-        Canvas.SetLeft(PinEnd, Math.Max(startX + 14, endX));
+        Canvas.SetLeft(PinEnd, Math.Max(startX + 20, endX));
 
         ActiveRangeTrack.Margin = new Thickness(startX, 0, 0, 0);
         ActiveRangeTrack.Width = Math.Max(0, (endX + PinEnd.ActualWidth) - startX);
@@ -143,6 +143,9 @@ public partial class VideoPreviewWindow : Window
         BadgeTrimInfo.BorderBrush = isTrimmed 
             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248)) 
             : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 65, 85));
+
+        TxtCopyClipLabel.Text = isTrimmed ? "Copiar Recorte" : "Copiar Clip";
+        TxtSaveClipLabel.Text = isTrimmed ? "Guardar Recorte..." : "Guardar...";
     }
 
     private void PinStart_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -192,7 +195,7 @@ public partial class VideoPreviewWindow : Window
         double curX = e.GetPosition(TimelineCanvas).X;
         double endX = Canvas.GetLeft(PinEnd);
 
-        double newStartX = Math.Max(0, Math.Min(curX, endX - 16));
+        double newStartX = Math.Max(0, Math.Min(curX, endX - 20));
         Canvas.SetLeft(PinStart, newStartX);
 
         ActiveRangeTrack.Margin = new Thickness(newStartX, 0, 0, 0);
@@ -213,7 +216,7 @@ public partial class VideoPreviewWindow : Window
         double curX = e.GetPosition(TimelineCanvas).X;
         double startX = Canvas.GetLeft(PinStart);
 
-        double newEndX = Math.Max(startX + 16, Math.Min(curX, trackWidth - PinEnd.ActualWidth));
+        double newEndX = Math.Max(startX + 20, Math.Min(curX, trackWidth - PinEnd.ActualWidth));
         Canvas.SetLeft(PinEnd, newEndX);
 
         ActiveRangeTrack.Width = Math.Max(0, (newEndX + PinEnd.ActualWidth) - startX);

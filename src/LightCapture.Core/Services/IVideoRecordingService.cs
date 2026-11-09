@@ -13,7 +13,7 @@ public interface IVideoRecordingService
     event Action<string>? RecordingComplete;
     event Action<string>? RecordingError;
 
-    Task StartRecordingAsync(int x, int y, int width, int height, bool captureAudio, bool captureMic = true, bool isGif = false, CancellationToken ct = default);
+    Task StartRecordingAsync(int x, int y, int width, int height, bool captureAudio, bool captureMic = true, bool isGif = false, int fps = 60, CancellationToken ct = default);
     Task<string> StopRecordingAsync();
     Task CancelRecordingAsync();
 
