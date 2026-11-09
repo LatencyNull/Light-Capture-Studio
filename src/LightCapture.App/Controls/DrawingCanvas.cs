@@ -252,12 +252,44 @@ public class DrawingCanvas : FrameworkElement
     }
 
     public bool HasTranslatedBlocks => _lensBlocks.Count > 0;
+    public bool HasElements => _elements.Count > 0;
 
     public void ClearTranslations()
     {
         _lensBlocks.Clear();
         ShowTranslations = true;
         InvalidateVisual();
+    }
+
+    public void ExportOverlayToPng(string filePath, int pixelWidth, int pixelHeight)
+    {
+        if (pixelWidth <= 0 || pixelHeight <= 0) return;
+        double canvasW = ActualWidth > 0 ? ActualWidth : pixelWidth;
+        double canvasH = ActualHeight > 0 ? ActualHeight : pixelHeight;
+
+        double scaleX = pixelWidth / canvasW;
+        double scaleY = pixelHeight / canvasH;
+
+        var rtb = new RenderTargetBitmap(pixelWidth, pixelHeight, 96 * scaleX, 96 * scaleY, PixelFormats.Pbgra32);
+        var dv = new DrawingVisual();
+
+        using (var dc = dv.RenderOpen())
+        {
+            dc.PushTransform(new ScaleTransform(scaleX, scaleY));
+            foreach (var element in _elements)
+            {
+                element.Render(dc);
+            }
+            dc.Pop();
+        }
+
+        rtb.Render(dv);
+        rtb.Freeze();
+
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(rtb));
+        using var stream = System.IO.File.Create(filePath);
+        encoder.Save(stream);
     }
 
     public RenderTargetBitmap RenderFlattenedBitmap(BitmapSource backgroundImage, Rect selection)

@@ -9,7 +9,9 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using Point = System.Windows.Point;
 using LightCapture.App.Services;
+using LightCapture.Core.Models;
 
 namespace LightCapture.App.Views;
 
@@ -18,6 +20,19 @@ public partial class VideoPreviewWindow : Window
     private readonly string _videoPath;
     private string? _cachedTrimmedPath;
     private bool _isPlaying = true;
+
+    private static readonly System.Windows.Media.Color[] AnnotationPalette = new[]
+    {
+        System.Windows.Media.Color.FromRgb(239, 68, 68),   // Rojo
+        System.Windows.Media.Color.FromRgb(59, 130, 246),  // Azul
+        System.Windows.Media.Color.FromRgb(16, 185, 129),  // Verde
+        System.Windows.Media.Color.FromRgb(245, 158, 11),  // Naranja/Amarillo
+        System.Windows.Media.Color.FromRgb(139, 92, 246),  // Morado
+        System.Windows.Media.Colors.White
+    };
+    private int _paletteIndex = 0;
+    private DrawingToolType _currentVideoTool = DrawingToolType.None;
+    private Point _textInputPosition;
 
     private TimeSpan _totalDuration = TimeSpan.Zero;
     private TimeSpan _trimStart = TimeSpan.Zero;
@@ -60,30 +75,38 @@ public partial class VideoPreviewWindow : Window
         }
         catch { }
 
+        // Configurar capa de anotaciones vectoriales
+        VideoDrawingCanvas.CurrentColor = AnnotationPalette[0];
+        VideoDrawingCanvas.StrokeThickness = 3.5;
+        VideoDrawingCanvas.DrawingChanged += () => _cachedTrimmedPath = null;
+
         // Inicializar reproductor de video
         MediaVideoPlayer.Source = new Uri(_videoPath, UriKind.Absolute);
-        MediaVideoPlayer.MediaOpened += (s, e) =>
-        {
-            if (MediaVideoPlayer.NaturalDuration.HasTimeSpan)
-            {
-                _totalDuration = MediaVideoPlayer.NaturalDuration.TimeSpan;
-                _trimStart = TimeSpan.Zero;
-                _trimEnd = _totalDuration;
-
-                var fileInfo = new FileInfo(_videoPath);
-                double sizeMb = Math.Round((double)fileInfo.Length / (1024 * 1024), 2);
-                string formatTag = isGif ? "GIF • " : "";
-                TxtVideoInfo.Text = $"{formatTag}{_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2} • {sizeMb} MB";
-
-                UpdateTimelinePins();
-                StartPlaybackTimer();
-            }
-            MediaVideoPlayer.Play();
-            _isPlaying = true;
-            TxtPlayPauseIcon.Text = "⏸";
-        };
-
         MediaVideoPlayer.Play();
+    }
+
+    private void MediaVideoPlayer_MediaOpened(object sender, RoutedEventArgs e)
+    {
+        UpdateVideoViewportLayout();
+
+        if (MediaVideoPlayer.NaturalDuration.HasTimeSpan)
+        {
+            _totalDuration = MediaVideoPlayer.NaturalDuration.TimeSpan;
+            _trimStart = TimeSpan.Zero;
+            _trimEnd = _totalDuration;
+
+            bool isGif = _videoPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+            var fileInfo = new FileInfo(_videoPath);
+            double sizeMb = Math.Round((double)fileInfo.Length / (1024 * 1024), 2);
+            string formatTag = isGif ? "GIF • " : "";
+            TxtVideoInfo.Text = $"{formatTag}{_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2} • {sizeMb} MB";
+
+            UpdateTimelinePins();
+            StartPlaybackTimer();
+        }
+        MediaVideoPlayer.Play();
+        _isPlaying = true;
+        TxtPlayPauseIcon.Text = "⏸";
     }
 
     private void StartPlaybackTimer()
@@ -407,6 +430,179 @@ public partial class VideoPreviewWindow : Window
         MediaVideoPlayer.Position = _trimEnd;
     }
 
+    private void VideoContainer_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdateVideoViewportLayout();
+    }
+
+    private void UpdateVideoViewportLayout()
+    {
+        if (MediaVideoPlayer == null || VideoViewport == null || VideoContainer == null) return;
+        if (MediaVideoPlayer.NaturalVideoWidth <= 0 || MediaVideoPlayer.NaturalVideoHeight <= 0)
+        {
+            VideoViewport.Width = double.NaN;
+            VideoViewport.Height = double.NaN;
+            return;
+        }
+
+        double containerW = VideoContainer.ActualWidth;
+        double containerH = VideoContainer.ActualHeight;
+        if (containerW <= 0 || containerH <= 0) return;
+
+        double natW = MediaVideoPlayer.NaturalVideoWidth;
+        double natH = MediaVideoPlayer.NaturalVideoHeight;
+
+        double scale = Math.Min(containerW / natW, containerH / natH);
+        VideoViewport.Width = Math.Max(10, Math.Round(natW * scale));
+        VideoViewport.Height = Math.Max(10, Math.Round(natH * scale));
+    }
+
+    private void SetVideoTool(DrawingToolType tool)
+    {
+        CommitFloatingText();
+        _currentVideoTool = tool;
+        VideoDrawingCanvas.CurrentTool = tool;
+
+        if (tool != DrawingToolType.None && _isPlaying)
+        {
+            MediaVideoPlayer.Pause();
+            _isPlaying = false;
+            TxtPlayPauseIcon.Text = "▶";
+            PauseIndicator.Visibility = Visibility.Visible;
+        }
+
+        VideoDrawingCanvas.Cursor = tool switch
+        {
+            DrawingToolType.None => System.Windows.Input.Cursors.Hand,
+            DrawingToolType.Text => System.Windows.Input.Cursors.IBeam,
+            _ => System.Windows.Input.Cursors.Cross
+        };
+    }
+
+    private void BtnToolPointer_Click(object sender, RoutedEventArgs e) => SetVideoTool(DrawingToolType.None);
+    private void BtnToolArrow_Click(object sender, RoutedEventArgs e) => SetVideoTool(DrawingToolType.Arrow);
+    private void BtnToolText_Click(object sender, RoutedEventArgs e) => SetVideoTool(DrawingToolType.Text);
+    private void BtnToolPen_Click(object sender, RoutedEventArgs e) => SetVideoTool(DrawingToolType.Pen);
+    private void BtnToolRect_Click(object sender, RoutedEventArgs e) => SetVideoTool(DrawingToolType.Rectangle);
+    private void BtnToolRedact_Click(object sender, RoutedEventArgs e) => SetVideoTool(DrawingToolType.Redact);
+
+    private void BtnToolColor_Click(object sender, RoutedEventArgs e)
+    {
+        _paletteIndex = (_paletteIndex + 1) % AnnotationPalette.Length;
+        var newColor = AnnotationPalette[_paletteIndex];
+        VideoDrawingCanvas.CurrentColor = newColor;
+        VideoColorIndicator.Background = new SolidColorBrush(newColor);
+        VideoFloatingInput.Foreground = new SolidColorBrush(newColor);
+    }
+
+    private void BtnToolUndo_Click(object sender, RoutedEventArgs e)
+    {
+        CommitFloatingText();
+        VideoDrawingCanvas.Undo();
+    }
+
+    private void BtnToolClear_Click(object sender, RoutedEventArgs e)
+    {
+        CommitFloatingText();
+        VideoDrawingCanvas.ClearAll();
+    }
+
+    private void VideoDrawingCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed) return;
+        Point p = e.GetPosition(VideoDrawingCanvas);
+
+        if (_currentVideoTool == DrawingToolType.None)
+        {
+            TogglePlayPause();
+            return;
+        }
+
+        if (_currentVideoTool == DrawingToolType.Text)
+        {
+            CommitFloatingText();
+            ShowFloatingTextInput(p);
+            return;
+        }
+
+        CommitFloatingText();
+        VideoDrawingCanvas.StartDrawing(p);
+    }
+
+    private void VideoDrawingCanvas_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_currentVideoTool == DrawingToolType.None || _currentVideoTool == DrawingToolType.Text) return;
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point p = e.GetPosition(VideoDrawingCanvas);
+            VideoDrawingCanvas.UpdateDrawing(p);
+        }
+    }
+
+    private void VideoDrawingCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_currentVideoTool == DrawingToolType.None || _currentVideoTool == DrawingToolType.Text) return;
+        Point p = e.GetPosition(VideoDrawingCanvas);
+        VideoDrawingCanvas.EndDrawing(p);
+    }
+
+    private void ShowFloatingTextInput(Point p)
+    {
+        _textInputPosition = p;
+        double maxLeft = Math.Max(0, VideoViewport.ActualWidth - 140);
+        double maxTop = Math.Max(0, VideoViewport.ActualHeight - 40);
+
+        VideoFloatingInput.Margin = new Thickness(
+            Math.Min(maxLeft, Math.Max(0, p.X)),
+            Math.Min(maxTop, Math.Max(0, p.Y)),
+            0, 0
+        );
+        VideoFloatingInput.Foreground = new SolidColorBrush(VideoDrawingCanvas.CurrentColor);
+        VideoFloatingInput.Text = string.Empty;
+        VideoFloatingInput.Visibility = Visibility.Visible;
+        VideoFloatingInput.Focus();
+    }
+
+    private void CommitFloatingText()
+    {
+        if (VideoFloatingInput.Visibility != Visibility.Visible) return;
+        string text = VideoFloatingInput.Text.Trim();
+        VideoFloatingInput.Visibility = Visibility.Collapsed;
+        if (!string.IsNullOrEmpty(text))
+        {
+            VideoDrawingCanvas.AddTextElement(_textInputPosition, text);
+        }
+    }
+
+    private void VideoFloatingInput_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            CommitFloatingText();
+            e.Handled = true;
+        }
+        else if (e.Key == System.Windows.Input.Key.Escape)
+        {
+            VideoFloatingInput.Visibility = Visibility.Collapsed;
+            e.Handled = true;
+        }
+    }
+
+    private void VideoFloatingInput_LostFocus(object sender, RoutedEventArgs e)
+    {
+        CommitFloatingText();
+    }
+
+    private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Z && (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == System.Windows.Input.ModifierKeys.Control)
+        {
+            CommitFloatingText();
+            VideoDrawingCanvas.Undo();
+            e.Handled = true;
+        }
+    }
+
     private void VideoPlayer_MouseClick(object sender, MouseButtonEventArgs e)
     {
         TogglePlayPause();
@@ -443,8 +639,9 @@ public partial class VideoPreviewWindow : Window
     {
         bool isTrimmed = _trimStart > TimeSpan.FromMilliseconds(150) || 
                          (_totalDuration - _trimEnd) > TimeSpan.FromMilliseconds(150);
+        bool hasAnnotations = VideoDrawingCanvas != null && VideoDrawingCanvas.HasElements;
 
-        if (!isTrimmed)
+        if (!isTrimmed && !hasAnnotations)
         {
             return _videoPath;
         }
@@ -456,13 +653,30 @@ public partial class VideoPreviewWindow : Window
 
         try
         {
-            new ToastNotificationWindow("✂️ Procesando recorte del clip...", "/Assets/Icons/save.png").Show();
-            _cachedTrimmedPath = await VideoTrimmerService.TrimAsync(_videoPath, _trimStart, _trimEnd);
+            string? overlayPngPath = null;
+            if (hasAnnotations)
+            {
+                int natW = MediaVideoPlayer.NaturalVideoWidth > 0 ? MediaVideoPlayer.NaturalVideoWidth : (int)(VideoViewport?.ActualWidth ?? 640);
+                int natH = MediaVideoPlayer.NaturalVideoHeight > 0 ? MediaVideoPlayer.NaturalVideoHeight : (int)(VideoViewport?.ActualHeight ?? 360);
+
+                string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
+                if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
+                overlayPngPath = Path.Combine(tempDir, $"Overlay_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.png");
+
+                VideoDrawingCanvas?.ExportOverlayToPng(overlayPngPath, natW, natH);
+            }
+
+            string toastMsg = hasAnnotations && isTrimmed
+                ? "✂️🎨 Procesando recorte y anotaciones del clip..."
+                : (hasAnnotations ? "🎨 Estampando anotaciones en el video..." : "✂️ Procesando recorte del clip...");
+
+            new ToastNotificationWindow(toastMsg, "/Assets/Icons/save.png").Show();
+            _cachedTrimmedPath = await VideoTrimmerService.TrimAsync(_videoPath, _trimStart, _trimEnd, overlayPngPath);
             return _cachedTrimmedPath;
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"No se pudo recortar el clip: {ex.Message}. Se usará el video original.", "Recorte de Clip");
+            System.Windows.MessageBox.Show($"No se pudo procesar el clip: {ex.Message}. Se usará el video original.", "Exportación de Clip");
             return _videoPath;
         }
     }

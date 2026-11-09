@@ -30,4 +30,25 @@ public class DrawingHistoryTests
         Assert.Equal(DrawingToolType.Pen, nextUndone.ToolType);
         Assert.Empty(stack);
     }
+
+    [Fact]
+    public void VideoAnnotationElements_InstantiateWithCorrectProperties()
+    {
+        var arrow = new ArrowDrawingElement(Colors.Yellow, 3, new Point(10, 10), new Point(100, 100));
+        var rect = new RectangleDrawingElement(Colors.Green, 2, new Rect(20, 20, 150, 80));
+        var text = new TextDrawingElement(Colors.White, 16, new Point(30, 40), "Test Note");
+        var redact = new RedactDrawingElement(new Rect(50, 50, 120, 40), Colors.Black);
+
+        Assert.Equal(DrawingToolType.Arrow, arrow.ToolType);
+        Assert.Equal(Colors.Yellow, arrow.Color);
+
+        Assert.Equal(DrawingToolType.Rectangle, rect.ToolType);
+        Assert.Equal(150, rect.Bounds.Width);
+
+        Assert.Equal(DrawingToolType.Text, text.ToolType);
+        Assert.Equal("Test Note", text.Text);
+
+        Assert.Equal(DrawingToolType.Redact, redact.ToolType);
+        Assert.Equal(Colors.Black, redact.FillColor);
+    }
 }

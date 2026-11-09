@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -12,10 +13,11 @@ namespace LightCapture.App.Services;
 public static class VideoTrimmerService
 {
     /// <summary>
-    /// Recorta un video MP4 o GIF según el rango de inicio y fin especificado.
-    /// Retorna la ruta al nuevo archivo recortado en la carpeta temporal.
+    /// Recorta un video MP4 o GIF según el rango de inicio y fin especificado,
+    /// y opcionalmente estampa una capa de anotaciones (flechas, texto, censura) sobre el clip.
+    /// Retorna la ruta al nuevo archivo procesado en la carpeta temporal.
     /// </summary>
-    public static async Task<string> TrimAsync(string sourcePath, TimeSpan startTime, TimeSpan endTime)
+    public static async Task<string> TrimAsync(string sourcePath, TimeSpan startTime, TimeSpan endTime, string? overlayPngPath = null)
     {
         if (!File.Exists(sourcePath))
         {
@@ -30,16 +32,29 @@ public static class VideoTrimmerService
         bool isGif = sourcePath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
         if (isGif)
         {
-            return await TrimGifAsync(sourcePath, startTime, endTime);
+            return await TrimGifAsync(sourcePath, startTime, endTime, overlayPngPath);
         }
         else
         {
-            return await TrimMp4Async(sourcePath, startTime, endTime);
+            return await TrimMp4Async(sourcePath, startTime, endTime, overlayPngPath);
         }
     }
 
-    private static async Task<string> TrimMp4Async(string sourcePath, TimeSpan startTime, TimeSpan endTime)
+    private static async Task<string> TrimMp4Async(string sourcePath, TimeSpan startTime, TimeSpan endTime, string? overlayPngPath = null)
     {
+        bool hasOverlay = !string.IsNullOrEmpty(overlayPngPath) && File.Exists(overlayPngPath);
+
+        // 1. Si hay overlay y FFmpeg está instalado, usar aceleración FFmpeg (sub-segundo)
+        if (hasOverlay && IsFfmpegAvailable())
+        {
+            string? ffmpegResult = await TryFfmpegOverlayAsync(sourcePath, startTime, endTime, overlayPngPath!);
+            if (!string.IsNullOrEmpty(ffmpegResult) && File.Exists(ffmpegResult))
+            {
+                return ffmpegResult;
+            }
+        }
+
+        // 2. Si no hay FFmpeg o falló, procesar con Windows.Media.Editing nativo
         string fullSource = Path.GetFullPath(sourcePath);
         var sourceFile = await StorageFile.GetFileFromPathAsync(fullSource);
         var clip = await MediaClip.CreateFromFileAsync(sourceFile);
@@ -52,6 +67,21 @@ public static class VideoTrimmerService
 
         var composition = new MediaComposition();
         composition.Clips.Add(clip);
+
+        if (hasOverlay)
+        {
+            try
+            {
+                var overlayFile = await StorageFile.GetFileFromPathAsync(Path.GetFullPath(overlayPngPath!));
+                var overlayClip = await MediaClip.CreateFromImageFileAsync(overlayFile, clip.TrimmedDuration);
+                var overlay = new MediaOverlay(overlayClip);
+                overlay.Opacity = 1.0;
+                var overlayLayer = new MediaOverlayLayer();
+                overlayLayer.Overlays.Add(overlay);
+                composition.OverlayLayers.Add(overlayLayer);
+            }
+            catch { }
+        }
 
         string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
         if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
@@ -67,7 +97,68 @@ public static class VideoTrimmerService
         return destPath;
     }
 
-    private static Task<string> TrimGifAsync(string sourcePath, TimeSpan startTime, TimeSpan endTime)
+    private static bool IsFfmpegAvailable()
+    {
+        try
+        {
+            using var p = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "ffmpeg",
+                    Arguments = "-version",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+            p.Start();
+            p.WaitForExit(1000);
+            return p.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task<string?> TryFfmpegOverlayAsync(string sourcePath, TimeSpan startTime, TimeSpan endTime, string overlayPngPath)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
+                if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
+
+                string destPath = Path.Combine(tempDir, $"Annotated_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.mp4");
+                double startSec = Math.Max(0, startTime.TotalSeconds);
+                double durationSec = Math.Max(0.05, (endTime - startTime).TotalSeconds);
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "ffmpeg",
+                    Arguments = $"-y -ss {startSec.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)} -t {durationSec.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)} -i \"{Path.GetFullPath(sourcePath)}\" -i \"{Path.GetFullPath(overlayPngPath)}\" -filter_complex \"[0:v][1:v]overlay=0:0[v]\" -map \"[v]\" -map 0:a? -c:v libx264 -preset veryfast -crf 20 -c:a aac -b:a 128k \"{destPath}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using var proc = Process.Start(psi);
+                if (proc == null) return null;
+                proc.WaitForExit(30000);
+                return proc.ExitCode == 0 && File.Exists(destPath) ? destPath : null;
+            }
+            catch
+            {
+                return null;
+            }
+        });
+    }
+
+    private static Task<string> TrimGifAsync(string sourcePath, TimeSpan startTime, TimeSpan endTime, string? overlayPngPath = null)
     {
         return Task.Run(() =>
         {
@@ -106,6 +197,10 @@ public static class VideoTrimmerService
             int currentAccMs = 0;
             var extractedBitmaps = new List<Bitmap>();
 
+            using var overlayImg = (!string.IsNullOrEmpty(overlayPngPath) && File.Exists(overlayPngPath))
+                ? System.Drawing.Image.FromFile(overlayPngPath)
+                : null;
+
             for (int i = 0; i < totalFrames; i++)
             {
                 int fStart = currentAccMs;
@@ -115,7 +210,14 @@ public static class VideoTrimmerService
                 if (fEnd >= startMs && fStart <= endMs)
                 {
                     img.SelectActiveFrame(fd, i);
-                    extractedBitmaps.Add(new Bitmap(img));
+                    var frameBmp = new Bitmap(img);
+                    if (overlayImg != null)
+                    {
+                        using var g = Graphics.FromImage(frameBmp);
+                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        g.DrawImage(overlayImg, 0, 0, frameBmp.Width, frameBmp.Height);
+                    }
+                    extractedBitmaps.Add(frameBmp);
                 }
             }
 
