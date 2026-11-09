@@ -259,55 +259,7 @@
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.4"/>
             </Border.Effect>
             <StackPanel Orientation="Horizontal">
-                <!-- 1. ⭐ 🌐 GALAXY AI TRADUCIR (Alterna Traducción y Original) -->
-                <Button x:Name="BtnTranslate" Style="{StaticResource EmojiBtnStyle}" ToolTip="Galaxy AI Traducir [🌐 Ctrl+T]&#x0a;Alterna entre Traducción y Original&#x0a;Clic derecho: Copiar solo texto" Click="BtnTranslate_Click" MouseRightButtonUp="BtnTranslate_RightClick">
-                    <Grid Width="26" Height="26">
-                        <Image Source="/Assets/Icons/globe.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Border x:Name="TranslateIndicator" Width="7" Height="7" CornerRadius="3.5" Background="Transparent" BorderBrush="#FFFFFF" BorderThickness="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-1,-1,0" Visibility="Collapsed"/>
-                    </Grid>
-                </Button>
-
-                <!-- 2. 🔍 Búsqueda visual con Google Lens -->
-                <Button x:Name="BtnSearch" Style="{StaticResource EmojiBtnStyle}" ToolTip="Buscar imagen en Google Lens [🔍]" Click="BtnSearch_Click">
-                    <Image Source="/Assets/Icons/search.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
-                </Button>
-
-                <!-- 3. ✨ Buscar en Gemini / Preguntar con IA -->
-                <Button x:Name="BtnGemini" Style="{StaticResource EmojiBtnStyle}" ToolTip="Abrir en Gemini [✨ Ctrl+G]&#x0a;Copia la captura y abre gemini.google.com (Pega con Ctrl+V)&#x0a;Clic derecho: Menú de opciones de Gemini" Click="BtnGemini_Click" MouseRightButtonUp="BtnGemini_RightClick">
-                    <Image Source="/Assets/Icons/gemini.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    <Button.ContextMenu>
-                        <ContextMenu x:Name="GeminiContextMenu" Style="{StaticResource ModernShareMenuStyle}">
-                            <MenuItem Header="Preguntar sobre imagen en Gemini (Pegar con Ctrl+V)" Click="GeminiWebChat_Click">
-                                <MenuItem.Icon>
-                                    <Image Source="/Assets/Icons/gemini.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Header="Preguntar sobre texto en Gemini (OCR + Prompt)" Click="GeminiPrompt_Click">
-                                <MenuItem.Icon>
-                                    <Image Source="/Assets/Icons/text.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </ContextMenu>
-                    </Button.ContextMenu>
-                </Button>
-
-                <!-- 4. 🎥 Grabar clip de video (MP4 / GIF) -->
-                <Button x:Name="BtnRecordVideo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Grabar pantalla (MP4 o GIF) [🎥]&#x0a;Clic: Abrir menú de grabación para elegir formato e iniciar" Click="BtnRecordVideo_Click" MouseRightButtonUp="BtnRecordVideo_RightClick">
-                    <Image Source="/Assets/Icons/video.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    <Button.ContextMenu>
-                        <ContextMenu x:Name="VideoRecordContextMenu" Style="{StaticResource ModernShareMenuStyle}">
-                            <MenuItem Header="🎙️ + 🔊 Grabar con Micrófono y Audio del sistema" Click="RecordFullAudio_Click"/>
-                            <MenuItem Header="🎙️ Solo Micrófono (Voz / Narración)" Click="RecordMicOnly_Click"/>
-                            <MenuItem Header="🔊 Solo Audio del sistema" Click="RecordAudioOnly_Click"/>
-                            <MenuItem Header="🔇 Silencioso (Sin sonido)" Click="RecordMuted_Click"/>
-                        </ContextMenu>
-                    </Button.ContextMenu>
-                </Button>
-
-                <!-- Separador de grupo acciones 1 -->
-                <Rectangle x:Name="SepActions1" Width="1" Fill="{DynamicResource ToolbarSeparator}" Margin="4,3"/>
-
-                <!-- 4. 📤 Compartir en Redes Sociales, WhatsApp, Facebook, Instagram, Email -->
+                <!-- 1. 📤 Compartir en Redes Sociales, WhatsApp, Facebook, Instagram, Email (Totalmente a la izquierda) -->
                 <Button x:Name="BtnShare" Style="{StaticResource EmojiBtnStyle}" ToolTip="Compartir captura [📤]&#x0a;WhatsApp, Facebook, Instagram, Correo, Telegram, X, Nube..." Click="BtnShare_Click">
                     <!-- Icono universal de compartir en móviles (3 nodos conectados) -->
                     <Path Data="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"
@@ -369,7 +321,57 @@
                     </Button.ContextMenu>
                 </Button>
 
-                <!-- 5. 🖨️ Imprimir captura -->
+                <!-- 2. ⭐ 🌐 GALAXY AI TRADUCIR (Alterna Traducción y Original) -->
+                <Button x:Name="BtnTranslate" Style="{StaticResource EmojiBtnStyle}" ToolTip="Galaxy AI Traducir [🌐 Ctrl+T]&#x0a;Alterna entre Traducción y Original&#x0a;Clic derecho: Copiar solo texto" Click="BtnTranslate_Click" MouseRightButtonUp="BtnTranslate_RightClick">
+                    <Grid Width="26" Height="26">
+                        <Image Source="/Assets/Icons/globe.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="TranslateIndicator" Width="7" Height="7" CornerRadius="3.5" Background="Transparent" BorderBrush="#FFFFFF" BorderThickness="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-1,-1,0" Visibility="Collapsed"/>
+                    </Grid>
+                </Button>
+
+                <!-- 3. 🔍 Búsqueda visual con Google Lens -->
+                <Button x:Name="BtnSearch" Style="{StaticResource EmojiBtnStyle}" ToolTip="Buscar imagen en Google Lens [🔍]" Click="BtnSearch_Click">
+                    <Image Source="/Assets/Icons/search.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Button>
+
+                <!-- 4. ✨ Buscar en Gemini / Preguntar con IA -->
+                <Button x:Name="BtnGemini" Style="{StaticResource EmojiBtnStyle}" ToolTip="Abrir en Gemini [✨ Ctrl+G]&#x0a;Copia la captura y abre gemini.google.com (Pega con Ctrl+V)&#x0a;Clic derecho: Menú de opciones de Gemini" Click="BtnGemini_Click" MouseRightButtonUp="BtnGemini_RightClick">
+                    <Image Source="/Assets/Icons/gemini.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="GeminiContextMenu" Style="{StaticResource ModernShareMenuStyle}">
+                            <MenuItem Header="Preguntar sobre imagen en Gemini (Pegar con Ctrl+V)" Click="GeminiWebChat_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/gemini.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Preguntar sobre texto en Gemini (OCR + Prompt)" Click="GeminiPrompt_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/Icons/text.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+
+                <!-- 5. 🎥 Grabar clip de video (MP4 / GIF) con clásico icono de grabadora de cine -->
+                <Button x:Name="BtnRecordVideo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Grabar pantalla (MP4 o GIF) [🎥]&#x0a;Clic: Abrir menú de grabación para elegir formato e iniciar" Click="BtnRecordVideo_Click" MouseRightButtonUp="BtnRecordVideo_RightClick">
+                    <!-- Icono clásico de grabadora de cine (camera-movie con dos carretes) -->
+                    <Path Data="F0 M18 9H16V7a3 3 0 0 0-3-3 3 3 0 0 0-3 3H8a3 3 0 0 0-3-3 3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2l4 4V5l-4 4zM10 7a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1zM5 7a1 1 0 0 1 1 1 1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1z"
+                          Fill="{DynamicResource PrimaryText}" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="VideoRecordContextMenu" Style="{StaticResource ModernShareMenuStyle}">
+                            <MenuItem Header="🎙️ + 🔊 Grabar con Micrófono y Audio del sistema" Click="RecordFullAudio_Click"/>
+                            <MenuItem Header="🎙️ Solo Micrófono (Voz / Narración)" Click="RecordMicOnly_Click"/>
+                            <MenuItem Header="🔊 Solo Audio del sistema" Click="RecordAudioOnly_Click"/>
+                            <MenuItem Header="🔇 Silencioso (Sin sonido)" Click="RecordMuted_Click"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+
+                <!-- Separador de grupo acciones 1 -->
+                <Rectangle x:Name="SepActions1" Width="1" Fill="{DynamicResource ToolbarSeparator}" Margin="4,3"/>
+
+                <!-- 6. 🖨️ Imprimir captura -->
                 <Button x:Name="BtnPrint" Style="{StaticResource EmojiBtnStyle}" ToolTip="Imprimir captura [🖨️ Ctrl+P]" Click="BtnPrint_Click">
                     <Image Source="/Assets/Icons/print.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
