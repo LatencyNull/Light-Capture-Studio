@@ -203,6 +203,7 @@
                 <RowDefinition Height="Auto"/> <!-- Cabecera -->
                 <RowDefinition Height="*"/>    <!-- Reproductor de video -->
                 <RowDefinition Height="Auto"/> <!-- Barra de Reproducción y Recorte tipo Fotos -->
+                <RowDefinition Height="Auto"/> <!-- Pistas de Objetos estilo CapCut -->
                 <RowDefinition Height="Auto"/> <!-- Barra de acciones -->
             </Grid.RowDefinitions>
 
@@ -228,20 +229,23 @@
                     <MediaElement x:Name="MediaVideoPlayer"
                                   LoadedBehavior="Manual"
                                   UnloadedBehavior="Close"
+                                  ScrubbingEnabled="True"
                                   Stretch="Uniform"
                                   HorizontalAlignment="Stretch"
                                   VerticalAlignment="Stretch"
+                                  IsHitTestVisible="False"
                                   MediaOpened="MediaVideoPlayer_MediaOpened"
                                   MediaEnded="MediaVideoPlayer_MediaEnded"/>
 
                     <!-- Capa vectorial de anotaciones acelerada por GPU sobre todo el marco -->
                     <controls:DrawingCanvas x:Name="VideoDrawingCanvas"
+                                            Background="Transparent"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"
                                             ClipToBounds="True"
-                                            MouseDown="VideoDrawingCanvas_MouseDown"
-                                            MouseMove="VideoDrawingCanvas_MouseMove"
-                                            MouseUp="VideoDrawingCanvas_MouseUp"/>
+                                            PreviewMouseLeftButtonDown="VideoDrawingCanvas_MouseDown"
+                                            PreviewMouseMove="VideoDrawingCanvas_MouseMove"
+                                            PreviewMouseLeftButtonUp="VideoDrawingCanvas_MouseUp"/>
 
                     <!-- Caja flotante de texto para escribir en el video -->
                     <TextBox x:Name="VideoFloatingInput"
@@ -336,16 +340,24 @@
             <Border Grid.Row="2" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="12" Padding="12,8" Margin="0,0,0,14">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="34"/>  <!-- Play/Pause -->
+                        <ColumnDefinition Width="68"/>  <!-- Play/Pause y Stop -->
                         <ColumnDefinition Width="110"/> <!-- Tiempo actual (Ancho fijo inmutable) -->
                         <ColumnDefinition Width="*"/>    <!-- Timeline interactiva con tiradores estilo Fotos -->
                         <ColumnDefinition Width="80"/>  <!-- Indicador de duración y reset (Ancho fijo inmutable) -->
                     </Grid.ColumnDefinitions>
 
-                    <!-- Botón Play/Pause -->
-                    <Button x:Name="BtnPlayPause" Grid.Column="0" Width="32" Height="32" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnPlayPause_Click" ToolTip="Reproducir / Pausar">
-                        <TextBlock x:Name="TxtPlayPauseIcon" Text="⏸" FontSize="14" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Button>
+                    <!-- Botones de Control de Reproducción -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Play/Pause -->
+                        <Button x:Name="BtnPlayPause" Width="30" Height="30" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnPlayPause_Click" ToolTip="Reproducir / Pausar (Espacio)">
+                            <TextBlock x:Name="TxtPlayPauseIcon" Text="⏸" FontSize="13" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+
+                        <!-- Stop (Volver al inicio) -->
+                        <Button x:Name="BtnStop" Width="30" Height="30" Margin="4,0,0,0" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnStop_Click" ToolTip="Detener y volver al inicio">
+                            <TextBlock Text="⏹" FontSize="13" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
 
                     <!-- Tiempo de reproducción actual (Ancho fijo para evitar fluctuaciones) -->
                     <Border Grid.Column="1" VerticalAlignment="Center" Margin="4,0,8,0">
@@ -355,13 +367,16 @@
                     <!-- Línea de tiempo interactiva con Recorte tipo Fotos de Windows -->
                     <Grid x:Name="TimelineContainer" Grid.Column="2" Height="30" VerticalAlignment="Center" Margin="4,0" SizeChanged="TimelineContainer_SizeChanged">
                         <!-- Pista inactiva completa (Fondo oscuro sutil) -->
-                        <Border Height="6" Background="{DynamicResource ToolbarSeparator}" CornerRadius="3" VerticalAlignment="Center"/>
+                        <Border Height="6" Background="{DynamicResource ToolbarSeparator}" CornerRadius="3" VerticalAlignment="Center" IsHitTestVisible="False"/>
 
                         <!-- Pista activa recortada (Rango azul claro entre Inicio y Fin) -->
-                        <Border x:Name="ActiveRangeTrack" Height="6" Background="#38BDF8" CornerRadius="3" HorizontalAlignment="Left" Width="100" Margin="0,0,0,0" VerticalAlignment="Center"/>
+                        <Border x:Name="ActiveRangeTrack" Height="6" Background="#38BDF8" CornerRadius="3" HorizontalAlignment="Left" Width="100" Margin="0,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
 
-                        <!-- Canvas para los cursores y pines -->
-                        <Canvas x:Name="TimelineCanvas" ClipToBounds="False" MouseLeftButtonDown="TimelineCanvas_MouseLeftButtonDown">
+                        <!-- Canvas para los cursores y pines con captura interactiva de clic y arrastre -->
+                        <Canvas x:Name="TimelineCanvas" Background="Transparent" Cursor="Hand" ClipToBounds="False"
+                                MouseLeftButtonDown="TimelineCanvas_MouseLeftButtonDown"
+                                MouseMove="TimelineCanvas_MouseMove"
+                                MouseLeftButtonUp="TimelineCanvas_MouseLeftButtonUp">
                             <!-- Pin de Inicio (Izquierdo: cápsula vertical minimalista estilo Fotos) -->
                             <Border x:Name="PinStart" Width="14" Height="24" Background="#FFFFFF" BorderBrush="#0284C7" BorderThickness="2" CornerRadius="6" Cursor="SizeWE" Canvas.Left="0" Canvas.Top="3" ToolTip="Inicio del recorte (arrastra para recortar)" MouseLeftButtonDown="PinStart_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinStart_MouseMove">
                                 <Border.Effect>
@@ -401,8 +416,30 @@
                 </Grid>
             </Border>
 
+            <!-- 2.8 Pistas de Objetos estilo CapCut (Aparece automáticamente al insertar flechas, texto, etc.) -->
+            <Border x:Name="ObjectTracksPanel" Grid.Row="3" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="10" Padding="10,6" Margin="0,0,0,10" Visibility="Collapsed">
+                <StackPanel>
+                    <!-- Cabecera de pistas -->
+                    <Grid Margin="0,0,0,6">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⏱️" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Línea de Tiempo" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                            <Border Background="{DynamicResource ActionBtnBackground}" CornerRadius="4" Padding="6,1" Margin="8,0,0,0">
+                                <TextBlock x:Name="TxtObjectTracksCount" Text="0 objetos" FontSize="10" Foreground="#38BDF8"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="Arrastra los bloques para cambiar cuándo aparecen y cuánto duran" FontSize="11" Foreground="{DynamicResource SecondaryText}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Lista scrolleable de pistas de objetos -->
+                    <ScrollViewer MaxHeight="96" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="ObjectTracksStackPanel"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+
             <!-- 3. Barra de Acciones y Compartir -->
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>

@@ -393,8 +393,9 @@ public partial class LightshotToolbar : UserControl
 
     private void ApplyWaveEffect(Panel panel, Point mousePos, bool isHorizontal)
     {
-        const double radius = 80.0;     // Radio de influencia de la ola en píxeles (~2.5 botones contiguos)
-        const double maxScale = 1.38;   // Magnificación máxima en la cresta de la ola (+25%+ zoom)
+        // Radio calibrado para enfocar la cresta únicamente en el icono bajo el cursor (~1.4 botones)
+        const double radius = 46.0;
+        const double maxScale = 1.35;
 
         foreach (UIElement child in panel.Children)
         {
@@ -410,8 +411,11 @@ public partial class LightshotToolbar : UserControl
                 double scale = 1.0;
                 if (distance < radius)
                 {
-                    // Curva de campana cosenoidal: fluida, continua y natural como en macOS Dock / Nexus
-                    double waveFactor = Math.Cos((distance / radius) * (Math.PI / 2.0));
+                    // Curva de campana cosenoidal de caída rápida (exponente 2.4):
+                    // El icono activo recibe el 100% de la cresta (1.35), mientras que el adyacente solo un sutil 1.05
+                    double normalized = distance / radius;
+                    double cosVal = Math.Cos(normalized * (Math.PI / 2.0));
+                    double waveFactor = Math.Pow(cosVal, 2.4);
                     scale = 1.0 + (maxScale - 1.0) * waveFactor;
                 }
 

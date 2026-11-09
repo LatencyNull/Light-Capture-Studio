@@ -79,6 +79,19 @@ public partial class OverlayWindow : Window
     private RecordingControlWidget? _recordingWidget;
     private RecordingBorderOverlay? _recordingBorder;
 
+    private enum ResizeDirection
+    {
+        None,
+        NW, N, NE,
+        W,      E,
+        SW, S, SE
+    }
+
+    private bool _isResizing;
+    private ResizeDirection _activeResizeHandle = ResizeDirection.None;
+    private Point _resizeStartMouse;
+    private Rect _resizeStartBounds;
+
     private Point _selectionStart;
     private Rect _selectionBounds;
     private bool _isSelecting;
@@ -283,6 +296,22 @@ public partial class OverlayWindow : Window
         }
         else
         {
+            // Comprobar si el usuario hizo clic en uno de los 8 tiradores de redimensionado (esquinas y bordes)
+            if (MainDrawingCanvas.CurrentTool == DrawingToolType.None)
+            {
+                var resizeDir = GetResizeHandleAtPoint(p);
+                if (resizeDir != ResizeDirection.None)
+                {
+                    CommitFloatingText();
+                    _isResizing = true;
+                    _activeResizeHandle = resizeDir;
+                    _resizeStartMouse = p;
+                    _resizeStartBounds = _selectionBounds;
+                    CaptureMouse();
+                    return;
+                }
+            }
+
             if (_selectionBounds.Contains(p))
             {
                 if (MainDrawingCanvas.CurrentTool != DrawingToolType.None)
@@ -450,6 +479,46 @@ public partial class OverlayWindow : Window
                 WindowSnapBorder.Visibility = Visibility.Collapsed;
             }
         }
+        else if (_isResizing)
+        {
+            double dx = current.X - _resizeStartMouse.X;
+            double dy = current.Y - _resizeStartMouse.Y;
+
+            double left = _resizeStartBounds.Left;
+            double top = _resizeStartBounds.Top;
+            double right = _resizeStartBounds.Right;
+            double bottom = _resizeStartBounds.Bottom;
+
+            switch (_activeResizeHandle)
+            {
+                case ResizeDirection.NW: left += dx; top += dy; break;
+                case ResizeDirection.N:  top += dy; break;
+                case ResizeDirection.NE: right += dx; top += dy; break;
+                case ResizeDirection.E:  right += dx; break;
+                case ResizeDirection.SE: right += dx; bottom += dy; break;
+                case ResizeDirection.S:  bottom += dy; break;
+                case ResizeDirection.SW: left += dx; bottom += dy; break;
+                case ResizeDirection.W:  left += dx; break;
+            }
+
+            double screenW = Width;
+            double screenH = Height;
+
+            double finalX = Math.Max(0, Math.Min(left, right));
+            double finalY = Math.Max(0, Math.Min(top, bottom));
+            double finalW = Math.Max(15, Math.Abs(right - left));
+            double finalH = Math.Max(15, Math.Abs(bottom - top));
+
+            if (finalX + finalW > screenW) finalW = Math.Max(15, screenW - finalX);
+            if (finalY + finalH > screenH) finalH = Math.Max(15, screenH - finalY);
+
+            _selectionBounds = new Rect(finalX, finalY, finalW, finalH);
+
+            UpdateSelectionVisuals(_selectionBounds);
+            UpdateDimming(_selectionBounds);
+            MainToolbar.UpdatePosition(_selectionBounds, Width, Height);
+            return;
+        }
         else if (_isSelecting)
         {
             double x = Math.Min(_selectionStart.X, current.X);
@@ -482,11 +551,23 @@ public partial class OverlayWindow : Window
             MainDrawingCanvas.UpdateDrawing(current);
         }
 
-        if (_hasSelection && MainDrawingCanvas.CurrentTool == DrawingToolType.Text)
+        if (_hasSelection && !_isSelecting && !_isDraggingSelection && !_isResizing && MainDrawingCanvas.CurrentTool == DrawingToolType.None)
+        {
+            var resizeDir = GetResizeHandleAtPoint(current);
+            Cursor = resizeDir switch
+            {
+                ResizeDirection.NW or ResizeDirection.SE => System.Windows.Input.Cursors.SizeNWSE,
+                ResizeDirection.NE or ResizeDirection.SW => System.Windows.Input.Cursors.SizeNESW,
+                ResizeDirection.N or ResizeDirection.S => System.Windows.Input.Cursors.SizeNS,
+                ResizeDirection.W or ResizeDirection.E => System.Windows.Input.Cursors.SizeWE,
+                _ => _selectionBounds.Contains(current) ? System.Windows.Input.Cursors.Hand : System.Windows.Input.Cursors.Cross
+            };
+        }
+        else if (_hasSelection && MainDrawingCanvas.CurrentTool == DrawingToolType.Text)
         {
             Cursor = _selectionBounds.Contains(current) ? System.Windows.Input.Cursors.IBeam : System.Windows.Input.Cursors.Arrow;
         }
-        else if (!_isSelecting && !_isDraggingSelection && !_hasSelection)
+        else if (!_isSelecting && !_isDraggingSelection && !_isResizing && !_hasSelection)
         {
             Cursor = System.Windows.Input.Cursors.Arrow;
         }
@@ -497,6 +578,23 @@ public partial class OverlayWindow : Window
         if (e.ChangedButton != MouseButton.Left) return;
 
         Point p = e.GetPosition(this);
+
+        if (_isResizing)
+        {
+            _isResizing = false;
+            _activeResizeHandle = ResizeDirection.None;
+            ReleaseMouseCapture();
+
+            UpdateSelectionVisuals(_selectionBounds);
+            UpdateDimming(_selectionBounds);
+            UpdateHandlesPosition(_selectionBounds);
+            HandlesLayer.Visibility = Visibility.Visible;
+            DimensionTag.Visibility = Visibility.Visible;
+            MainToolbar.UpdatePosition(_selectionBounds, Width, Height);
+            MainDrawingCanvas.ActiveSelectionBounds = _selectionBounds;
+            CheckForQrCodeAsync();
+            return;
+        }
 
         if (_isSelecting)
         {
@@ -569,16 +667,49 @@ public partial class OverlayWindow : Window
 
     private void UpdateHandlesPosition(Rect r)
     {
-        Canvas.SetLeft(HandleNW, r.X - 3); Canvas.SetTop(HandleNW, r.Y - 3);
-        Canvas.SetLeft(HandleN, r.X + (r.Width / 2) - 3); Canvas.SetTop(HandleN, r.Y - 3);
-        Canvas.SetLeft(HandleNE, r.Right - 3); Canvas.SetTop(HandleNE, r.Y - 3);
+        const double half = 4.0;
+        Canvas.SetLeft(HandleNW, r.X - half); Canvas.SetTop(HandleNW, r.Y - half);
+        Canvas.SetLeft(HandleN, r.X + (r.Width / 2) - half); Canvas.SetTop(HandleN, r.Y - half);
+        Canvas.SetLeft(HandleNE, r.Right - half); Canvas.SetTop(HandleNE, r.Y - half);
 
-        Canvas.SetLeft(HandleW, r.X - 3); Canvas.SetTop(HandleW, r.Y + (r.Height / 2) - 3);
-        Canvas.SetLeft(HandleE, r.Right - 3); Canvas.SetTop(HandleE, r.Y + (r.Height / 2) - 3);
+        Canvas.SetLeft(HandleW, r.X - half); Canvas.SetTop(HandleW, r.Y + (r.Height / 2) - half);
+        Canvas.SetLeft(HandleE, r.Right - half); Canvas.SetTop(HandleE, r.Y + (r.Height / 2) - half);
 
-        Canvas.SetLeft(HandleSW, r.X - 3); Canvas.SetTop(HandleSW, r.Bottom - 3);
-        Canvas.SetLeft(HandleS, r.X + (r.Width / 2) - 3); Canvas.SetTop(HandleS, r.Bottom - 3);
-        Canvas.SetLeft(HandleSE, r.Right - 3); Canvas.SetTop(HandleSE, r.Bottom - 3);
+        Canvas.SetLeft(HandleSW, r.X - half); Canvas.SetTop(HandleSW, r.Bottom - half);
+        Canvas.SetLeft(HandleS, r.X + (r.Width / 2) - half); Canvas.SetTop(HandleS, r.Bottom - half);
+        Canvas.SetLeft(HandleSE, r.Right - half); Canvas.SetTop(HandleSE, r.Bottom - half);
+    }
+
+    private ResizeDirection GetResizeHandleAtPoint(Point p)
+    {
+        if (!_hasSelection || HandlesLayer.Visibility != Visibility.Visible) return ResizeDirection.None;
+
+        Rect r = _selectionBounds;
+        const double tol = 12.0;
+
+        Point nw = new Point(r.Left, r.Top);
+        Point ne = new Point(r.Right, r.Top);
+        Point se = new Point(r.Right, r.Bottom);
+        Point sw = new Point(r.Left, r.Bottom);
+
+        Point n = new Point(r.Left + r.Width / 2.0, r.Top);
+        Point s = new Point(r.Left + r.Width / 2.0, r.Bottom);
+        Point w = new Point(r.Left, r.Top + r.Height / 2.0);
+        Point e = new Point(r.Right, r.Top + r.Height / 2.0);
+
+        // Esquinas prioritarias
+        if (Math.Abs(p.X - nw.X) <= tol && Math.Abs(p.Y - nw.Y) <= tol) return ResizeDirection.NW;
+        if (Math.Abs(p.X - ne.X) <= tol && Math.Abs(p.Y - ne.Y) <= tol) return ResizeDirection.NE;
+        if (Math.Abs(p.X - se.X) <= tol && Math.Abs(p.Y - se.Y) <= tol) return ResizeDirection.SE;
+        if (Math.Abs(p.X - sw.X) <= tol && Math.Abs(p.Y - sw.Y) <= tol) return ResizeDirection.SW;
+
+        // Bordes cardinales
+        if (Math.Abs(p.X - n.X) <= tol && Math.Abs(p.Y - n.Y) <= tol) return ResizeDirection.N;
+        if (Math.Abs(p.X - s.X) <= tol && Math.Abs(p.Y - s.Y) <= tol) return ResizeDirection.S;
+        if (Math.Abs(p.X - w.X) <= tol && Math.Abs(p.Y - w.Y) <= tol) return ResizeDirection.W;
+        if (Math.Abs(p.X - e.X) <= tol && Math.Abs(p.Y - e.Y) <= tol) return ResizeDirection.E;
+
+        return ResizeDirection.None;
     }
 
     private void UpdateQrBannerPosition()

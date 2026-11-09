@@ -20,7 +20,7 @@ public record TranslatedLensBlock(
     double FontSize
 );
 
-public class DrawingCanvas : FrameworkElement
+public class DrawingCanvas : Canvas
 {
     private readonly List<DrawingElement> _elements = new();
     private readonly Stack<DrawingElement> _undoStack = new();
@@ -39,7 +39,33 @@ public class DrawingCanvas : FrameworkElement
 
     public Rect ActiveSelectionBounds { get; set; }
 
+    public TimeSpan? CurrentPlaybackTime { get; set; }
+    public TimeSpan DefaultStartTime { get; set; } = TimeSpan.Zero;
+    public TimeSpan DefaultDuration { get; set; } = TimeSpan.FromSeconds(3);
+    public TimeSpan TotalVideoDuration { get; set; } = TimeSpan.FromSeconds(10);
+    public IReadOnlyList<DrawingElement> Elements => _elements;
+
     public event Action? DrawingChanged;
+
+    public void RemoveElement(DrawingElement element)
+    {
+        _elements.Remove(element);
+        _undoStack.Clear();
+        InvalidateVisual();
+        DrawingChanged?.Invoke();
+    }
+
+    public DrawingCanvas()
+    {
+        Background = System.Windows.Media.Brushes.Transparent;
+        ClipToBounds = true;
+    }
+
+    protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+    {
+        base.OnRenderSizeChanged(sizeInfo);
+        InvalidateVisual();
+    }
 
     public void SetTranslatedBlocks(IEnumerable<TranslatedLensBlock> blocks)
     {
@@ -102,29 +128,35 @@ public class DrawingCanvas : FrameworkElement
         _startPoint = point;
         _isDrawing = true;
 
+        TimeSpan start = DefaultStartTime;
+        TimeSpan end = TotalVideoDuration.TotalSeconds > 0
+            ? TimeSpan.FromSeconds(Math.Min(TotalVideoDuration.TotalSeconds, start.TotalSeconds + DefaultDuration.TotalSeconds))
+            : start + DefaultDuration;
+        if (end <= start) end = start + TimeSpan.FromSeconds(1);
+
         if (CurrentTool == DrawingToolType.Pen)
         {
-            _previewElement = new PenDrawingElement(CurrentColor, StrokeThickness, new List<Point> { point });
+            _previewElement = new PenDrawingElement(CurrentColor, StrokeThickness, new List<Point> { point }) { StartTime = start, EndTime = end };
         }
         else if (CurrentTool == DrawingToolType.Marker)
         {
-            _previewElement = new MarkerDrawingElement(CurrentColor, StrokeThickness, new List<Point> { point });
+            _previewElement = new MarkerDrawingElement(CurrentColor, StrokeThickness, new List<Point> { point }) { StartTime = start, EndTime = end };
         }
         else if (CurrentTool == DrawingToolType.Arrow)
         {
-            _previewElement = new ArrowDrawingElement(CurrentColor, StrokeThickness, point, point);
+            _previewElement = new ArrowDrawingElement(CurrentColor, StrokeThickness, point, point) { StartTime = start, EndTime = end };
         }
         else if (CurrentTool == DrawingToolType.Rectangle)
         {
-            _previewElement = new RectangleDrawingElement(CurrentColor, StrokeThickness, new Rect(point.X, point.Y, 0, 0));
+            _previewElement = new RectangleDrawingElement(CurrentColor, StrokeThickness, new Rect(point.X, point.Y, 0, 0)) { StartTime = start, EndTime = end };
         }
         else if (CurrentTool == DrawingToolType.Line)
         {
-            _previewElement = new LineDrawingElement(CurrentColor, StrokeThickness, point, point);
+            _previewElement = new LineDrawingElement(CurrentColor, StrokeThickness, point, point) { StartTime = start, EndTime = end };
         }
         else if (CurrentTool == DrawingToolType.Redact)
         {
-            _previewElement = new RedactDrawingElement(new Rect(point.X, point.Y, 0, 0), Colors.Black);
+            _previewElement = new RedactDrawingElement(new Rect(point.X, point.Y, 0, 0), Colors.Black) { StartTime = start, EndTime = end };
         }
 
         InvalidateVisual();
@@ -133,6 +165,9 @@ public class DrawingCanvas : FrameworkElement
     public void UpdateDrawing(Point currentPoint)
     {
         if (!_isDrawing || CurrentTool == DrawingToolType.None) return;
+
+        TimeSpan? prevStart = _previewElement?.StartTime;
+        TimeSpan? prevEnd = _previewElement?.EndTime;
 
         if (CurrentTool == DrawingToolType.Pen && _previewElement is PenDrawingElement penElem)
         {
@@ -146,11 +181,11 @@ public class DrawingCanvas : FrameworkElement
         }
         else if (CurrentTool == DrawingToolType.Line)
         {
-            _previewElement = new LineDrawingElement(CurrentColor, StrokeThickness, _startPoint, currentPoint);
+            _previewElement = new LineDrawingElement(CurrentColor, StrokeThickness, _startPoint, currentPoint) { StartTime = prevStart, EndTime = prevEnd };
         }
         else if (CurrentTool == DrawingToolType.Arrow)
         {
-            _previewElement = new ArrowDrawingElement(CurrentColor, StrokeThickness, _startPoint, currentPoint);
+            _previewElement = new ArrowDrawingElement(CurrentColor, StrokeThickness, _startPoint, currentPoint) { StartTime = prevStart, EndTime = prevEnd };
         }
         else if (CurrentTool == DrawingToolType.Rectangle)
         {
@@ -158,7 +193,7 @@ public class DrawingCanvas : FrameworkElement
             double y = Math.Min(_startPoint.Y, currentPoint.Y);
             double w = Math.Abs(currentPoint.X - _startPoint.X);
             double h = Math.Abs(currentPoint.Y - _startPoint.Y);
-            _previewElement = new RectangleDrawingElement(CurrentColor, StrokeThickness, new Rect(x, y, w, h));
+            _previewElement = new RectangleDrawingElement(CurrentColor, StrokeThickness, new Rect(x, y, w, h)) { StartTime = prevStart, EndTime = prevEnd };
         }
         else if (CurrentTool == DrawingToolType.Pixelate)
         {
@@ -166,7 +201,7 @@ public class DrawingCanvas : FrameworkElement
             double y = Math.Min(_startPoint.Y, currentPoint.Y);
             double w = Math.Abs(currentPoint.X - _startPoint.X);
             double h = Math.Abs(currentPoint.Y - _startPoint.Y);
-            _previewElement = new RectangleDrawingElement(Color.FromArgb(120, 100, 100, 100), 1.5, new Rect(x, y, w, h));
+            _previewElement = new RectangleDrawingElement(Color.FromArgb(120, 100, 100, 100), 1.5, new Rect(x, y, w, h)) { StartTime = prevStart, EndTime = prevEnd };
         }
         else if (CurrentTool == DrawingToolType.Redact)
         {
@@ -174,7 +209,7 @@ public class DrawingCanvas : FrameworkElement
             double y = Math.Min(_startPoint.Y, currentPoint.Y);
             double w = Math.Abs(currentPoint.X - _startPoint.X);
             double h = Math.Abs(currentPoint.Y - _startPoint.Y);
-            _previewElement = new RedactDrawingElement(new Rect(x, y, w, h), Colors.Black);
+            _previewElement = new RedactDrawingElement(new Rect(x, y, w, h), Colors.Black) { StartTime = prevStart, EndTime = prevEnd };
         }
 
         InvalidateVisual();
@@ -216,7 +251,19 @@ public class DrawingCanvas : FrameworkElement
     public void AddTextElement(Point position, string text)
     {
         if (string.IsNullOrWhiteSpace(text)) return;
-        _elements.Add(new TextDrawingElement(CurrentColor, 16, position, text));
+
+        TimeSpan start = DefaultStartTime;
+        TimeSpan end = TotalVideoDuration.TotalSeconds > 0
+            ? TimeSpan.FromSeconds(Math.Min(TotalVideoDuration.TotalSeconds, start.TotalSeconds + DefaultDuration.TotalSeconds))
+            : start + DefaultDuration;
+        if (end <= start) end = start + TimeSpan.FromSeconds(1);
+
+        var textElem = new TextDrawingElement(CurrentColor, 16, position, text)
+        {
+            StartTime = start,
+            EndTime = end
+        };
+        _elements.Add(textElem);
         _undoStack.Clear();
         InvalidateVisual();
         DrawingChanged?.Invoke();
@@ -265,9 +312,16 @@ public class DrawingCanvas : FrameworkElement
             }
         }
 
-        // 2. Renderizar trazos y elementos de dibujo (incluyendo pixelados y pasos numerados)
+        // 2. Renderizar trazos y elementos de dibujo activos en el tiempo de reproducción actual
         foreach (var element in _elements)
         {
+            if (CurrentPlaybackTime.HasValue && element.StartTime.HasValue && element.EndTime.HasValue)
+            {
+                if (CurrentPlaybackTime.Value < element.StartTime.Value || CurrentPlaybackTime.Value > element.EndTime.Value)
+                {
+                    continue; // Fuera del rango de tiempo
+                }
+            }
             element.Render(dc);
         }
 
@@ -304,6 +358,40 @@ public class DrawingCanvas : FrameworkElement
             {
                 element.Render(dc);
             }
+            dc.Pop();
+        }
+
+        rtb.Render(dv);
+        rtb.Freeze();
+
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(rtb));
+        using var stream = System.IO.File.Create(filePath);
+        encoder.Save(stream);
+    }
+
+    public void ExportSingleElementOverlayToPng(DrawingElement elem, string filePath, int targetVidWidth, int targetVidHeight, double containerW, double containerH)
+    {
+        if (targetVidWidth <= 0 || targetVidHeight <= 0) return;
+        double cw = containerW > 0 ? containerW : targetVidWidth;
+        double ch = containerH > 0 ? containerH : targetVidHeight;
+
+        double s = Math.Min(cw / targetVidWidth, ch / targetVidHeight);
+        double offsetX = (cw - targetVidWidth * s) / 2.0;
+        double offsetY = (ch - targetVidHeight * s) / 2.0;
+
+        var rtb = new RenderTargetBitmap(targetVidWidth, targetVidHeight, 96, 96, PixelFormats.Pbgra32);
+        var dv = new DrawingVisual();
+
+        using (var dc = dv.RenderOpen())
+        {
+            var group = new TransformGroup();
+            group.Children.Add(new TranslateTransform(-offsetX, -offsetY));
+            group.Children.Add(new ScaleTransform(1.0 / s, 1.0 / s));
+            dc.PushTransform(group);
+
+            elem.Render(dc);
+
             dc.Pop();
         }
 

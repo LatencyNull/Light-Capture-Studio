@@ -26,6 +26,34 @@ public enum DrawingToolType
 
 public abstract record DrawingElement(DrawingToolType ToolType, Color Color, double StrokeThickness)
 {
+    public TimeSpan? StartTime { get; set; }
+    public TimeSpan? EndTime { get; set; }
+    public string Id { get; init; } = Guid.NewGuid().ToString("N");
+
+    public string DisplayName => ToolType switch
+    {
+        DrawingToolType.Arrow => "Flecha",
+        DrawingToolType.Text => "Texto",
+        DrawingToolType.Pen => "Pluma",
+        DrawingToolType.Rectangle => "Rectángulo",
+        DrawingToolType.Redact => "Censura",
+        DrawingToolType.Marker => "Marcador",
+        DrawingToolType.NumberedStep => "Paso",
+        _ => "Objeto"
+    };
+
+    public string IconEmoji => ToolType switch
+    {
+        DrawingToolType.Arrow => "↗️",
+        DrawingToolType.Text => "🔤",
+        DrawingToolType.Pen => "✏️",
+        DrawingToolType.Rectangle => "🔲",
+        DrawingToolType.Redact => "🔒",
+        DrawingToolType.Marker => "🖍️",
+        DrawingToolType.NumberedStep => "🔢",
+        _ => "📍"
+    };
+
     public abstract void Render(DrawingContext dc);
 }
 
@@ -34,7 +62,14 @@ public record PenDrawingElement(Color Color, double StrokeThickness, IReadOnlyLi
 {
     public override void Render(DrawingContext dc)
     {
-        if (Points.Count < 2) return;
+        if (Points.Count == 0) return;
+        if (Points.Count == 1)
+        {
+            var dotBrush = new SolidColorBrush(Color);
+            dotBrush.Freeze();
+            dc.DrawEllipse(dotBrush, null, Points[0], Math.Max(1.5, StrokeThickness / 2.0), Math.Max(1.5, StrokeThickness / 2.0));
+            return;
+        }
 
         var pen = new Pen(new SolidColorBrush(Color), StrokeThickness)
         {

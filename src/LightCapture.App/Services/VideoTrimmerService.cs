@@ -4,20 +4,29 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Media.Editing;
 using Windows.Storage;
 
 namespace LightCapture.App.Services;
 
+public record TimedOverlay(string ImagePath, TimeSpan StartTime, TimeSpan EndTime);
+
 public static class VideoTrimmerService
 {
     /// <summary>
     /// Recorta un video MP4 o GIF según el rango de inicio y fin especificado,
-    /// y opcionalmente estampa una capa de anotaciones (flechas, texto, censura) sobre el clip.
+    /// y opcionalmente estampa una o varias capas de anotaciones con tiempos específicos.
     /// Retorna la ruta al nuevo archivo procesado en la carpeta temporal.
     /// </summary>
-    public static async Task<string> TrimAsync(string sourcePath, TimeSpan startTime, TimeSpan endTime, string? overlayPngPath = null)
+    public static async Task<string> TrimAsync(
+        string sourcePath, 
+        TimeSpan startTime, 
+        TimeSpan endTime, 
+        string? overlayPngPath = null,
+        IReadOnlyList<TimedOverlay>? timedOverlays = null)
     {
         if (!File.Exists(sourcePath))
         {
@@ -32,22 +41,28 @@ public static class VideoTrimmerService
         bool isGif = sourcePath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
         if (isGif)
         {
-            return await TrimGifAsync(sourcePath, startTime, endTime, overlayPngPath);
+            return await TrimGifAsync(sourcePath, startTime, endTime, overlayPngPath, timedOverlays);
         }
         else
         {
-            return await TrimMp4Async(sourcePath, startTime, endTime, overlayPngPath);
+            return await TrimMp4Async(sourcePath, startTime, endTime, overlayPngPath, timedOverlays);
         }
     }
 
-    private static async Task<string> TrimMp4Async(string sourcePath, TimeSpan startTime, TimeSpan endTime, string? overlayPngPath = null)
+    private static async Task<string> TrimMp4Async(
+        string sourcePath, 
+        TimeSpan startTime, 
+        TimeSpan endTime, 
+        string? overlayPngPath = null,
+        IReadOnlyList<TimedOverlay>? timedOverlays = null)
     {
-        bool hasOverlay = !string.IsNullOrEmpty(overlayPngPath) && File.Exists(overlayPngPath);
+        bool hasOverlays = (timedOverlays != null && timedOverlays.Count > 0) ||
+                           (!string.IsNullOrEmpty(overlayPngPath) && File.Exists(overlayPngPath));
 
         // 1. Si hay overlay y FFmpeg está instalado, usar aceleración FFmpeg (sub-segundo)
-        if (hasOverlay && IsFfmpegAvailable())
+        if (hasOverlays && IsFfmpegAvailable())
         {
-            string? ffmpegResult = await TryFfmpegOverlayAsync(sourcePath, startTime, endTime, overlayPngPath!);
+            string? ffmpegResult = await TryFfmpegOverlayAsync(sourcePath, startTime, endTime, overlayPngPath, timedOverlays);
             if (!string.IsNullOrEmpty(ffmpegResult) && File.Exists(ffmpegResult))
             {
                 return ffmpegResult;
@@ -68,17 +83,45 @@ public static class VideoTrimmerService
         var composition = new MediaComposition();
         composition.Clips.Add(clip);
 
-        if (hasOverlay)
+        if (!string.IsNullOrEmpty(overlayPngPath) && File.Exists(overlayPngPath))
         {
             try
             {
-                var overlayFile = await StorageFile.GetFileFromPathAsync(Path.GetFullPath(overlayPngPath!));
+                var overlayFile = await StorageFile.GetFileFromPathAsync(Path.GetFullPath(overlayPngPath));
                 var overlayClip = await MediaClip.CreateFromImageFileAsync(overlayFile, clip.TrimmedDuration);
                 var overlay = new MediaOverlay(overlayClip);
                 overlay.Opacity = 1.0;
                 var overlayLayer = new MediaOverlayLayer();
                 overlayLayer.Overlays.Add(overlay);
                 composition.OverlayLayers.Add(overlayLayer);
+            }
+            catch { }
+        }
+        else if (timedOverlays != null && timedOverlays.Count > 0)
+        {
+            try
+            {
+                var overlayLayer = new MediaOverlayLayer();
+                foreach (var to in timedOverlays)
+                {
+                    if (File.Exists(to.ImagePath) && to.EndTime > startTime && to.StartTime < endTime)
+                    {
+                        var overlayFile = await StorageFile.GetFileFromPathAsync(Path.GetFullPath(to.ImagePath));
+                        var s = to.StartTime > startTime ? to.StartTime - startTime : TimeSpan.Zero;
+                        var e = to.EndTime < endTime ? to.EndTime - startTime : clip.TrimmedDuration;
+                        var dur = e - s;
+                        if (dur > TimeSpan.Zero)
+                        {
+                            var overlayClip = await MediaClip.CreateFromImageFileAsync(overlayFile, dur);
+                            var overlay = new MediaOverlay(overlayClip) { Delay = s, Opacity = 1.0 };
+                            overlayLayer.Overlays.Add(overlay);
+                        }
+                    }
+                }
+                if (overlayLayer.Overlays.Count > 0)
+                {
+                    composition.OverlayLayers.Add(overlayLayer);
+                }
             }
             catch { }
         }
@@ -123,7 +166,12 @@ public static class VideoTrimmerService
         }
     }
 
-    private static async Task<string?> TryFfmpegOverlayAsync(string sourcePath, TimeSpan startTime, TimeSpan endTime, string overlayPngPath)
+    private static async Task<string?> TryFfmpegOverlayAsync(
+        string sourcePath, 
+        TimeSpan startTime, 
+        TimeSpan endTime, 
+        string? overlayPngPath,
+        IReadOnlyList<TimedOverlay>? timedOverlays = null)
     {
         return await Task.Run(() =>
         {
@@ -136,10 +184,55 @@ public static class VideoTrimmerService
                 double startSec = Math.Max(0, startTime.TotalSeconds);
                 double durationSec = Math.Max(0.05, (endTime - startTime).TotalSeconds);
 
+                var inputs = new StringBuilder();
+                inputs.Append($"-y -ss {startSec.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)} -t {durationSec.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)} -i \"{Path.GetFullPath(sourcePath)}\"");
+
+                string filterComplex;
+
+                if (timedOverlays != null && timedOverlays.Count > 0)
+                {
+                    var valid = timedOverlays.Where(t => File.Exists(t.ImagePath) && t.EndTime > startTime && t.StartTime < endTime).ToList();
+                    if (valid.Count == 0)
+                    {
+                        return null;
+                    }
+
+                    for (int i = 0; i < valid.Count; i++)
+                    {
+                        inputs.Append($" -i \"{Path.GetFullPath(valid[i].ImagePath)}\"");
+                    }
+
+                    var filters = new StringBuilder();
+                    string lastLabel = "0:v";
+                    for (int i = 0; i < valid.Count; i++)
+                    {
+                        var to = valid[i];
+                        double s = Math.Max(0, (to.StartTime - startTime).TotalSeconds);
+                        double e = Math.Min(durationSec, (to.EndTime - startTime).TotalSeconds);
+                        string outLabel = (i == valid.Count - 1) ? "v" : $"v{i + 1}";
+                        string sStr = s.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
+                        string eStr = e.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
+
+                        filters.Append($"[{lastLabel}][{i + 1}:v]overlay=0:0:enable='between(t,{sStr},{eStr})'[{outLabel}];");
+                        lastLabel = outLabel;
+                    }
+
+                    filterComplex = filters.ToString().TrimEnd(';');
+                }
+                else if (!string.IsNullOrEmpty(overlayPngPath) && File.Exists(overlayPngPath))
+                {
+                    inputs.Append($" -i \"{Path.GetFullPath(overlayPngPath)}\"");
+                    filterComplex = "[0:v][1:v]overlay=0:0[v]";
+                }
+                else
+                {
+                    return null;
+                }
+
                 var psi = new ProcessStartInfo
                 {
                     FileName = "ffmpeg",
-                    Arguments = $"-y -ss {startSec.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)} -t {durationSec.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)} -i \"{Path.GetFullPath(sourcePath)}\" -i \"{Path.GetFullPath(overlayPngPath)}\" -filter_complex \"[0:v][1:v]overlay=0:0[v]\" -map \"[v]\" -map 0:a? -c:v libx264 -preset veryfast -crf 20 -c:a aac -b:a 128k \"{destPath}\"",
+                    Arguments = $"{inputs} -filter_complex \"{filterComplex}\" -map \"[v]\" -map 0:a? -c:v libx264 -preset veryfast -crf 20 -c:a aac -b:a 128k \"{destPath}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
@@ -158,7 +251,12 @@ public static class VideoTrimmerService
         });
     }
 
-    private static Task<string> TrimGifAsync(string sourcePath, TimeSpan startTime, TimeSpan endTime, string? overlayPngPath = null)
+    private static Task<string> TrimGifAsync(
+        string sourcePath, 
+        TimeSpan startTime, 
+        TimeSpan endTime, 
+        string? overlayPngPath = null,
+        IReadOnlyList<TimedOverlay>? timedOverlays = null)
     {
         return Task.Run(() =>
         {
@@ -201,23 +299,56 @@ public static class VideoTrimmerService
                 ? System.Drawing.Image.FromFile(overlayPngPath)
                 : null;
 
-            for (int i = 0; i < totalFrames; i++)
+            var loadedTimed = new List<(TimedOverlay Meta, System.Drawing.Image Img)>();
+            if (timedOverlays != null)
             {
-                int fStart = currentAccMs;
-                int fEnd = currentAccMs + frameDelays[i];
-                currentAccMs = fEnd;
-
-                if (fEnd >= startMs && fStart <= endMs)
+                foreach (var to in timedOverlays)
                 {
-                    img.SelectActiveFrame(fd, i);
-                    var frameBmp = new Bitmap(img);
-                    if (overlayImg != null)
+                    if (File.Exists(to.ImagePath))
                     {
-                        using var g = Graphics.FromImage(frameBmp);
-                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        g.DrawImage(overlayImg, 0, 0, frameBmp.Width, frameBmp.Height);
+                        try { loadedTimed.Add((to, System.Drawing.Image.FromFile(to.ImagePath))); } catch { }
                     }
-                    extractedBitmaps.Add(frameBmp);
+                }
+            }
+
+            try
+            {
+                for (int i = 0; i < totalFrames; i++)
+                {
+                    int fStart = currentAccMs;
+                    int fEnd = currentAccMs + frameDelays[i];
+                    currentAccMs = fEnd;
+
+                    if (fEnd >= startMs && fStart <= endMs)
+                    {
+                        img.SelectActiveFrame(fd, i);
+                        var frameBmp = new Bitmap(img);
+                        var frameTime = TimeSpan.FromMilliseconds(fStart);
+
+                        using (var g = Graphics.FromImage(frameBmp))
+                        {
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            if (overlayImg != null)
+                            {
+                                g.DrawImage(overlayImg, 0, 0, frameBmp.Width, frameBmp.Height);
+                            }
+                            foreach (var (meta, overlayImage) in loadedTimed)
+                            {
+                                if (frameTime >= meta.StartTime && frameTime <= meta.EndTime)
+                                {
+                                    g.DrawImage(overlayImage, 0, 0, frameBmp.Width, frameBmp.Height);
+                                }
+                            }
+                        }
+                        extractedBitmaps.Add(frameBmp);
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var (_, overlayImage) in loadedTimed)
+                {
+                    overlayImage.Dispose();
                 }
             }
 

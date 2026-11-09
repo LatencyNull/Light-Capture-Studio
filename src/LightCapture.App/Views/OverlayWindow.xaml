@@ -53,16 +53,16 @@
                 </StackPanel>
             </Border>
 
-            <!-- 8 Tiradores de redimensionado -->
-            <Canvas x:Name="HandlesLayer" Visibility="Collapsed">
-                <Rectangle x:Name="HandleNW" Width="6" Height="6" Fill="#000" Stroke="#FFF" StrokeThickness="1" Cursor="SizeNWSE"/>
-                <Rectangle x:Name="HandleN"  Width="6" Height="6" Fill="#000" Stroke="#FFF" StrokeThickness="1" Cursor="SizeNS"/>
-                <Rectangle x:Name="HandleNE" Width="6" Height="6" Fill="#000" Stroke="#FFF" StrokeThickness="1" Cursor="SizeNESW"/>
-                <Rectangle x:Name="HandleW"  Width="6" Height="6" Fill="#000" Stroke="#FFF" StrokeThickness="1" Cursor="SizeWE"/>
-                <Rectangle x:Name="HandleE"  Width="6" Height="6" Fill="#000" Stroke="#FFF" StrokeThickness="1" Cursor="SizeWE"/>
-                <Rectangle x:Name="HandleSW" Width="6" Height="6" Fill="#000" Stroke="#FFF" StrokeThickness="1" Cursor="SizeNESW"/>
-                <Rectangle x:Name="HandleS"  Width="6" Height="6" Fill="#000" Stroke="#FFF" StrokeThickness="1" Cursor="SizeNS"/>
-                <Rectangle x:Name="HandleSE" Width="6" Height="6" Fill="#000" Stroke="#FFF" StrokeThickness="1" Cursor="SizeNWSE"/>
+            <!-- 8 Tiradores de redimensionado estilo profesional -->
+            <Canvas x:Name="HandlesLayer" Visibility="Collapsed" Panel.ZIndex="60">
+                <Rectangle x:Name="HandleNW" Width="8" Height="8" Fill="#FFFFFF" Stroke="#0284C7" StrokeThickness="1.5" Cursor="SizeNWSE"/>
+                <Rectangle x:Name="HandleN"  Width="8" Height="8" Fill="#FFFFFF" Stroke="#0284C7" StrokeThickness="1.5" Cursor="SizeNS"/>
+                <Rectangle x:Name="HandleNE" Width="8" Height="8" Fill="#FFFFFF" Stroke="#0284C7" StrokeThickness="1.5" Cursor="SizeNESW"/>
+                <Rectangle x:Name="HandleW"  Width="8" Height="8" Fill="#FFFFFF" Stroke="#0284C7" StrokeThickness="1.5" Cursor="SizeWE"/>
+                <Rectangle x:Name="HandleE"  Width="8" Height="8" Fill="#FFFFFF" Stroke="#0284C7" StrokeThickness="1.5" Cursor="SizeWE"/>
+                <Rectangle x:Name="HandleSW" Width="8" Height="8" Fill="#FFFFFF" Stroke="#0284C7" StrokeThickness="1.5" Cursor="SizeNESW"/>
+                <Rectangle x:Name="HandleS"  Width="8" Height="8" Fill="#FFFFFF" Stroke="#0284C7" StrokeThickness="1.5" Cursor="SizeNS"/>
+                <Rectangle x:Name="HandleSE" Width="8" Height="8" Fill="#FFFFFF" Stroke="#0284C7" StrokeThickness="1.5" Cursor="SizeNWSE"/>
             </Canvas>
 
             <!-- Canvas de dibujo interactivo y capas Lens -->

@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -46,6 +48,11 @@ public partial class VideoPreviewWindow : Window
     private DateTime _lastLoopSeekTime = DateTime.MinValue;
     private DispatcherTimer? _playbackTimer;
     private DateTime _lastSocialMenuCloseTime = DateTime.MinValue;
+    private bool _isScrubbingTimeline;
+    private bool _wasPlayingBeforeScrub;
+    private DateTime _lastScrubSeekTime = DateTime.MinValue;
+
+    private readonly List<(DrawingElement Element, Border Pill, TextBlock TimeBadge, Border BadgeBorder, Canvas Canvas)> _trackPillBindings = new();
 
     public VideoPreviewWindow(string videoPath)
     {
@@ -78,7 +85,11 @@ public partial class VideoPreviewWindow : Window
         // Configurar capa de anotaciones vectoriales
         VideoDrawingCanvas.CurrentColor = AnnotationPalette[0];
         VideoDrawingCanvas.StrokeThickness = 3.5;
-        VideoDrawingCanvas.DrawingChanged += () => _cachedTrimmedPath = null;
+        VideoDrawingCanvas.DrawingChanged += () =>
+        {
+            _cachedTrimmedPath = null;
+            Dispatcher.Invoke(RebuildObjectTracks);
+        };
 
         // Inicializar reproductor de video
         MediaVideoPlayer.Source = new Uri(_videoPath, UriKind.Absolute);
@@ -92,6 +103,9 @@ public partial class VideoPreviewWindow : Window
             _totalDuration = MediaVideoPlayer.NaturalDuration.TimeSpan;
             _trimStart = TimeSpan.Zero;
             _trimEnd = _totalDuration;
+
+            VideoDrawingCanvas.TotalVideoDuration = _totalDuration;
+            VideoDrawingCanvas.DefaultStartTime = TimeSpan.Zero;
 
             bool isGif = _videoPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
             var fileInfo = new FileInfo(_videoPath);
@@ -113,7 +127,7 @@ public partial class VideoPreviewWindow : Window
         _playbackTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) };
         _playbackTimer.Tick += (s, e) =>
         {
-            if (!_isPlaying || _isDraggingStart || _isDraggingEnd || _totalDuration.TotalSeconds <= 0) return;
+            if (!_isPlaying || _isDraggingStart || _isDraggingEnd || _isScrubbingTimeline || _totalDuration.TotalSeconds <= 0) return;
 
             var pos = MediaVideoPlayer.Position;
 
@@ -154,6 +168,9 @@ public partial class VideoPreviewWindow : Window
             }
 
             TxtPlaybackPosition.Text = $"{pos.Minutes:D2}:{pos.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
+            VideoDrawingCanvas.CurrentPlaybackTime = pos;
+            VideoDrawingCanvas.InvalidateVisual();
+            HighlightActiveTracks(pos);
         };
         _playbackTimer.Start();
     }
@@ -161,6 +178,7 @@ public partial class VideoPreviewWindow : Window
     private void TimelineContainer_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         UpdateTimelinePins();
+        UpdateAllPillPositions();
     }
 
     private void UpdateTimelinePins()
@@ -360,6 +378,73 @@ public partial class VideoPreviewWindow : Window
 
     private void TimelineCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        if (_isDraggingStart || _isDraggingEnd) return;
+        if (_totalDuration.TotalSeconds <= 0) return;
+
+        _isScrubbingTimeline = true;
+        _wasPlayingBeforeScrub = _isPlaying;
+
+        // Pausar temporalmente mientras se arrastra/friega para previsualización suave fotograma a fotograma
+        if (_isPlaying)
+        {
+            MediaVideoPlayer.Pause();
+            _isPlaying = false;
+            TxtPlayPauseIcon.Text = "▶";
+        }
+        PauseIndicator.Visibility = Visibility.Collapsed;
+
+        TimelineCanvas.CaptureMouse();
+        _lastScrubSeekTime = DateTime.UtcNow;
+        SeekToTimelinePosition(e.GetPosition(TimelineCanvas).X);
+        e.Handled = true;
+    }
+
+    private void TimelineCanvas_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isScrubbingTimeline && e.LeftButton == MouseButtonState.Pressed)
+        {
+            // Throttle a 25ms (~40 fps) para decodificación suave y fluida en tiempo real
+            if ((DateTime.UtcNow - _lastScrubSeekTime).TotalMilliseconds >= 25)
+            {
+                _lastScrubSeekTime = DateTime.UtcNow;
+                SeekToTimelinePosition(e.GetPosition(TimelineCanvas).X);
+            }
+            e.Handled = true;
+        }
+    }
+
+    private void TimelineCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isScrubbingTimeline)
+        {
+            _isScrubbingTimeline = false;
+            TimelineCanvas.ReleaseMouseCapture();
+
+            // Garantizar fotograma exacto en el punto de soltado
+            SeekToTimelinePosition(e.GetPosition(TimelineCanvas).X);
+
+            // Si estaba reproduciendo antes de hacer clic o fregar, reanudar la reproducción
+            if (_wasPlayingBeforeScrub)
+            {
+                MediaVideoPlayer.Play();
+                _isPlaying = true;
+                TxtPlayPauseIcon.Text = "⏸";
+                PauseIndicator.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                MediaVideoPlayer.Pause();
+                _isPlaying = false;
+                TxtPlayPauseIcon.Text = "▶";
+                PauseIndicator.Visibility = Visibility.Visible;
+            }
+
+            e.Handled = true;
+        }
+    }
+
+    private void SeekToTimelinePosition(double clickX)
+    {
         if (_totalDuration.TotalSeconds <= 0) return;
 
         double trackWidth = TimelineContainer.ActualWidth;
@@ -367,8 +452,9 @@ public partial class VideoPreviewWindow : Window
         double maxTravel = trackWidth - pinWidth;
         if (maxTravel <= 0) return;
 
-        double clickX = e.GetPosition(TimelineCanvas).X;
-        double ratio = Math.Max(0, Math.Min(clickX / maxTravel, 1.0));
+        // Centrado respecto al pin para que el cursor y la aguja coincidan con precisión matemática
+        double adjustedX = clickX - (pinWidth / 2.0);
+        double ratio = Math.Max(0, Math.Min(adjustedX / maxTravel, 1.0));
         var targetTime = TimeSpan.FromSeconds(ratio * _totalDuration.TotalSeconds);
 
         // Clamp dentro del rango recortado
@@ -382,11 +468,45 @@ public partial class VideoPreviewWindow : Window
         double needleX = Math.Max(0, Math.Min(needleRatio * maxTravel + (pinWidth / 2) - 1, trackWidth - 3));
         Canvas.SetLeft(Playhead, needleX);
         TxtPlaybackPosition.Text = $"{targetTime.Minutes:D2}:{targetTime.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
+        VideoDrawingCanvas.CurrentPlaybackTime = targetTime;
+        VideoDrawingCanvas.InvalidateVisual();
+        HighlightActiveTracks(targetTime);
     }
 
     private void BtnPlayPause_Click(object sender, RoutedEventArgs e)
     {
         TogglePlayPause();
+    }
+
+    private void BtnStop_Click(object sender, RoutedEventArgs e)
+    {
+        StopPlayback();
+    }
+
+    private void StopPlayback()
+    {
+        MediaVideoPlayer.Pause();
+        _isPlaying = false;
+        TxtPlayPauseIcon.Text = "▶";
+        PauseIndicator.Visibility = Visibility.Visible;
+
+        var targetTime = _trimStart;
+        MediaVideoPlayer.Position = targetTime;
+
+        double trackWidth = TimelineContainer.ActualWidth;
+        double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+        double maxTravel = trackWidth - pinWidth;
+        if (maxTravel > 0 && _totalDuration.TotalSeconds > 0)
+        {
+            double needleRatio = targetTime.TotalSeconds / _totalDuration.TotalSeconds;
+            double needleX = Math.Max(0, Math.Min(needleRatio * maxTravel + (pinWidth / 2) - 1, trackWidth - 3));
+            Canvas.SetLeft(Playhead, needleX);
+        }
+
+        TxtPlaybackPosition.Text = $"{targetTime.Minutes:D2}:{targetTime.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
+        VideoDrawingCanvas.CurrentPlaybackTime = targetTime;
+        VideoDrawingCanvas.InvalidateVisual();
+        HighlightActiveTracks(targetTime);
     }
 
     private void BtnResetTrim_Click(object sender, RoutedEventArgs e)
@@ -433,6 +553,8 @@ public partial class VideoPreviewWindow : Window
         CommitFloatingText();
         _currentVideoTool = tool;
         VideoDrawingCanvas.CurrentTool = tool;
+        VideoDrawingCanvas.DefaultStartTime = MediaVideoPlayer.Position;
+        VideoDrawingCanvas.TotalVideoDuration = _totalDuration;
 
         if (tool != DrawingToolType.None && _isPlaying)
         {
@@ -481,24 +603,42 @@ public partial class VideoPreviewWindow : Window
     private void VideoDrawingCanvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton != MouseButton.Left) return;
+
+        // Si el clic ocurrió sobre la barra de herramientas de anotación, no interferir
+        if (e.OriginalSource is DependencyObject dep)
+        {
+            DependencyObject? cur = dep;
+            while (cur != null && cur != VideoDrawingCanvas)
+            {
+                if (cur == AnnotationToolbar) return;
+                cur = VisualTreeHelper.GetParent(cur);
+            }
+        }
+
         Point p = e.GetPosition(VideoDrawingCanvas);
 
         if (_currentVideoTool == DrawingToolType.None)
         {
             TogglePlayPause();
+            e.Handled = true;
             return;
         }
+
+        VideoDrawingCanvas.DefaultStartTime = MediaVideoPlayer.Position;
+        VideoDrawingCanvas.TotalVideoDuration = _totalDuration;
 
         if (_currentVideoTool == DrawingToolType.Text)
         {
             CommitFloatingText();
             ShowFloatingTextInput(p);
+            e.Handled = true;
             return;
         }
 
         CommitFloatingText();
         VideoDrawingCanvas.CaptureMouse();
         VideoDrawingCanvas.StartDrawing(p);
+        e.Handled = true;
     }
 
     private void VideoDrawingCanvas_MouseMove(object sender, MouseEventArgs e)
@@ -508,6 +648,7 @@ public partial class VideoPreviewWindow : Window
         {
             Point p = e.GetPosition(VideoDrawingCanvas);
             VideoDrawingCanvas.UpdateDrawing(p);
+            e.Handled = true;
         }
     }
 
@@ -520,19 +661,17 @@ public partial class VideoPreviewWindow : Window
         }
         Point p = e.GetPosition(VideoDrawingCanvas);
         VideoDrawingCanvas.EndDrawing(p);
+        e.Handled = true;
     }
 
     private void ShowFloatingTextInput(Point p)
     {
-        _textInputPosition = p;
         double maxLeft = Math.Max(0, VideoContainer.ActualWidth - 140);
         double maxTop = Math.Max(0, VideoContainer.ActualHeight - 40);
+        Point adjusted = new Point(Math.Min(maxLeft, Math.Max(0, p.X)), Math.Min(maxTop, Math.Max(0, p.Y)));
+        _textInputPosition = adjusted;
 
-        VideoFloatingInput.Margin = new Thickness(
-            Math.Min(maxLeft, Math.Max(0, p.X)),
-            Math.Min(maxTop, Math.Max(0, p.Y)),
-            0, 0
-        );
+        VideoFloatingInput.Margin = new Thickness(adjusted.X, adjusted.Y, 0, 0);
         VideoFloatingInput.Foreground = new SolidColorBrush(VideoDrawingCanvas.CurrentColor);
         VideoFloatingInput.Text = string.Empty;
         VideoFloatingInput.Visibility = Visibility.Visible;
@@ -611,6 +750,342 @@ public partial class VideoPreviewWindow : Window
         }
     }
 
+    #region Pistas de Objetos estilo CapCut
+
+    private void RebuildObjectTracks()
+    {
+        _trackPillBindings.Clear();
+        ObjectTracksStackPanel.Children.Clear();
+
+        var elements = VideoDrawingCanvas.Elements;
+        if (elements.Count == 0)
+        {
+            ObjectTracksPanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        ObjectTracksPanel.Visibility = Visibility.Visible;
+        TxtObjectTracksCount.Text = $"{elements.Count} {(elements.Count == 1 ? "objeto" : "objetos")}";
+
+        foreach (var elem in elements)
+        {
+            var rowGrid = new Grid { Margin = new Thickness(0, 2, 0, 2), Height = 28 };
+            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(190) });
+            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            // Columna 0: Información y botón de eliminar
+            var infoPanel = new DockPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
+
+            var btnDelete = new System.Windows.Controls.Button
+            {
+                Content = new TextBlock { Text = "✕", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68)) },
+                Width = 20,
+                Height = 20,
+                Background = System.Windows.Media.Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                ToolTip = "Eliminar este objeto del video",
+                Margin = new Thickness(4, 0, 0, 0)
+            };
+            DockPanel.SetDock(btnDelete, Dock.Right);
+            btnDelete.Click += (s, e) => VideoDrawingCanvas.RemoveElement(elem);
+            infoPanel.Children.Add(btnDelete);
+
+            var badgeBorder = new Border
+            {
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(40, 56, 189, 248)),
+                BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, 56, 189, 248)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(5, 1, 5, 1),
+                Margin = new Thickness(4, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            var txtTimeBadge = new TextBlock
+            {
+                FontFamily = new System.Windows.Media.FontFamily("Consolas, Segoe UI"),
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248)),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            badgeBorder.Child = txtTimeBadge;
+            DockPanel.SetDock(badgeBorder, Dock.Right);
+            infoPanel.Children.Add(badgeBorder);
+
+            var leftStack = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            var txtIcon = new TextBlock { Text = elem.IconEmoji, FontSize = 12, Margin = new Thickness(0, 0, 5, 0), VerticalAlignment = VerticalAlignment.Center };
+            var colorDot = new System.Windows.Shapes.Ellipse
+            {
+                Width = 8,
+                Height = 8,
+                Fill = new SolidColorBrush(elem.Color),
+                Margin = new Thickness(0, 0, 5, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            string labelText = elem.DisplayName;
+            if (elem is TextDrawingElement tde && !string.IsNullOrWhiteSpace(tde.Text))
+            {
+                string clean = tde.Text.Replace("\r", " ").Replace("\n", " ").Trim();
+                string preview = clean.Length > 8 ? clean.Substring(0, 8) + "…" : clean;
+                labelText = $"\"{preview}\"";
+            }
+
+            var txtName = new TextBlock
+            {
+                Text = labelText,
+                FontSize = 11,
+                FontWeight = FontWeights.Medium,
+                Foreground = (System.Windows.Media.Brush)FindResource("PrimaryText"),
+                VerticalAlignment = VerticalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 65
+            };
+            leftStack.Children.Add(txtIcon);
+            leftStack.Children.Add(colorDot);
+            leftStack.Children.Add(txtName);
+
+            infoPanel.Children.Add(leftStack);
+            Grid.SetColumn(infoPanel, 0);
+            rowGrid.Children.Add(infoPanel);
+
+            // Columna 1: Pista y barra interactiva (Pill)
+            var trackBorder = new Border
+            {
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(30, 15, 23, 42)),
+                BorderBrush = (System.Windows.Media.Brush)FindResource("ToolbarSeparator"),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(5),
+                Height = 22,
+                VerticalAlignment = VerticalAlignment.Center,
+                ClipToBounds = true
+            };
+            var trackCanvas = new Canvas
+            {
+                Background = System.Windows.Media.Brushes.Transparent,
+                ClipToBounds = true,
+                Height = 22
+            };
+            trackBorder.Child = trackCanvas;
+            Grid.SetColumn(trackBorder, 1);
+            rowGrid.Children.Add(trackBorder);
+
+            // Bloque / Pill arrastrable y redimensionable
+            var pill = new Border
+            {
+                Height = 18,
+                CornerRadius = new CornerRadius(4),
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(120, elem.Color.R, elem.Color.G, elem.Color.B)),
+                BorderBrush = new SolidColorBrush(elem.Color),
+                BorderThickness = new Thickness(1.5),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                ClipToBounds = true,
+                ToolTip = "Arrastra el bloque para moverlo en el tiempo, o los bordes para cambiar cuánto dura"
+            };
+            Canvas.SetTop(pill, 2);
+
+            var pillGrid = new Grid();
+            var pillText = new TextBlock
+            {
+                Text = $"{elem.IconEmoji} {labelText}",
+                FontSize = 9.5,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = System.Windows.Media.Brushes.White,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Margin = new Thickness(6, 0, 6, 0),
+                IsHitTestVisible = false
+            };
+            pillGrid.Children.Add(pillText);
+
+            var leftHandle = new Border
+            {
+                Width = 5,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(120, 255, 255, 255)),
+                Cursor = System.Windows.Input.Cursors.SizeWE,
+                IsHitTestVisible = false
+            };
+            var rightHandle = new Border
+            {
+                Width = 5,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(120, 255, 255, 255)),
+                Cursor = System.Windows.Input.Cursors.SizeWE,
+                IsHitTestVisible = false
+            };
+            pillGrid.Children.Add(leftHandle);
+            pillGrid.Children.Add(rightHandle);
+            pill.Child = pillGrid;
+
+            trackCanvas.Children.Add(pill);
+
+            var binding = (elem, pill, txtTimeBadge, badgeBorder, trackCanvas);
+            _trackPillBindings.Add(binding);
+
+            SetupPillInteractions(elem, pill, trackCanvas, txtTimeBadge);
+
+            ObjectTracksStackPanel.Children.Add(rowGrid);
+        }
+
+        UpdateAllPillPositions();
+    }
+
+    private void SetupPillInteractions(DrawingElement elem, Border pill, Canvas trackCanvas, TextBlock txtTimeBadge)
+    {
+        int dragMode = 0; // 0=None, 1=Move, 2=ResizeStart, 3=ResizeEnd
+        double dragStartMouseX = 0;
+        TimeSpan initialStart = TimeSpan.Zero;
+        TimeSpan initialEnd = TimeSpan.Zero;
+
+        pill.MouseMove += (s, e) =>
+        {
+            if (!pill.IsMouseCaptured)
+            {
+                Point pt = e.GetPosition(pill);
+                if (pt.X <= 6 || pt.X >= pill.ActualWidth - 6)
+                {
+                    pill.Cursor = System.Windows.Input.Cursors.SizeWE;
+                }
+                else
+                {
+                    pill.Cursor = System.Windows.Input.Cursors.Hand;
+                }
+                return;
+            }
+
+            double currentMouseX = e.GetPosition(trackCanvas).X;
+            double deltaX = currentMouseX - dragStartMouseX;
+            double cWidth = trackCanvas.ActualWidth;
+            if (cWidth <= 0 || _totalDuration.TotalSeconds <= 0) return;
+
+            double deltaSec = (deltaX / cWidth) * _totalDuration.TotalSeconds;
+
+            if (dragMode == 1) // Mover bloque completo
+            {
+                var duration = initialEnd - initialStart;
+                double newStart = Math.Max(0, Math.Min(_totalDuration.TotalSeconds - duration.TotalSeconds, initialStart.TotalSeconds + deltaSec));
+                elem.StartTime = TimeSpan.FromSeconds(newStart);
+                elem.EndTime = elem.StartTime + duration;
+            }
+            else if (dragMode == 2) // Redimensionar inicio
+            {
+                double minDur = 0.3;
+                double newStart = Math.Max(0, Math.Min(initialEnd.TotalSeconds - minDur, initialStart.TotalSeconds + deltaSec));
+                elem.StartTime = TimeSpan.FromSeconds(newStart);
+            }
+            else if (dragMode == 3) // Redimensionar fin
+            {
+                double minDur = 0.3;
+                double newEnd = Math.Max(initialStart.TotalSeconds + minDur, Math.Min(_totalDuration.TotalSeconds, initialEnd.TotalSeconds + deltaSec));
+                elem.EndTime = TimeSpan.FromSeconds(newEnd);
+            }
+
+            UpdateSinglePillPosition(elem, pill, trackCanvas, txtTimeBadge);
+            _cachedTrimmedPath = null;
+            VideoDrawingCanvas.InvalidateVisual();
+
+            var targetTime = (dragMode == 3) ? (elem.EndTime ?? TimeSpan.Zero) : (elem.StartTime ?? TimeSpan.Zero);
+            MediaVideoPlayer.Position = targetTime;
+            e.Handled = true;
+        };
+
+        pill.MouseLeftButtonDown += (s, e) =>
+        {
+            Point pt = e.GetPosition(pill);
+            if (pt.X <= 6)
+                dragMode = 2; // Resize start
+            else if (pt.X >= pill.ActualWidth - 6)
+                dragMode = 3; // Resize end
+            else
+                dragMode = 1; // Move
+
+            dragStartMouseX = e.GetPosition(trackCanvas).X;
+            initialStart = elem.StartTime ?? TimeSpan.Zero;
+            initialEnd = elem.EndTime ?? _totalDuration;
+
+            pill.CaptureMouse();
+            MediaVideoPlayer.Pause();
+            _isPlaying = false;
+            TxtPlayPauseIcon.Text = "▶";
+            PauseIndicator.Visibility = Visibility.Visible;
+            e.Handled = true;
+        };
+
+        pill.MouseLeftButtonUp += (s, e) =>
+        {
+            if (pill.IsMouseCaptured)
+            {
+                pill.ReleaseMouseCapture();
+                dragMode = 0;
+                _cachedTrimmedPath = null;
+                e.Handled = true;
+            }
+        };
+
+        trackCanvas.SizeChanged += (s, e) =>
+        {
+            UpdateSinglePillPosition(elem, pill, trackCanvas, txtTimeBadge);
+        };
+    }
+
+    private void UpdateSinglePillPosition(DrawingElement elem, Border pill, Canvas trackCanvas, TextBlock txtTimeBadge)
+    {
+        double cWidth = trackCanvas.ActualWidth;
+        if (cWidth <= 0 || _totalDuration.TotalSeconds <= 0) return;
+
+        var start = elem.StartTime ?? TimeSpan.Zero;
+        var end = elem.EndTime ?? _totalDuration;
+        if (end > _totalDuration) end = _totalDuration;
+        if (end < start) end = start + TimeSpan.FromSeconds(0.5);
+
+        double startRatio = Math.Max(0, Math.Min(start.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
+        double endRatio = Math.Max(0, Math.Min(end.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
+
+        double x = startRatio * cWidth;
+        double w = Math.Max(18, (endRatio - startRatio) * cWidth);
+
+        Canvas.SetLeft(pill, x);
+        pill.Width = Math.Min(w, cWidth - x);
+
+        txtTimeBadge.Text = $"{start.Minutes:D2}:{start.Seconds:D2} - {end.Minutes:D2}:{end.Seconds:D2}";
+    }
+
+    private void UpdateAllPillPositions()
+    {
+        foreach (var b in _trackPillBindings)
+        {
+            UpdateSinglePillPosition(b.Element, b.Pill, b.Canvas, b.TimeBadge);
+        }
+    }
+
+    private void HighlightActiveTracks(TimeSpan currentPos)
+    {
+        foreach (var b in _trackPillBindings)
+        {
+            var start = b.Element.StartTime ?? TimeSpan.Zero;
+            var end = b.Element.EndTime ?? _totalDuration;
+            bool isActive = currentPos >= start && currentPos <= end;
+
+            if (isActive)
+            {
+                b.Pill.BorderThickness = new Thickness(2.0);
+                b.BadgeBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, 56, 189, 248));
+                b.TimeBadge.Foreground = System.Windows.Media.Brushes.White;
+            }
+            else
+            {
+                b.Pill.BorderThickness = new Thickness(1.5);
+                b.BadgeBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(40, 56, 189, 248));
+                b.TimeBadge.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248));
+            }
+        }
+    }
+
+    #endregion
+
     private async Task<string> GetEffectiveVideoPathAsync()
     {
         bool isTrimmed = _trimStart > TimeSpan.FromMilliseconds(150) || 
@@ -629,25 +1104,35 @@ public partial class VideoPreviewWindow : Window
 
         try
         {
-            string? overlayPngPath = null;
-            if (hasAnnotations)
+            List<TimedOverlay>? timedOverlays = null;
+            if (hasAnnotations && VideoDrawingCanvas != null)
             {
                 int natW = MediaVideoPlayer.NaturalVideoWidth > 0 ? MediaVideoPlayer.NaturalVideoWidth : (int)VideoContainer.ActualWidth;
                 int natH = MediaVideoPlayer.NaturalVideoHeight > 0 ? MediaVideoPlayer.NaturalVideoHeight : (int)VideoContainer.ActualHeight;
 
                 string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
                 if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
-                overlayPngPath = Path.Combine(tempDir, $"Overlay_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.png");
 
-                VideoDrawingCanvas?.ExportVideoOverlayToPng(overlayPngPath, natW, natH, VideoContainer.ActualWidth, VideoContainer.ActualHeight);
+                timedOverlays = new List<TimedOverlay>();
+                foreach (var elem in VideoDrawingCanvas.Elements)
+                {
+                    string elemPng = Path.Combine(tempDir, $"OverlayElem_{elem.Id}_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.png");
+                    VideoDrawingCanvas.ExportSingleElementOverlayToPng(elem, elemPng, natW, natH, VideoContainer.ActualWidth, VideoContainer.ActualHeight);
+
+                    var start = elem.StartTime ?? TimeSpan.Zero;
+                    var end = elem.EndTime ?? _totalDuration;
+                    if (end <= start) end = start + TimeSpan.FromSeconds(1);
+
+                    timedOverlays.Add(new TimedOverlay(elemPng, start, end));
+                }
             }
 
             string toastMsg = hasAnnotations && isTrimmed
-                ? "✂️🎨 Procesando recorte y anotaciones del clip..."
-                : (hasAnnotations ? "🎨 Estampando anotaciones en el video..." : "✂️ Procesando recorte del clip...");
+                ? "✂️🎨 Procesando recorte y pistas del video..."
+                : (hasAnnotations ? "🎨 Estampando pistas de objetos en el video..." : "✂️ Procesando recorte del clip...");
 
             new ToastNotificationWindow(toastMsg, "/Assets/Icons/save.png").Show();
-            _cachedTrimmedPath = await VideoTrimmerService.TrimAsync(_videoPath, _trimStart, _trimEnd, overlayPngPath);
+            _cachedTrimmedPath = await VideoTrimmerService.TrimAsync(_videoPath, _trimStart, _trimEnd, null, timedOverlays);
             return _cachedTrimmedPath;
         }
         catch (Exception ex)
