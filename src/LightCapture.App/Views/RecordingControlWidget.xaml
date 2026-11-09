@@ -80,7 +80,7 @@
 
                     <!-- Opción GIF (máx 15s) -->
                     <Button x:Name="BtnFormatGif" Style="{StaticResource FormatToggleBtnStyle}" Click="BtnFormatGif_Click" ToolTip="Grabar GIF Animado en bucle sin sonido (máximo 15 segundos)">
-                        <TextBlock x:Name="TxtFormatGif" Text="🎞️ GIF (≤15s)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryText}"/>
+                        <TextBlock x:Name="TxtFormatGif" Text="GIF (≤15s)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryText}"/>
                     </Button>
                 </StackPanel>
             </Border>
