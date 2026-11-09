@@ -17,14 +17,9 @@
 
 ## 🚀 Descripción General
 
-**Light Capture Studio** redefine la experiencia de captura en el escritorio en 2026. Inspirado en la agilidad y el flujo de trabajo intuitivo de herramientas clásicas como Lightshot, pero reconstruido desde cero para satisfacer las necesidades actuales. Mientras que las aplicaciones tradicionales se limitaban a capturas estáticas básicas, **Light Capture Studio** eleva la productividad con traducción en vivo sobre la pantalla, grabación fluida de pantalla (**video MP4 y GIF animado** con audio del sistema y micrófono), OCR nativo de Windows y privacidad local absoluta:
+**Light Capture Studio** es una suite de captura, traducción y grabación de pantalla para Windows, diseñada como una evolución moderna de herramientas clásicas como Lightshot. Su propósito es consolidar en un único ejecutable ligero y portable las tareas cotidianas que antes requerían múltiples programas dispersos: capturar áreas con precisión, traducir textos de inmediato sin salir de la pantalla, grabar clips con audio y extraer texto de imágenes mediante OCR.
 
-- 🌐 **Traducción en Vivo en Pantalla**: Traduce videojuegos, cómics, PDFs o textos no seleccionables directamente sobre la pantalla con una capa estilo Google Lens.
-- 🎥 **Grabación de Video MP4 y GIF Animado**: Graba clips MP4 nítidos con sonido del sistema y narración por micrófono, o genera GIFs animados ligeros listos para Discord, GitHub y chats.
-- 🎬 **Anotaciones en Video y Línea de Tiempo de Objetos**: Dibuja flechas, inserta textos explicativos, rectángulos resaltadores, trazos libres y censura Knox directamente sobre tus videos, con una línea de tiempo visual interactiva para controlar cuándo aparece cada elemento y cuánto tiempo dura.
-- 🔍 **OCR Nativo de Windows**: Extrae texto bloqueado de videos de YouTube, documentos escaneados e imágenes directamente al portapapeles (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>).
-- 🕒 **Historial Local con Búsqueda Inteligente**: Guarda e indexa automáticamente cada captura en tu carpeta `Documentos\Light Capture Studio`. ¡Busca semanas después por cualquier palabra que aparezca en la imagen!
-- 🔒 **Privacidad 100% Local**: Sin subidas a nubes públicas ni enlaces expuestos. Todo lo que ocurre en tu pantalla se queda en tu computadora.
+A diferencia del software de captura convencional, este proyecto sigue una arquitectura **100% local**: no sube imágenes a servidores públicos ni depende de servicios web de terceros para el almacenamiento. Todo el procesamiento de imágenes, OCR, codificación de video e indexación de historial se ejecuta dentro de tu propio equipo.
 
 ---
 
