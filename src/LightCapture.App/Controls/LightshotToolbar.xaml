@@ -31,7 +31,7 @@
             </Setter>
         </Style>
 
-        <!-- Botón estándar estilo Emoji con zoom hover sutil en el icono -->
+        <!-- Botón estándar estilo Emoji con efecto ola dock -->
         <Style x:Key="EmojiBtnStyle" TargetType="Button">
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="32"/>
@@ -42,27 +42,20 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
-                            <Grid x:Name="iconContainer" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Grid.RenderTransform>
-                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                </Grid.RenderTransform>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ToolbarHover}"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToolbarBorder}"/>
-                                <Setter TargetName="iconContainer" Property="RenderTransform">
-                                    <Setter.Value>
-                                        <ScaleTransform ScaleX="1.25" ScaleY="1.25"/>
-                                    </Setter.Value>
-                                </Setter>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ToolbarPressed}"/>
-                                <Setter TargetName="iconContainer" Property="RenderTransform">
+                                <Setter TargetName="border" Property="RenderTransform">
                                     <Setter.Value>
                                         <ScaleTransform ScaleX="0.94" ScaleY="0.94"/>
                                     </Setter.Value>
@@ -74,7 +67,7 @@
             </Setter>
         </Style>
 
-        <!-- Toggle RadioButton estilo Emoji con resaltado activo y zoom hover sutil en el icono -->
+        <!-- Toggle RadioButton estilo Emoji con resaltado activo y efecto ola dock -->
         <Style x:Key="EmojiToolToggleStyle" TargetType="RadioButton">
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="32"/>
@@ -85,23 +78,16 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
-                            <Grid x:Name="iconContainer" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Grid.RenderTransform>
-                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                </Grid.RenderTransform>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ToolbarHover}"/>
                                 <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToolbarBorder}"/>
-                                <Setter TargetName="iconContainer" Property="RenderTransform">
-                                    <Setter.Value>
-                                        <ScaleTransform ScaleX="1.25" ScaleY="1.25"/>
-                                    </Setter.Value>
-                                </Setter>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#2563EB"/>
@@ -110,7 +96,7 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource ToolbarPressed}"/>
-                                <Setter TargetName="iconContainer" Property="RenderTransform">
+                                <Setter TargetName="border" Property="RenderTransform">
                                     <Setter.Value>
                                         <ScaleTransform ScaleX="0.94" ScaleY="0.94"/>
                                     </Setter.Value>
@@ -189,18 +175,20 @@
     </UserControl.Resources>
 
     <!-- Canvas contenedor de ambas barras de herramientas posicionables -->
-    <Canvas x:Name="ToolbarRoot" Width="0" Height="0">
+    <Canvas x:Name="ToolbarRoot" Width="0" Height="0" ClipToBounds="False">
 
         <!-- ============================================================== -->
         <!-- 1. BARRA VERTICAL DERECHA (Herramientas Esenciales de Dibujo)  -->
         <!-- ============================================================== -->
         <Border x:Name="VerticalBar" Canvas.Left="0" Canvas.Top="0"
                 Background="{DynamicResource ToolbarBackground}" BorderBrush="{DynamicResource ToolbarBorder}" BorderThickness="1.5"
-                CornerRadius="14" Padding="3" Margin="6,0,0,0">
+                CornerRadius="14" Padding="3" Margin="6,0,0,0"
+                ClipToBounds="False"
+                MouseMove="VerticalBar_MouseMove" MouseLeave="VerticalBar_MouseLeave">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.4"/>
             </Border.Effect>
-            <StackPanel Orientation="Vertical">
+            <StackPanel x:Name="VerticalStackPanel" Orientation="Vertical" ClipToBounds="False">
                 <!-- 1. ✏️ Pluma -->
                 <RadioButton x:Name="BtnPen" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Pluma de dibujo [✏️]" Click="BtnPen_Click">
                     <Image Source="/Assets/Icons/pen.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -258,11 +246,13 @@
         <!-- ============================================== -->
         <Border x:Name="HorizontalBar" Canvas.Left="0" Canvas.Top="0"
                 Background="{DynamicResource ToolbarBackground}" BorderBrush="{DynamicResource ToolbarBorder}" BorderThickness="1.5"
-                CornerRadius="14" Padding="3" Margin="0,6,0,0">
+                CornerRadius="14" Padding="3" Margin="0,6,0,0"
+                ClipToBounds="False"
+                MouseMove="HorizontalBar_MouseMove" MouseLeave="HorizontalBar_MouseLeave">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.4"/>
             </Border.Effect>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel x:Name="HorizontalStackPanel" Orientation="Horizontal" ClipToBounds="False">
                 <!-- 1. 📤 Compartir en Redes Sociales, WhatsApp, Facebook, Instagram, Email (Totalmente a la izquierda) -->
                 <Button x:Name="BtnShare" Style="{StaticResource EmojiBtnStyle}" ToolTip="Compartir captura [📤]&#x0a;WhatsApp, Facebook, Instagram, Correo, Telegram, X, Nube..." Click="BtnShare_Click">
                     <!-- Icono universal de compartir en móviles (3 nodos conectados) -->

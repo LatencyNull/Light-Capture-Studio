@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using LightCapture.Core.Models;
 using LightCapture.Core.Services;
@@ -13,6 +14,9 @@ using Shape = System.Windows.Shapes.Shape;
 using ButtonBase = System.Windows.Controls.Primitives.ButtonBase;
 using RadioButton = System.Windows.Controls.RadioButton;
 using ColorConverter = System.Windows.Media.ColorConverter;
+using Panel = System.Windows.Controls.Panel;
+using Point = System.Windows.Point;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
 namespace LightCapture.App.Controls;
 
@@ -78,6 +82,15 @@ public partial class LightshotToolbar : UserControl
         {
             BtnShare.ContextMenu.Closed += (s, e) => _lastShareMenuCloseTime = DateTime.UtcNow;
         }
+
+        IsVisibleChanged += (s, e) =>
+        {
+            if (!IsVisible)
+            {
+                ResetWaveEffect(HorizontalStackPanel);
+                ResetWaveEffect(VerticalStackPanel);
+            }
+        };
     }
 
     public void SetTranslateActiveState(bool isTranslated, bool isShowingTranslation)
@@ -348,4 +361,103 @@ public partial class LightshotToolbar : UserControl
     private void BtnCopy_Click(object sender, RoutedEventArgs e) => CopyRequested?.Invoke();
     private void BtnSave_Click(object sender, RoutedEventArgs e) => SaveRequested?.Invoke();
     private void BtnClose_Click(object sender, RoutedEventArgs e) => CloseRequested?.Invoke();
+
+    // =========================================================================
+    // EFECTO OLA MAC OS DOCK / WINSTEP NEXUS (Magnificación Continua y Suave)
+    // =========================================================================
+    private void HorizontalBar_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (HorizontalStackPanel == null) return;
+        Point pos = e.GetPosition(HorizontalStackPanel);
+        ApplyWaveEffect(HorizontalStackPanel, pos, isHorizontal: true);
+    }
+
+    private void HorizontalBar_MouseLeave(object sender, MouseEventArgs e)
+    {
+        if (HorizontalStackPanel == null) return;
+        ResetWaveEffect(HorizontalStackPanel);
+    }
+
+    private void VerticalBar_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (VerticalStackPanel == null) return;
+        Point pos = e.GetPosition(VerticalStackPanel);
+        ApplyWaveEffect(VerticalStackPanel, pos, isHorizontal: false);
+    }
+
+    private void VerticalBar_MouseLeave(object sender, MouseEventArgs e)
+    {
+        if (VerticalStackPanel == null) return;
+        ResetWaveEffect(VerticalStackPanel);
+    }
+
+    private void ApplyWaveEffect(Panel panel, Point mousePos, bool isHorizontal)
+    {
+        const double radius = 80.0;     // Radio de influencia de la ola en píxeles (~2.5 botones contiguos)
+        const double maxScale = 1.38;   // Magnificación máxima en la cresta de la ola (+25%+ zoom)
+
+        foreach (UIElement child in panel.Children)
+        {
+            if (child is ButtonBase btn && btn.Content is FrameworkElement icon)
+            {
+                double w = btn.ActualWidth > 0 ? btn.ActualWidth : 32.0;
+                double h = btn.ActualHeight > 0 ? btn.ActualHeight : 32.0;
+                Point btnCenter = btn.TranslatePoint(new Point(w / 2.0, h / 2.0), panel);
+                double distance = isHorizontal
+                    ? Math.Abs(mousePos.X - btnCenter.X)
+                    : Math.Abs(mousePos.Y - btnCenter.Y);
+
+                double scale = 1.0;
+                if (distance < radius)
+                {
+                    // Curva de campana cosenoidal: fluida, continua y natural como en macOS Dock / Nexus
+                    double waveFactor = Math.Cos((distance / radius) * (Math.PI / 2.0));
+                    scale = 1.0 + (maxScale - 1.0) * waveFactor;
+                }
+
+                if (icon.RenderTransform is not ScaleTransform st || st.IsFrozen)
+                {
+                    st = new ScaleTransform(1.0, 1.0);
+                    icon.RenderTransformOrigin = new Point(0.5, 0.5);
+                    icon.RenderTransform = st;
+                }
+
+                // Desactivar animaciones activas para latencia 0ms durante el movimiento continuo del mouse
+                st.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                st.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+                st.ScaleX = scale;
+                st.ScaleY = scale;
+
+                // Elevar dinámicamente en Z el icono ampliado para superposición limpia
+                Panel.SetZIndex(btn, (int)(scale * 100));
+            }
+        }
+    }
+
+    private void ResetWaveEffect(Panel? panel)
+    {
+        if (panel == null) return;
+
+        foreach (UIElement child in panel.Children)
+        {
+            if (child is ButtonBase btn && btn.Content is FrameworkElement icon)
+            {
+                if (icon.RenderTransform is ScaleTransform st && !st.IsFrozen)
+                {
+                    if (Math.Abs(st.ScaleX - 1.0) > 0.005 || Math.Abs(st.ScaleY - 1.0) > 0.005)
+                    {
+                        var anim = new DoubleAnimation
+                        {
+                            To = 1.0,
+                            Duration = TimeSpan.FromMilliseconds(160),
+                            DecelerationRatio = 0.8
+                        };
+                        st.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
+                        st.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
+                    }
+                }
+                Panel.SetZIndex(btn, 0);
+            }
+        }
+    }
 }
