@@ -110,16 +110,15 @@ public partial class VideoPreviewWindow : Window
                 }
             }
 
-            // Bucle inteligente al alcanzar el límite final del recorte
+            // Al alcanzar el límite final del recorte, detener la reproducción (no repetir en bucle infinito)
             if (pos >= _trimEnd)
             {
-                if (!_isLooping && (DateTime.UtcNow - _lastLoopSeekTime).TotalMilliseconds > 300)
-                {
-                    _isLooping = true;
-                    _lastLoopSeekTime = DateTime.UtcNow;
-                    MediaVideoPlayer.Position = _trimStart;
-                    pos = _trimStart;
-                }
+                MediaVideoPlayer.Pause();
+                _isPlaying = false;
+                TxtPlayPauseIcon.Text = "▶";
+                PauseIndicator.Visibility = Visibility.Visible;
+                MediaVideoPlayer.Position = _trimEnd;
+                pos = _trimEnd;
             }
 
             // Actualizar aguja de reproducción (playhead) en el espacio del track
@@ -401,10 +400,11 @@ public partial class VideoPreviewWindow : Window
 
     private void MediaVideoPlayer_MediaEnded(object sender, RoutedEventArgs e)
     {
-        _isLooping = true;
-        _lastLoopSeekTime = DateTime.UtcNow;
-        MediaVideoPlayer.Position = _trimStart;
-        MediaVideoPlayer.Play();
+        MediaVideoPlayer.Pause();
+        _isPlaying = false;
+        TxtPlayPauseIcon.Text = "▶";
+        PauseIndicator.Visibility = Visibility.Visible;
+        MediaVideoPlayer.Position = _trimEnd;
     }
 
     private void VideoPlayer_MouseClick(object sender, MouseButtonEventArgs e)

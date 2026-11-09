@@ -33,7 +33,7 @@
                     <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource MenuHover}"/>
                     <Setter TargetName="IconHost" Property="RenderTransform">
                         <Setter.Value>
-                            <ScaleTransform ScaleX="1.12" ScaleY="1.12"/>
+                            <ScaleTransform ScaleX="1.25" ScaleY="1.25"/>
                         </Setter.Value>
                     </Setter>
                 </Trigger>
@@ -87,7 +87,7 @@
                     <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource MenuHover}"/>
                     <Setter TargetName="IconHost" Property="RenderTransform">
                         <Setter.Value>
-                            <ScaleTransform ScaleX="1.12" ScaleY="1.12"/>
+                            <ScaleTransform ScaleX="1.25" ScaleY="1.25"/>
                         </Setter.Value>
                     </Setter>
                 </Trigger>

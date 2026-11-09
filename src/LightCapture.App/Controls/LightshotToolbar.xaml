@@ -56,7 +56,7 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToolbarBorder}"/>
                                 <Setter TargetName="iconContainer" Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="1.10" ScaleY="1.10"/>
+                                        <ScaleTransform ScaleX="1.25" ScaleY="1.25"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
@@ -99,7 +99,7 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToolbarBorder}"/>
                                 <Setter TargetName="iconContainer" Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="1.10" ScaleY="1.10"/>
+                                        <ScaleTransform ScaleX="1.25" ScaleY="1.25"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
