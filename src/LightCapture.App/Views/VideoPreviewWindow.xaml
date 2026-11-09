@@ -7,8 +7,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Topmost="True"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        Topmost="True">
 
     <Window.Resources>
         <!-- Estilo botones de acción rápida -->
@@ -143,8 +142,8 @@
                 <RowDefinition Height="Auto"/> <!-- Barra de acciones -->
             </Grid.RowDefinitions>
 
-            <!-- 1. Cabecera -->
-            <Grid Grid.Row="0" Margin="0,0,0,12">
+            <!-- 1. Cabecera (Arrastrar ventana estilo Explorador de Windows) -->
+            <Grid Grid.Row="0" Margin="0,0,0,12" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtHeaderIcon" Text="🎥" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
                     <TextBlock x:Name="TxtHeaderTitle" Text="Previsualización del Clip" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>

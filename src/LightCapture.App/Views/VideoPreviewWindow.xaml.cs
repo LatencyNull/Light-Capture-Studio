@@ -25,12 +25,18 @@ public partial class VideoPreviewWindow : Window
     private bool _isDraggingStart;
     private bool _isDraggingEnd;
     private DispatcherTimer? _playbackTimer;
+    private DateTime _lastSocialMenuCloseTime = DateTime.MinValue;
 
     public VideoPreviewWindow(string videoPath)
     {
         InitializeComponent();
 
         _videoPath = videoPath;
+
+        if (BtnMoreSocial.ContextMenu != null)
+        {
+            BtnMoreSocial.ContextMenu.Closed += (s, e) => _lastSocialMenuCloseTime = DateTime.UtcNow;
+        }
 
         bool isGif = _videoPath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
         if (isGif)
@@ -294,7 +300,7 @@ public partial class VideoPreviewWindow : Window
         TogglePlayPause();
     }
 
-    private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ButtonState == MouseButtonState.Pressed)
         {
@@ -405,13 +411,23 @@ public partial class VideoPreviewWindow : Window
 
     private void BtnMoreSocial_Click(object sender, RoutedEventArgs e)
     {
-        if (BtnMoreSocial.ContextMenu != null)
+        if (BtnMoreSocial.ContextMenu == null) return;
+
+        if (BtnMoreSocial.ContextMenu.IsOpen)
         {
-            BtnMoreSocial.ContextMenu.PlacementTarget = BtnMoreSocial;
-            BtnMoreSocial.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
-            BtnMoreSocial.ContextMenu.VerticalOffset = -6;
-            BtnMoreSocial.ContextMenu.IsOpen = true;
+            BtnMoreSocial.ContextMenu.IsOpen = false;
+            return;
         }
+
+        if ((DateTime.UtcNow - _lastSocialMenuCloseTime).TotalMilliseconds < 350)
+        {
+            return;
+        }
+
+        BtnMoreSocial.ContextMenu.PlacementTarget = BtnMoreSocial;
+        BtnMoreSocial.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
+        BtnMoreSocial.ContextMenu.VerticalOffset = -6;
+        BtnMoreSocial.ContextMenu.IsOpen = true;
     }
 
     private async void ShareTikTok_Click(object sender, RoutedEventArgs e)

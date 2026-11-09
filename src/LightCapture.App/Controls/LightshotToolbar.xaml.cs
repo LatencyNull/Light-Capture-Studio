@@ -66,6 +66,10 @@ public partial class LightshotToolbar : UserControl
     public LightshotToolbar()
     {
         InitializeComponent();
+        if (BtnShare.ContextMenu != null)
+        {
+            BtnShare.ContextMenu.Closed += (s, e) => _lastShareMenuCloseTime = DateTime.UtcNow;
+        }
     }
 
     public void SetTranslateActiveState(bool isTranslated, bool isShowingTranslation)
@@ -209,14 +213,26 @@ public partial class LightshotToolbar : UserControl
     private void RecordAudioOnly_Click(object sender, RoutedEventArgs e) => RecordVideoRequested?.Invoke(true, false);
     private void RecordMuted_Click(object sender, RoutedEventArgs e) => RecordVideoRequested?.Invoke(false, false);
 
+    private DateTime _lastShareMenuCloseTime = DateTime.MinValue;
+
     private void BtnShare_Click(object sender, RoutedEventArgs e)
     {
-        if (BtnShare.ContextMenu != null)
+        if (BtnShare.ContextMenu == null) return;
+
+        if (BtnShare.ContextMenu.IsOpen)
         {
-            BtnShare.ContextMenu.PlacementTarget = BtnShare;
-            BtnShare.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
-            BtnShare.ContextMenu.IsOpen = true;
+            BtnShare.ContextMenu.IsOpen = false;
+            return;
         }
+
+        if ((DateTime.UtcNow - _lastShareMenuCloseTime).TotalMilliseconds < 350)
+        {
+            return;
+        }
+
+        BtnShare.ContextMenu.PlacementTarget = BtnShare;
+        BtnShare.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
+        BtnShare.ContextMenu.IsOpen = true;
     }
 
     private void ShareWhatsAppApp_Click(object sender, RoutedEventArgs e)
