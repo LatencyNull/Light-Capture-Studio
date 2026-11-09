@@ -123,7 +123,7 @@ public partial class VideoPreviewWindow : Window
         double endX = Math.Min(trackWidth - PinEnd.ActualWidth, endRatio * trackWidth - PinEnd.ActualWidth);
 
         Canvas.SetLeft(PinStart, startX);
-        Canvas.SetLeft(PinEnd, Math.Max(startX + 20, endX));
+        Canvas.SetLeft(PinEnd, Math.Max(startX + 14, endX));
 
         ActiveRangeTrack.Margin = new Thickness(startX, 0, 0, 0);
         ActiveRangeTrack.Width = Math.Max(0, (endX + PinEnd.ActualWidth) - startX);
@@ -134,10 +134,12 @@ public partial class VideoPreviewWindow : Window
     private void UpdateTrimLabels()
     {
         var trimDuration = _trimEnd - _trimStart;
-        TxtTrimDuration.Text = $"✂️ {trimDuration.Minutes:D2}:{trimDuration.Seconds:D2}.{trimDuration.Milliseconds / 100}";
-
         bool isTrimmed = _trimStart > TimeSpan.FromMilliseconds(150) || 
                          (_totalDuration - _trimEnd) > TimeSpan.FromMilliseconds(150);
+
+        TxtTrimDuration.Text = isTrimmed 
+            ? $"{trimDuration.Minutes:D2}:{trimDuration.Seconds:D2}.{trimDuration.Milliseconds / 100}" 
+            : $"{_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
 
         BtnResetTrim.Visibility = isTrimmed ? Visibility.Visible : Visibility.Collapsed;
         BadgeTrimInfo.BorderBrush = isTrimmed 
@@ -195,7 +197,7 @@ public partial class VideoPreviewWindow : Window
         double curX = e.GetPosition(TimelineCanvas).X;
         double endX = Canvas.GetLeft(PinEnd);
 
-        double newStartX = Math.Max(0, Math.Min(curX, endX - 20));
+        double newStartX = Math.Max(0, Math.Min(curX, endX - 14));
         Canvas.SetLeft(PinStart, newStartX);
 
         ActiveRangeTrack.Margin = new Thickness(newStartX, 0, 0, 0);
@@ -216,7 +218,7 @@ public partial class VideoPreviewWindow : Window
         double curX = e.GetPosition(TimelineCanvas).X;
         double startX = Canvas.GetLeft(PinStart);
 
-        double newEndX = Math.Max(startX + 20, Math.Min(curX, trackWidth - PinEnd.ActualWidth));
+        double newEndX = Math.Max(startX + 14, Math.Min(curX, trackWidth - PinEnd.ActualWidth));
         Canvas.SetLeft(PinEnd, newEndX);
 
         ActiveRangeTrack.Width = Math.Max(0, (newEndX + PinEnd.ActualWidth) - startX);

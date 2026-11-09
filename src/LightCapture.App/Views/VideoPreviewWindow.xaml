@@ -148,10 +148,7 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtHeaderIcon" Text="🎥" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
                     <TextBlock x:Name="TxtHeaderTitle" Text="Previsualización del Clip" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
-                    <Border Background="#0284C7" CornerRadius="6" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="✂️ Recorte de Video / GIF" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF"/>
-                    </Border>
-                    <Border Background="{DynamicResource CardBackground}" CornerRadius="6" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource CardBackground}" CornerRadius="6" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
                         <TextBlock x:Name="TxtVideoInfo" Text="00:00 • 0.0 MB" FontSize="11" FontWeight="Medium" Foreground="#38BDF8"/>
                     </Border>
                 </StackPanel>
@@ -177,85 +174,70 @@
                 </Grid>
             </Border>
 
-            <!-- 2.5 Barra de Reproducción y Recorte tipo 'Fotos de Windows' -->
-            <Border Grid.Row="2" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="14" Padding="14,10" Margin="0,0,0,14">
+            <!-- 2.5 Barra de Reproducción y Recorte estilo Fotos de Windows -->
+            <Border Grid.Row="2" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="12" Padding="12,8" Margin="0,0,0,14">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Guía y badge de recorte -->
-                        <RowDefinition Height="Auto"/> <!-- Controles y Timeline con pines -->
-                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/> <!-- Play/Pause -->
+                        <ColumnDefinition Width="Auto"/> <!-- Tiempo actual -->
+                        <ColumnDefinition Width="*"/>    <!-- Timeline interactiva con tiradores estilo Fotos -->
+                        <ColumnDefinition Width="Auto"/> <!-- Indicador sutil de duración / reset -->
+                    </Grid.ColumnDefinitions>
 
-                    <!-- Fila 0: Guía visual de la herramienta de recorte -->
-                    <Grid Grid.Row="0" Margin="0,0,0,10">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Background="#0284C7" CornerRadius="6" Padding="6,2" Margin="0,0,8,0">
-                                <TextBlock Text="✂️ HERRAMIENTA DE RECORTE" FontSize="10" FontWeight="Black" Foreground="#FFFFFF"/>
+                    <!-- Botón Play/Pause -->
+                    <Button x:Name="BtnPlayPause" Grid.Column="0" Width="32" Height="32" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnPlayPause_Click" ToolTip="Reproducir / Pausar">
+                        <TextBlock x:Name="TxtPlayPauseIcon" Text="⏸" FontSize="14" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+
+                    <!-- Tiempo de reproducción actual -->
+                    <TextBlock x:Name="TxtPlaybackPosition" Grid.Column="1" Text="00:00 / 00:00" FontFamily="Consolas, Segoe UI" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center" Margin="8,0,12,0"/>
+
+                    <!-- Línea de tiempo interactiva con Recorte tipo Fotos de Windows -->
+                    <Grid x:Name="TimelineContainer" Grid.Column="2" Height="30" VerticalAlignment="Center" Margin="4,0" SizeChanged="TimelineContainer_SizeChanged">
+                        <!-- Pista inactiva completa (Fondo oscuro sutil) -->
+                        <Border Height="6" Background="{DynamicResource ToolbarSeparator}" CornerRadius="3" VerticalAlignment="Center"/>
+
+                        <!-- Pista activa recortada (Rango azul claro entre Inicio y Fin) -->
+                        <Border x:Name="ActiveRangeTrack" Height="6" Background="#38BDF8" CornerRadius="3" HorizontalAlignment="Left" Width="100" Margin="0,0,0,0" VerticalAlignment="Center"/>
+
+                        <!-- Canvas para los cursores y pines -->
+                        <Canvas x:Name="TimelineCanvas" ClipToBounds="False" MouseLeftButtonDown="TimelineCanvas_MouseLeftButtonDown">
+                            <!-- Pin de Inicio (Izquierdo: cápsula vertical minimalista estilo Fotos) -->
+                            <Border x:Name="PinStart" Width="12" Height="24" Background="#FFFFFF" BorderBrush="#0284C7" BorderThickness="2" CornerRadius="6" Cursor="SizeWE" Canvas.Left="0" Canvas.Top="3" ToolTip="Inicio del recorte (arrastra para recortar)" MouseLeftButtonDown="PinStart_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinStart_MouseMove">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.4"/>
+                                </Border.Effect>
+                                <!-- Indicador de agarre vertical sutil -->
+                                <Border Width="2" Height="8" Background="#0284C7" CornerRadius="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-                            <TextBlock Text="Arrastra los tiradores [ ✂ y ✂ ] para recortar el clip" FontSize="11" Foreground="{DynamicResource SecondaryText}" VerticalAlignment="Center"/>
-                        </StackPanel>
 
-                        <!-- Badge info de recorte y botón de restablecer -->
-                        <Border x:Name="BadgeTrimInfo" HorizontalAlignment="Right" Background="{DynamicResource ActionBtnBackground}" BorderBrush="#38BDF8" BorderThickness="1.5" CornerRadius="8" Padding="8,3" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtTrimDuration" Text="✂️ 00:00.0" FontSize="11" FontWeight="Bold" Foreground="#38BDF8"/>
-                                <Button x:Name="BtnResetTrim" Background="Transparent" BorderThickness="0" Foreground="#F59E0B" Cursor="Hand" Padding="8,0,0,0" Click="BtnResetTrim_Click" ToolTip="Restablecer recorte a duración completa" Visibility="Collapsed">
-                                    <TextBlock Text="↺ Restablecer" FontSize="11" FontWeight="Bold"/>
-                                </Button>
-                            </StackPanel>
+                            <!-- Pin de Fin (Derecho: cápsula vertical minimalista estilo Fotos) -->
+                            <Border x:Name="PinEnd" Width="12" Height="24" Background="#FFFFFF" BorderBrush="#0284C7" BorderThickness="2" CornerRadius="6" Cursor="SizeWE" Canvas.Left="100" Canvas.Top="3" ToolTip="Fin del recorte (arrastra para recortar)" MouseLeftButtonDown="PinEnd_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinEnd_MouseMove">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.4"/>
+                                </Border.Effect>
+                                <!-- Indicador de agarre vertical sutil -->
+                                <Border Width="2" Height="8" Background="#0284C7" CornerRadius="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Aguja de reproducción actual (Playhead estilo Fotos) -->
+                            <Border x:Name="Playhead" Width="2" Height="22" Background="#FFFFFF" CornerRadius="1" Canvas.Left="0" Canvas.Top="4" IsHitTestVisible="False">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="0" Color="#FFFFFF" Opacity="0.9"/>
+                                </Border.Effect>
+                            </Border>
+                        </Canvas>
+                    </Grid>
+
+                    <!-- Indicador sutil de duración y botón restablecer -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,4,0">
+                        <Border x:Name="BadgeTrimInfo" Background="{DynamicResource ActionBtnBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="6" Padding="6,2" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtTrimDuration" Text="00:00" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}"/>
                         </Border>
-                    </Grid>
-
-                    <!-- Fila 1: Reproductor, Scrubber y Timeline interactiva -->
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/> <!-- Play/Pause -->
-                            <ColumnDefinition Width="Auto"/> <!-- Tiempo actual -->
-                            <ColumnDefinition Width="*"/>    <!-- Timeline con tiradores de recorte -->
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Botón Play/Pause -->
-                        <Button x:Name="BtnPlayPause" Grid.Column="0" Width="32" Height="32" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnPlayPause_Click" ToolTip="Reproducir / Pausar">
-                            <TextBlock x:Name="TxtPlayPauseIcon" Text="⏸" FontSize="14" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Button x:Name="BtnResetTrim" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SecondaryText}" Cursor="Hand" Padding="4,2" Click="BtnResetTrim_Click" ToolTip="Restablecer recorte a duración completa" Visibility="Collapsed">
+                            <TextBlock Text="↺" FontSize="13" FontWeight="Bold"/>
                         </Button>
-
-                        <!-- Tiempo de reproducción actual -->
-                        <TextBlock x:Name="TxtPlaybackPosition" Grid.Column="1" Text="00:00 / 00:00" FontFamily="Consolas, Segoe UI" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center" Margin="8,0,12,0"/>
-
-                        <!-- Línea de tiempo interactiva con Recorte tipo Fotos de Windows -->
-                        <Grid x:Name="TimelineContainer" Grid.Column="2" Height="32" VerticalAlignment="Center" Margin="4,0" SizeChanged="TimelineContainer_SizeChanged">
-                            <!-- Pista inactiva completa (Fondo oscuro) -->
-                            <Border Height="8" Background="{DynamicResource ToolbarSeparator}" CornerRadius="4" VerticalAlignment="Center"/>
-
-                            <!-- Pista activa recortada (Rango entre Inicio y Fin) -->
-                            <Border x:Name="ActiveRangeTrack" Height="8" Background="#38BDF8" CornerRadius="4" HorizontalAlignment="Left" Width="100" Margin="0,0,0,0" VerticalAlignment="Center"/>
-
-                            <!-- Canvas para los cursores y pines -->
-                            <Canvas x:Name="TimelineCanvas" ClipToBounds="False" MouseLeftButtonDown="TimelineCanvas_MouseLeftButtonDown">
-                                <!-- Pin de Inicio (Izquierdo estilo corchete de recorte) -->
-                                <Border x:Name="PinStart" Width="20" Height="28" Background="#0284C7" BorderBrush="#FFFFFF" BorderThickness="1.5" CornerRadius="6,0,0,6" Cursor="SizeWE" Canvas.Left="0" Canvas.Top="2" ToolTip="Tirador de Inicio del Recorte [✂]" MouseLeftButtonDown="PinStart_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinStart_MouseMove">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.5"/>
-                                    </Border.Effect>
-                                    <TextBlock Text="[ ✂" FontSize="9" FontWeight="Black" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-1,0,0,0"/>
-                                </Border>
-
-                                <!-- Pin de Fin (Derecho estilo corchete de recorte) -->
-                                <Border x:Name="PinEnd" Width="20" Height="28" Background="#0284C7" BorderBrush="#FFFFFF" BorderThickness="1.5" CornerRadius="0,6,6,0" Cursor="SizeWE" Canvas.Left="100" Canvas.Top="2" ToolTip="Tirador de Fin del Recorte [✂]" MouseLeftButtonDown="PinEnd_MouseLeftButtonDown" MouseLeftButtonUp="Pin_MouseLeftButtonUp" MouseMove="PinEnd_MouseMove">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.5"/>
-                                    </Border.Effect>
-                                    <TextBlock Text="✂ ]" FontSize="9" FontWeight="Black" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0"/>
-                                </Border>
-
-                                <!-- Aguja de reproducción actual (Playhead) -->
-                                <Border x:Name="Playhead" Width="3" Height="24" Background="#FFFFFF" CornerRadius="1.5" Canvas.Left="0" Canvas.Top="4" IsHitTestVisible="False">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="4" ShadowDepth="0" Color="#FFFFFF" Opacity="0.9"/>
-                                    </Border.Effect>
-                                </Border>
-                            </Canvas>
-                        </Grid>
-                    </Grid>
+                    </StackPanel>
                 </Grid>
             </Border>
 
@@ -268,10 +250,13 @@
 
                 <!-- Acciones Principales (Izquierda) -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Más Redes: WhatsApp, Discord, TikTok, Instagram, Facebook, Telegram, X -->
+                    <!-- Botón Compartir con el símbolo universal de móviles (Android / iOS / Material) -->
                     <Button x:Name="BtnMoreSocial" Style="{StaticResource ActionBtnStyle}" Margin="0,0,10,0" Click="BtnMoreSocial_Click" ToolTip="Compartir en WhatsApp, Discord, TikTok, Instagram, Facebook, Telegram, X...">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🌐 Redes ▾" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Icono universal de compartir en móviles (3 nodos conectados) -->
+                            <Path Data="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"
+                                  Fill="{DynamicResource PrimaryText}" Width="14" Height="14" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Compartir ▾" VerticalAlignment="Center"/>
                         </StackPanel>
                         <Button.ContextMenu>
                             <ContextMenu Style="{StaticResource DarkContextMenuStyle}" Placement="Top" VerticalOffset="-6">
