@@ -29,6 +29,8 @@ public partial class App : Application
     private HwndSource? _messageHwndSource;
 
     private WpfContextMenu? _trayContextMenu;
+    private WpfMenuItem? _captureMenuItem;
+    private WpfMenuItem? _hotkeyMenuItem;
     private WpfMenuItem? _menuItemTheme;
     private WpfMenuItem? _menuLangEs;
     private WpfMenuItem? _menuLangEn;
@@ -151,7 +153,7 @@ public partial class App : Application
         _notifyIcon = new NotifyIcon
         {
             Icon = appIcon,
-            Text = "Light Capture Studio - F9 para capturar pantalla",
+            Text = $"Light Capture Studio - {HotkeySettingsManager.CurrentDisplayName} para capturar pantalla",
             Visible = true,
             ContextMenuStrip = null // Reemplazado por el menú flotante moderno WPF One UI
         };
@@ -259,11 +261,11 @@ public partial class App : Application
         headerItem.Icon = appLogo;
         _trayContextMenu.Items.Add(headerItem);
 
-        // 2. 📸 Capturar pantalla (F9)
-        var captureItem = new WpfMenuItem
+        // 2. 📸 Capturar pantalla
+        _captureMenuItem = new WpfMenuItem
         {
             Header = "Capturar pantalla",
-            InputGestureText = "F9",
+            InputGestureText = HotkeySettingsManager.CurrentDisplayName,
             FontWeight = FontWeights.SemiBold
         };
         var camPath = new WpfPath
@@ -274,9 +276,9 @@ public partial class App : Application
             Width = 16,
             Height = 16
         };
-        captureItem.Icon = camPath;
-        captureItem.Click += (s, e) => StartCapture();
-        _trayContextMenu.Items.Add(captureItem);
+        _captureMenuItem.Icon = camPath;
+        _captureMenuItem.Click += (s, e) => StartCapture();
+        _trayContextMenu.Items.Add(_captureMenuItem);
 
         // 3. 🕒 Historial de capturas...
         var historyItem = new WpfMenuItem
@@ -294,6 +296,40 @@ public partial class App : Application
         historyItem.Icon = historyPath;
         historyItem.Click += (s, e) => OpenHistory();
         _trayContextMenu.Items.Add(historyItem);
+
+        // 4. 📁 Abrir carpeta de capturas (Documentos\Light Capture)
+        var openFolderItem = new WpfMenuItem
+        {
+            Header = "Abrir carpeta de capturas"
+        };
+        var folderPath = new WpfPath
+        {
+            Data = System.Windows.Media.Geometry.Parse("M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"),
+            Fill = (System.Windows.Media.Brush)FindResource("PrimaryText"),
+            Stretch = System.Windows.Media.Stretch.Uniform,
+            Width = 16,
+            Height = 16
+        };
+        openFolderItem.Icon = folderPath;
+        openFolderItem.Click += (s, e) => OpenCapturesFolder();
+        _trayContextMenu.Items.Add(openFolderItem);
+
+        // 5. ⌨️ Configurar tecla de captura...
+        _hotkeyMenuItem = new WpfMenuItem
+        {
+            Header = $"Configurar tecla de captura ({HotkeySettingsManager.CurrentDisplayName})..."
+        };
+        var keyboardPath = new WpfPath
+        {
+            Data = System.Windows.Media.Geometry.Parse("M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"),
+            Fill = (System.Windows.Media.Brush)FindResource("PrimaryText"),
+            Stretch = System.Windows.Media.Stretch.Uniform,
+            Width = 16,
+            Height = 16
+        };
+        _hotkeyMenuItem.Icon = keyboardPath;
+        _hotkeyMenuItem.Click += (s, e) => OpenHotkeyConfig();
+        _trayContextMenu.Items.Add(_hotkeyMenuItem);
 
         _trayContextMenu.Items.Add(new WpfSeparator());
 
@@ -444,27 +480,120 @@ public partial class App : Application
         _hotkeyManager = new HotkeyManager();
         _hotkeyManager.Initialize(_messageHwndSource);
 
-        // Tecla F9 exclusiva para Light Capture Studio
-        bool f9Ok = _hotkeyManager.Register(HotkeyManager.VK_F9, 0, StartCapture);
+        // Tecla configurada por el usuario (F9 por defecto, o personalizada)
+        uint userVk = HotkeySettingsManager.CurrentVirtualKey;
+        uint userMod = HotkeySettingsManager.CurrentModifiers;
+        string userDisplay = HotkeySettingsManager.CurrentDisplayName;
 
-        // Tecla Impr Pant (PrintScreen) directa si está disponible
-        _hotkeyManager.Register(HotkeyManager.VK_SNAPSHOT, 0, StartCapture);
+        bool mainOk = _hotkeyManager.RegisterCaptureHotkey(userVk, userMod, StartCapture);
 
-        // Atajo secundario alternativo (Ctrl+Shift+X)
+        // Si la tecla configurada no es Impr Pant, registrarla como acceso secundario universal
+        if (userVk != HotkeyManager.VK_SNAPSHOT)
+        {
+            _hotkeyManager.Register(HotkeyManager.VK_SNAPSHOT, 0, StartCapture);
+        }
+
+        // Atajo secundario alternativo fijo (Ctrl+Shift+X)
         const uint MOD_CONTROL = 0x0002;
         const uint MOD_SHIFT = 0x0004;
         const uint VK_X = 0x58;
         _hotkeyManager.Register(VK_X, MOD_CONTROL | MOD_SHIFT, StartCapture);
 
-        if (!f9Ok)
+        if (!mainOk)
         {
             _notifyIcon?.ShowBalloonTip(
                 4000,
                 "Light Capture Studio",
-                "La tecla F9 está asignada en otro programa. Usa 'Ctrl+Shift+X' o haz clic en la pluma para capturar.",
+                $"La tecla '{userDisplay}' está asignada en otro programa. Usa 'Ctrl+Shift+X' o haz clic derecho en el icono para cambiarla.",
                 ToolTipIcon.Warning
             );
         }
+    }
+
+    public void ApplyCaptureHotkey(uint vk, uint modifiers, string displayName)
+    {
+        HotkeySettingsManager.SaveConfig(vk, modifiers, displayName);
+
+        bool ok = _hotkeyManager?.RegisterCaptureHotkey(vk, modifiers, StartCapture) ?? false;
+
+        UpdateTrayHotkeyDisplay(displayName);
+
+        if (!ok)
+        {
+            _notifyIcon?.ShowBalloonTip(
+                4000,
+                "Light Capture Studio",
+                $"La tecla '{displayName}' no pudo registrarse (puede estar ocupada por Windows u otra app).",
+                ToolTipIcon.Warning
+            );
+        }
+        else
+        {
+            _notifyIcon?.ShowBalloonTip(
+                2500,
+                "Light Capture Studio",
+                $"✅ Tecla de captura configurada: {displayName}",
+                ToolTipIcon.Info
+            );
+        }
+    }
+
+    private void UpdateTrayHotkeyDisplay(string displayName)
+    {
+        if (_notifyIcon != null)
+        {
+            string text = $"Light Capture Studio - {displayName} para capturar pantalla";
+            if (text.Length > 63) text = text[..63];
+            _notifyIcon.Text = text;
+        }
+
+        if (_captureMenuItem != null)
+        {
+            _captureMenuItem.InputGestureText = displayName;
+        }
+
+        if (_hotkeyMenuItem != null)
+        {
+            _hotkeyMenuItem.Header = $"Configurar tecla de captura ({displayName})...";
+        }
+    }
+
+    public void OpenCapturesFolder()
+    {
+        try
+        {
+            string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string folder = Path.Combine(docs, "Light Capture");
+            Directory.CreateDirectory(folder);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = folder,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error al abrir la carpeta: {ex.Message}", "Carpeta de capturas", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private HotkeyConfigWindow? _currentHotkeyWindow;
+
+    public void OpenHotkeyConfig()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (_currentHotkeyWindow != null && _currentHotkeyWindow.IsLoaded)
+            {
+                _currentHotkeyWindow.Activate();
+                return;
+            }
+
+            _currentHotkeyWindow = new HotkeyConfigWindow();
+            _currentHotkeyWindow.Closed += (s, e) => _currentHotkeyWindow = null;
+            _currentHotkeyWindow.Show();
+            _currentHotkeyWindow.Activate();
+        });
     }
 
     public void StartCapture()

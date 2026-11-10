@@ -42,7 +42,7 @@ public class CaptureHistoryService : ICaptureHistoryService
         else
         {
             string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            _historyDir = Path.Combine(docs, "Light Capture Studio");
+            _historyDir = Path.Combine(docs, "Light Capture");
         }
 
         Directory.CreateDirectory(_historyDir);
@@ -53,7 +53,7 @@ public class CaptureHistoryService : ICaptureHistoryService
         {
             var oldDirs = new[]
             {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture Studio"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCaptureTranslator", "History"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCaptureStudio", "History")
             };
@@ -96,7 +96,46 @@ public class CaptureHistoryService : ICaptureHistoryService
                 }
                 catch { }
             }
+
+            ReconcileExistingImages();
         }
+    }
+
+    private void ReconcileExistingImages()
+    {
+        try
+        {
+            if (!Directory.Exists(_historyDir)) return;
+
+            var existingFiles = Directory.GetFiles(_historyDir, "*.*")
+                .Where(f => f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var indexedFileNames = new HashSet<string>(_entries.Select(e => e.ImageFileName), StringComparer.OrdinalIgnoreCase);
+            bool updated = false;
+
+            foreach (var file in existingFiles.OrderByDescending(File.GetLastWriteTime))
+            {
+                string fileName = Path.GetFileName(file);
+                if (!indexedFileNames.Contains(fileName))
+                {
+                    string id = Guid.NewGuid().ToString("N");
+                    DateTime dt = File.GetLastWriteTime(file);
+                    _entries.Add(new HistoryEntry(id, dt, fileName, "Captura en disco"));
+                    indexedFileNames.Add(fileName);
+                    updated = true;
+                }
+            }
+
+            if (updated)
+            {
+                _entries.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
+                SaveMetadata();
+            }
+        }
+        catch { }
     }
 
     private void SaveMetadata()
@@ -116,42 +155,54 @@ public class CaptureHistoryService : ICaptureHistoryService
     {
         if (!IsHistoryEnabled || image == null) return;
 
-        string id = Guid.NewGuid().ToString("N");
-        string fileName = $"{DateTime.Now:yyyyMMdd_HHmmss}_{id[..6]}.png";
-        string filePath = Path.Combine(_historyDir, fileName);
-
-        // Guardar PNG a disco
-        using (var stream = File.Create(filePath))
+        try
         {
-            var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(image));
-            encoder.Save(stream);
-        }
+            Directory.CreateDirectory(_historyDir);
 
-        lock (_lock)
-        {
-            _entries.Insert(0, new HistoryEntry(id, DateTime.Now, fileName, ocrText ?? string.Empty));
-
-            // Mantener máximo 50 capturas
-            while (_entries.Count > 50)
+            if (image.CanFreeze && !image.IsFrozen)
             {
-                var oldest = _entries[^1];
-                string oldPath = Path.Combine(_historyDir, oldest.ImageFileName);
-                if (File.Exists(oldPath))
-                {
-                    try { File.Delete(oldPath); } catch { }
-                }
-                _entries.RemoveAt(_entries.Count - 1);
+                image.Freeze();
             }
 
-            SaveMetadata();
+            string id = Guid.NewGuid().ToString("N");
+            string fileName = $"LightCapture_{DateTime.Now:yyyyMMdd_HHmmss}_{id[..6]}.png";
+            string filePath = Path.Combine(_historyDir, fileName);
+
+            // Guardar PNG a disco
+            using (var stream = File.Create(filePath))
+            {
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                encoder.Save(stream);
+            }
+
+            lock (_lock)
+            {
+                _entries.Insert(0, new HistoryEntry(id, DateTime.Now, fileName, ocrText ?? string.Empty));
+
+                // Mantener hasta 100 capturas en historial
+                while (_entries.Count > 100)
+                {
+                    var oldest = _entries[^1];
+                    string oldPath = Path.Combine(_historyDir, oldest.ImageFileName);
+                    if (File.Exists(oldPath))
+                    {
+                        try { File.Delete(oldPath); } catch { }
+                    }
+                    _entries.RemoveAt(_entries.Count - 1);
+                }
+
+                SaveMetadata();
+            }
         }
+        catch { }
     }
 
     public IReadOnlyList<HistoryEntry> GetHistory()
     {
         lock (_lock)
         {
+            ReconcileExistingImages();
             return _entries.ToList();
         }
     }

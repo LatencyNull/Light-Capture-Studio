@@ -61,7 +61,7 @@ public class KillerFeaturesTests
         // Assert
         Assert.NotEmpty(results);
         Assert.Contains(uniqueKey, results[0].OcrText);
-        Assert.Equal(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture Studio"), historyService.HistoryDirectory);
+        Assert.Equal(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture"), historyService.HistoryDirectory);
 
         // Cleanup
         historyService.DeleteEntry(results[0].Id);

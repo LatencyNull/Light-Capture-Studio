@@ -39,6 +39,29 @@ public class HotkeyManager : IDisposable
         return false;
     }
 
+    private int _captureHotkeyId = -1;
+
+    public bool RegisterCaptureHotkey(uint vk, uint modifiers, Action callback)
+    {
+        if (_source != null && _captureHotkeyId != -1)
+        {
+            UnregisterHotKey(_source.Handle, _captureHotkeyId);
+            _hotkeyActions.Remove(_captureHotkeyId);
+            _captureHotkeyId = -1;
+        }
+
+        int id = _currentId++;
+        _captureHotkeyId = id;
+        _hotkeyActions[id] = callback;
+
+        if (_source != null)
+        {
+            return RegisterHotKey(_source.Handle, id, modifiers, vk);
+        }
+
+        return false;
+    }
+
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         if (msg == WM_HOTKEY)

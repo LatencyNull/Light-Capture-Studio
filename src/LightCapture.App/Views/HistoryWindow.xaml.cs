@@ -58,6 +58,10 @@ public partial class HistoryWindow : Window
 
         HistoryItemsList.ItemsSource = viewModels;
         TxtTotalCount.Text = $"{viewModels.Count} {(viewModels.Count == 1 ? "captura" : "capturas")}";
+        if (EmptyHistoryPlaceholder != null)
+        {
+            EmptyHistoryPlaceholder.Visibility = viewModels.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 
     private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
