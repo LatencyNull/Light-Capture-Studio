@@ -53,10 +53,18 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
         string workerExe = Path.Combine(baseDir, "LightCapture.Recorder.exe");
         if (!File.Exists(workerExe))
         {
-            string altPath = Path.Combine(baseDir, "..", "..", "..", "..", "LightCapture.Recorder.exe");
-            if (File.Exists(altPath))
+            string[] possiblePaths = new[]
             {
-                workerExe = Path.GetFullPath(altPath);
+                Path.Combine(baseDir, "..", "..", "..", "LightCapture.Recorder", "bin", "x64", "Debug", "net8.0-windows10.0.19041.0", "LightCapture.Recorder.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "LightCapture.Recorder", "bin", "x64", "Release", "net8.0-windows10.0.19041.0", "LightCapture.Recorder.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "..", "src", "LightCapture.Recorder", "bin", "x64", "Debug", "net8.0-windows10.0.19041.0", "LightCapture.Recorder.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "..", "src", "LightCapture.Recorder", "bin", "x64", "Release", "net8.0-windows10.0.19041.0", "LightCapture.Recorder.exe")
+            };
+
+            string? found = possiblePaths.FirstOrDefault(File.Exists);
+            if (found != null)
+            {
+                workerExe = Path.GetFullPath(found);
             }
             else
             {
