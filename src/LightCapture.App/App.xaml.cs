@@ -157,15 +157,19 @@ public partial class App : Application
             ContextMenuStrip = null // Reemplazado por el menú flotante moderno WPF One UI
         };
 
+        _notifyIcon.MouseUp += (s, e) =>
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                ShowTrayContextMenu();
+            }
+        };
+
         _notifyIcon.MouseClick += (s, e) =>
         {
             if (e.Button == MouseButtons.Left)
             {
                 StartCapture();
-            }
-            else if (e.Button == MouseButtons.Right)
-            {
-                ShowTrayContextMenu();
             }
         };
 
@@ -174,6 +178,11 @@ public partial class App : Application
 
     private void ShowTrayContextMenu()
     {
+        if (_trayContextMenu != null && _trayContextMenu.IsOpen)
+        {
+            _trayContextMenu.IsOpen = false;
+        }
+
         if (_trayHelperWindow == null)
         {
             _trayHelperWindow = new Window
@@ -189,14 +198,6 @@ public partial class App : Application
             };
             _trayHelperWindow.Show();
             _trayHelperWindow.Hide();
-
-            _trayHelperWindow.Deactivated += (s, e) =>
-            {
-                if (_trayContextMenu != null && _trayContextMenu.IsOpen)
-                {
-                    _trayContextMenu.IsOpen = false;
-                }
-            };
         }
 
         if (_trayContextMenu == null)
@@ -216,6 +217,15 @@ public partial class App : Application
             _trayContextMenu.PlacementTarget = _trayHelperWindow;
             _trayContextMenu.Placement = PlacementMode.MousePoint;
             _trayContextMenu.IsOpen = true;
+
+            // Asegurar que el PopupRoot del menú WPF reciba inmediatamente el foco de primer plano en Windows
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (_trayContextMenu != null && _trayContextMenu.IsOpen && PresentationSource.FromVisual(_trayContextMenu) is HwndSource hwndSource)
+                {
+                    SetForegroundWindow(hwndSource.Handle);
+                }
+            }), System.Windows.Threading.DispatcherPriority.Input);
         }
     }
 
@@ -223,7 +233,8 @@ public partial class App : Application
     {
         _trayContextMenu = new WpfContextMenu
         {
-            Style = (Style)FindResource("ModernContextMenuStyle")
+            Style = (Style)FindResource("ModernContextMenuStyle"),
+            StaysOpen = false
         };
 
         _trayContextMenu.Closed += (s, e) =>
