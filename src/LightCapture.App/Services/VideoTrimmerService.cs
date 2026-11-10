@@ -30,12 +30,12 @@ public static class VideoTrimmerService
     {
         if (!File.Exists(sourcePath))
         {
-            throw new FileNotFoundException("El archivo fuente no existe.", sourcePath);
+            throw new FileNotFoundException("Source file does not exist.", sourcePath);
         }
 
         if (startTime >= endTime)
         {
-            throw new ArgumentException("El tiempo de inicio debe ser menor al tiempo de fin.");
+            throw new ArgumentException("Start time must be less than end time.");
         }
 
         bool isGif = sourcePath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);

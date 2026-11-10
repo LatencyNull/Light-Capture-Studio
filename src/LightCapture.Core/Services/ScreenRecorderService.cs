@@ -25,16 +25,16 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
     {
         if (IsRecording)
         {
-            throw new InvalidOperationException("Ya hay una grabación en curso.");
+            throw new InvalidOperationException("A recording is already in progress.");
         }
 
-        // Aseguramos dimensiones pares (requisito de codificadores H.264)
+        // Ensure even dimensions (required by H.264 encoders)
         if (width % 2 != 0) width++;
         if (height % 2 != 0) height++;
 
         if (width < 32 || height < 32)
         {
-            throw new ArgumentException("El área seleccionada es demasiado pequeña para grabar video.");
+            throw new ArgumentException("The selected area is too small to record video.");
         }
 
         string tempFolder = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
@@ -60,7 +60,7 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
             }
             else
             {
-                throw new FileNotFoundException($"No se encontró el módulo grabador: {workerExe}");
+                throw new FileNotFoundException($"Recorder module not found: {workerExe}");
             }
         }
 
@@ -127,7 +127,7 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
                 }
                 else
                 {
-                    _stopTcs?.TrySetException(new Exception("El proceso de grabación terminó inesperadamente."));
+                    _stopTcs?.TrySetException(new Exception("Recording process terminated unexpectedly."));
                 }
             }
         };

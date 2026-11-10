@@ -10,7 +10,7 @@ public static class PixelationHelper
     {
         if (source == null || bounds.Width <= 0 || bounds.Height <= 0)
         {
-            throw new ArgumentException("Parámetros de recorte inválidos");
+            throw new ArgumentException("Invalid crop parameters");
         }
 
         int x = Math.Max(0, (int)bounds.X);

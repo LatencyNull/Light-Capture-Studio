@@ -395,7 +395,7 @@ namespace LightCapture.RecorderWorker
         {
             if (frames.Count == 0)
             {
-                throw new InvalidOperationException("No se capturaron fotogramas.");
+                throw new InvalidOperationException("No frames were captured.");
             }
 
             using (var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None))

@@ -189,41 +189,41 @@
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.4"/>
             </Border.Effect>
             <StackPanel x:Name="VerticalStackPanel" Orientation="Vertical" ClipToBounds="False">
-                <!-- 1. ✏️ Pluma -->
-                <RadioButton x:Name="BtnPen" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Pluma de dibujo [✏️]" Click="BtnPen_Click">
+                <!-- 1. ✏️ Pen -->
+                <RadioButton x:Name="BtnPen" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Drawing Pen [✏️]" Click="BtnPen_Click">
                     <Image Source="/Assets/Icons/pen.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </RadioButton>
 
-                <!-- 2. 🖍️ Marcador Fluorescente (uno debajo del otro) -->
-                <RadioButton x:Name="BtnMarker" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Marcador fluorescente [🖍️]" Click="BtnMarker_Click">
+                <!-- 2. 🖍️ Highlighter Marker -->
+                <RadioButton x:Name="BtnMarker" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Highlighter Marker [🖍️]" Click="BtnMarker_Click">
                     <Image Source="/Assets/Icons/marker.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </RadioButton>
 
-                <!-- 3. ↗️ Flecha -->
-                <RadioButton x:Name="BtnArrow" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Flecha indicadora [↗️]" Click="BtnArrow_Click">
+                <!-- 3. ↗️ Arrow -->
+                <RadioButton x:Name="BtnArrow" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Pointer Arrow [↗️]" Click="BtnArrow_Click">
                     <Image Source="/Assets/Icons/arrow.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </RadioButton>
 
-                <!-- 4. 🔲 Rectángulo -->
-                <RadioButton x:Name="BtnRect" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Marco rectangular [🔲]" Click="BtnRect_Click">
+                <!-- 4. 🔲 Rectangle -->
+                <RadioButton x:Name="BtnRect" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Rectangle Frame [🔲]" Click="BtnRect_Click">
                     <Image Source="/Assets/Icons/rect.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </RadioButton>
 
-                <!-- 5. 🔒 Censura Dual Knox (Clic izq: Bloque sólido / Clic der: Mosaico) -->
-                <RadioButton x:Name="BtnRedact" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Censura segura Knox [🔒] (Bloque sólido irreversible)&#x0a;Clic derecho para pixelado mosaico" Click="BtnRedact_Click" MouseRightButtonUp="BtnRedact_RightClick">
+                <!-- 5. 🔒 Knox Redaction (Left click: Solid block / Right click: Mosaic) -->
+                <RadioButton x:Name="BtnRedact" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Knox Redaction [🔒] (Irreversible solid block)&#x0a;Right-click for mosaic blur" Click="BtnRedact_Click" MouseRightButtonUp="BtnRedact_RightClick">
                     <Image Source="/Assets/Icons/lock.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </RadioButton>
 
-                <!-- 6. 🔤 Texto Tipografía -->
-                <RadioButton x:Name="BtnText" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Añadir texto [🔤]" Click="BtnText_Click">
+                <!-- 6. 🔤 Text Tool -->
+                <RadioButton x:Name="BtnText" Style="{StaticResource EmojiToolToggleStyle}" ToolTip="Add Text [🔤]" Click="BtnText_Click">
                     <Image Source="/Assets/Icons/text.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </RadioButton>
 
-                <!-- Separador de grupo -->
+                <!-- Group separator -->
                 <Rectangle Height="1" Fill="{DynamicResource ToolbarSeparator}" Margin="4,3"/>
 
-                <!-- 7. 🎨 Selector de Color de Artista (Paleta + Indicador de color activo) -->
-                <Button x:Name="BtnColor" Style="{StaticResource EmojiBtnStyle}" ToolTip="Color de trazo activo [🎨]" Click="BtnColor_Click">
+                <!-- 7. 🎨 Color Picker -->
+                <Button x:Name="BtnColor" Style="{StaticResource EmojiBtnStyle}" ToolTip="Stroke Color [🎨]" Click="BtnColor_Click">
                     <Grid Width="26" Height="26">
                         <Image Source="/Assets/Icons/palette.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         <Border x:Name="ColorBox" Width="9" Height="9" CornerRadius="4.5" Background="#EF4444" BorderBrush="#FFFFFF" BorderThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-1,-1">
@@ -234,8 +234,8 @@
                     </Grid>
                 </Button>
 
-                <!-- 8. ↩️ Deshacer -->
-                <Button x:Name="BtnUndo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Deshacer trazo [↩️ Ctrl+Z]" Click="BtnUndo_Click">
+                <!-- 8. ↩️ Undo -->
+                <Button x:Name="BtnUndo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Undo Stroke [↩️ Ctrl+Z]" Click="BtnUndo_Click">
                     <Image Source="/Assets/Icons/undo.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
             </StackPanel>
@@ -253,14 +253,14 @@
                 <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.4"/>
             </Border.Effect>
             <StackPanel x:Name="HorizontalStackPanel" Orientation="Horizontal" ClipToBounds="False">
-                <!-- 1. 📤 Compartir en Redes Sociales, WhatsApp, Facebook, Instagram, Email (Totalmente a la izquierda) -->
-                <Button x:Name="BtnShare" Style="{StaticResource EmojiBtnStyle}" ToolTip="Compartir captura [📤]&#x0a;WhatsApp, Facebook, Instagram, Correo, Telegram, X, Nube..." Click="BtnShare_Click">
-                    <!-- Icono universal de compartir en móviles (3 nodos conectados) -->
+                <!-- 1. 📤 Share to Social Media, WhatsApp, Facebook, Instagram, Email -->
+                <Button x:Name="BtnShare" Style="{StaticResource EmojiBtnStyle}" ToolTip="Share capture [📤]&#x0a;WhatsApp, Facebook, Instagram, Email, Telegram, X, Cloud..." Click="BtnShare_Click">
+                    <!-- Universal mobile share icon (3 connected nodes) -->
                     <Path Data="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"
                           Fill="{DynamicResource PrimaryText}" Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <Button.ContextMenu>
                         <ContextMenu x:Name="ShareContextMenu" Style="{StaticResource ModernShareMenuStyle}">
-                            <MenuItem Header="WhatsApp (App de Windows)" Click="ShareWhatsAppApp_Click">
+                            <MenuItem Header="WhatsApp (Windows App)" Click="ShareWhatsAppApp_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/Icons/whatsapp.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
@@ -300,13 +300,13 @@
                                     <Image Source="/Assets/Icons/x.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="Correo electrónico" Click="ShareEmail_Click">
+                            <MenuItem Header="Email" Click="ShareEmail_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/Icons/email.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator Background="{DynamicResource ToolbarSeparator}" Margin="4,2"/>
-                            <MenuItem Header="Subir a la nube y copiar enlace" Click="ShareCloud_Click">
+                            <MenuItem Header="Upload to Cloud &amp; Copy Link" Click="ShareCloud_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/Icons/cloud.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
@@ -315,36 +315,36 @@
                     </Button.ContextMenu>
                 </Button>
 
-                <!-- 2. ⭐ 🌐 GALAXY AI TRADUCIR (Alterna Traducción y Original) -->
-                <Button x:Name="BtnTranslate" Style="{StaticResource EmojiBtnStyle}" ToolTip="Galaxy AI Traducir [🌐 Ctrl+T]&#x0a;Destino: Español (Clic para traducir / alternar original)&#x0a;Clic derecho: Cambiar idioma a Inglés o copiar" Click="BtnTranslate_Click" MouseRightButtonUp="BtnTranslate_RightClick">
+                <!-- 2. ⭐ 🌐 GALAXY AI TRANSLATE (Toggle Translation and Original) -->
+                <Button x:Name="BtnTranslate" Style="{StaticResource EmojiBtnStyle}" ToolTip="Galaxy AI Translate [🌐 Ctrl+T]&#x0a;Target: English (Click to translate / toggle original)&#x0a;Right-click: Change language or copy" Click="BtnTranslate_Click" MouseRightButtonUp="BtnTranslate_RightClick">
                     <Grid Width="28" Height="28">
                         <Image Source="/Assets/Icons/globe.png" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <!-- Badge de idioma activo (ES / EN) -->
+                        <!-- Active language badge (ES / EN) -->
                         <Border x:Name="BadgeLanguage" Background="#2563EB" CornerRadius="3" Padding="2.5,0.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,-2">
                             <TextBlock x:Name="TxtLangBadge" Text="ES" FontSize="8" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <!-- Indicador de estado de traducción (naranja/azul) -->
+                        <!-- Translation indicator (orange/blue) -->
                         <Border x:Name="TranslateIndicator" Width="7" Height="7" CornerRadius="3.5" Background="Transparent" BorderBrush="#FFFFFF" BorderThickness="1" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-2,-2,0" Visibility="Collapsed"/>
                     </Grid>
                     <Button.ContextMenu>
                         <ContextMenu x:Name="TranslateContextMenu" Style="{StaticResource ModernShareMenuStyle}">
-                            <MenuItem x:Name="MenuLangEs" Header="🇪🇸  Español (Predeterminado)" Click="MenuLangEs_Click">
+                            <MenuItem x:Name="MenuLangEs" Header="🇪🇸  Spanish" Click="MenuLangEs_Click">
                                 <MenuItem.Icon>
                                     <TextBlock x:Name="CheckLangEs" Text="✔" FontWeight="Bold" FontSize="13" Foreground="#3B82F6" HorizontalAlignment="Center"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem x:Name="MenuLangEn" Header="🇺🇸  Inglés (English)" Click="MenuLangEn_Click">
+                            <MenuItem x:Name="MenuLangEn" Header="🇺🇸  English (Default)" Click="MenuLangEn_Click">
                                 <MenuItem.Icon>
                                     <TextBlock x:Name="CheckLangEn" Text="✔" FontWeight="Bold" FontSize="13" Foreground="#3B82F6" HorizontalAlignment="Center" Visibility="Collapsed"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator Background="{DynamicResource ToolbarSeparator}" Margin="4,2"/>
-                            <MenuItem Header="📋  Copiar texto traducido" Click="MenuCopyTranslated_Click">
+                            <MenuItem Header="📋  Copy translated text" Click="MenuCopyTranslated_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/Icons/copy.png" Width="16" Height="16" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="📝  Copiar texto original (OCR)" Click="MenuCopyOcr_Click">
+                            <MenuItem Header="📝  Copy original text (OCR)" Click="MenuCopyOcr_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/Icons/text.png" Width="16" Height="16" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
@@ -353,22 +353,22 @@
                     </Button.ContextMenu>
                 </Button>
 
-                <!-- 3. 🔍 Búsqueda visual con Google Lens -->
-                <Button x:Name="BtnSearch" Style="{StaticResource EmojiBtnStyle}" ToolTip="Buscar imagen en Google Lens [🔍]" Click="BtnSearch_Click">
+                <!-- 3. 🔍 Visual search with Google Lens -->
+                <Button x:Name="BtnSearch" Style="{StaticResource EmojiBtnStyle}" ToolTip="Search image with Google Lens [🔍]" Click="BtnSearch_Click">
                     <Image Source="/Assets/Icons/search.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
 
-                <!-- 4. ✨ Buscar en Gemini / Preguntar con IA -->
-                <Button x:Name="BtnGemini" Style="{StaticResource EmojiBtnStyle}" ToolTip="Abrir en Gemini [✨ Ctrl+G]&#x0a;Copia la captura y abre gemini.google.com (Pega con Ctrl+V)&#x0a;Clic derecho: Menú de opciones de Gemini" Click="BtnGemini_Click" MouseRightButtonUp="BtnGemini_RightClick">
+                <!-- 4. ✨ Ask Gemini AI -->
+                <Button x:Name="BtnGemini" Style="{StaticResource EmojiBtnStyle}" ToolTip="Open in Gemini [✨ Ctrl+G]&#x0a;Copies capture and opens gemini.google.com (Paste with Ctrl+V)&#x0a;Right-click: Gemini options" Click="BtnGemini_Click" MouseRightButtonUp="BtnGemini_RightClick">
                     <Image Source="/Assets/Icons/gemini.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <Button.ContextMenu>
                         <ContextMenu x:Name="GeminiContextMenu" Style="{StaticResource ModernShareMenuStyle}">
-                            <MenuItem Header="Preguntar sobre imagen en Gemini (Pegar con Ctrl+V)" Click="GeminiWebChat_Click">
+                            <MenuItem Header="Ask about image in Gemini (Paste with Ctrl+V)" Click="GeminiWebChat_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/Icons/gemini.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="Preguntar sobre texto en Gemini (OCR + Prompt)" Click="GeminiPrompt_Click">
+                            <MenuItem Header="Ask about text in Gemini (OCR + Prompt)" Click="GeminiPrompt_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/Icons/text.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
@@ -377,27 +377,25 @@
                     </Button.ContextMenu>
                 </Button>
 
-                <!-- 5. 🎞️ Grabar clip de video (MP4 / GIF) con clásico carrete de cine con cinta marrón -->
-                <Button x:Name="BtnRecordVideo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Grabar pantalla (MP4 o GIF) [🎞️]&#x0a;Clic: Abrir menú de grabación para elegir formato e iniciar" Click="BtnRecordVideo_Click" MouseRightButtonUp="BtnRecordVideo_RightClick">
-                    <!-- Icono clásico de carrete de cine con cinta marrón -->
+                <!-- 5. 🎞️ Record video clip (MP4 / GIF) -->
+                <Button x:Name="BtnRecordVideo" Style="{StaticResource EmojiBtnStyle}" ToolTip="Record screen (MP4 or GIF) [🎞️]&#x0a;Click: Open recording options to choose audio and start" Click="BtnRecordVideo_Click" MouseRightButtonUp="BtnRecordVideo_RightClick">
+                    <!-- Classic film reel icon -->
                     <Viewbox Width="20" Height="20" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Canvas Width="24" Height="24">
-                            <!-- 1. Tira de cinta de celuloide marrón saliendo del carrete -->
+                            <!-- Film ribbon strip -->
                             <Path Data="M15 17 C17.5 20 20.5 21.5 23 20" Stroke="#9A3412" StrokeThickness="3.2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                            <!-- Perforaciones de la cinta saliente -->
+                            <!-- Ribbon perforations -->
                             <Path Data="M15.5 17 C17.8 20 20.6 21.5 22.8 20" Stroke="#FBBF24" StrokeThickness="0.7" StrokeDashArray="1,2"/>
 
-                            <!-- 2. Masa de cinta de celuloide marrón enrollada en el carrete -->
+                            <!-- Celluloid wound on reel -->
                             <Ellipse Canvas.Left="2.5" Canvas.Top="2.5" Width="19" Height="19" Fill="#854D0E"/>
                             <Ellipse Canvas.Left="4" Canvas.Top="4" Width="16" Height="16" Fill="#9A3412"/>
-                            <!-- Anillo sutil de las espiras de cinta -->
                             <Ellipse Canvas.Left="3.5" Canvas.Top="3.5" Width="17" Height="17" Stroke="#B45309" StrokeThickness="0.5" Fill="Transparent"/>
 
-                            <!-- 3. Chasis metálico del carrete de cine clásico (Aro exterior + 5 Radios + Eje) -->
-                            <!-- Aro exterior -->
+                            <!-- Metallic reel chassis -->
                             <Ellipse Canvas.Left="1.5" Canvas.Top="1.5" Width="21" Height="21" Stroke="{DynamicResource PrimaryText}" StrokeThickness="1.5" Fill="Transparent"/>
 
-                            <!-- 5 Radios metálicos del carrete a 72 grados -->
+                            <!-- Reel spokes -->
                             <Rectangle Canvas.Left="11.2" Canvas.Top="2" Width="1.6" Height="10" Fill="{DynamicResource PrimaryText}" RadiusX="0.5" RadiusY="0.5" RenderTransformOrigin="0.5,1.0">
                                 <Rectangle.RenderTransform><RotateTransform Angle="0"/></Rectangle.RenderTransform>
                             </Rectangle>
@@ -414,7 +412,7 @@
                                 <Rectangle.RenderTransform><RotateTransform Angle="288"/></Rectangle.RenderTransform>
                             </Rectangle>
 
-                            <!-- Eje central del carrete (Hub) -->
+                            <!-- Hub -->
                             <Ellipse Canvas.Left="8.5" Canvas.Top="8.5" Width="7" Height="7" Fill="{DynamicResource PrimaryText}"/>
                             <Ellipse Canvas.Left="10.2" Canvas.Top="10.2" Width="3.6" Height="3.6" Fill="{DynamicResource ToolbarBackground}"/>
                             <Ellipse Canvas.Left="11" Canvas.Top="11" Width="2" Height="2" Fill="{DynamicResource PrimaryText}"/>
@@ -422,42 +420,42 @@
                     </Viewbox>
                     <Button.ContextMenu>
                         <ContextMenu x:Name="VideoRecordContextMenu" Style="{StaticResource ModernShareMenuStyle}">
-                            <MenuItem Header="🎙️ + 🔊 Grabar con Micrófono y Audio del sistema" Click="RecordFullAudio_Click"/>
-                            <MenuItem Header="🎙️ Solo Micrófono (Voz / Narración)" Click="RecordMicOnly_Click"/>
-                            <MenuItem Header="🔊 Solo Audio del sistema" Click="RecordAudioOnly_Click"/>
-                            <MenuItem Header="🔇 Silencioso (Sin sonido)" Click="RecordMuted_Click"/>
+                            <MenuItem Header="🎙️ + 🔊 Record with Microphone and System Audio" Click="RecordFullAudio_Click"/>
+                            <MenuItem Header="🎙️ Microphone only (Voice / Narration)" Click="RecordMicOnly_Click"/>
+                            <MenuItem Header="🔊 System Audio only" Click="RecordAudioOnly_Click"/>
+                            <MenuItem Header="🔇 Muted (No sound)" Click="RecordMuted_Click"/>
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
 
-                <!-- Separador de grupo acciones 1 -->
+                <!-- Separator -->
                 <Rectangle x:Name="SepActions1" Width="1" Fill="{DynamicResource ToolbarSeparator}" Margin="4,3"/>
 
-                <!-- 6. 🖨️ Imprimir captura -->
-                <Button x:Name="BtnPrint" Style="{StaticResource EmojiBtnStyle}" ToolTip="Imprimir captura [🖨️ Ctrl+P]" Click="BtnPrint_Click">
+                <!-- 6. 🖨️ Print capture -->
+                <Button x:Name="BtnPrint" Style="{StaticResource EmojiBtnStyle}" ToolTip="Print capture [🖨️ Ctrl+P]" Click="BtnPrint_Click">
                     <Image Source="/Assets/Icons/print.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
 
-                <!-- 6. 📋 Copiar Texto OCR -->
-                <Button x:Name="BtnCopyOcrText" Style="{StaticResource EmojiBtnStyle}" ToolTip="Copiar texto con OCR [📋 Ctrl+Shift+T]" Click="BtnCopyOcrText_Click">
+                <!-- 6. 📋 Copy OCR Text -->
+                <Button x:Name="BtnCopyOcrText" Style="{StaticResource EmojiBtnStyle}" ToolTip="Copy text with OCR [📋 Ctrl+Shift+T]" Click="BtnCopyOcrText_Click">
                     <Image Source="/Assets/Icons/ocr.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
 
-                <!-- 5. 📑 Copiar imagen al portapapeles -->
-                <Button x:Name="BtnCopy" Style="{StaticResource EmojiBtnStyle}" ToolTip="Copiar imagen al portapapeles [📑 Ctrl+C]" Click="BtnCopy_Click">
+                <!-- 5. 📑 Copy image to clipboard -->
+                <Button x:Name="BtnCopy" Style="{StaticResource EmojiBtnStyle}" ToolTip="Copy image to clipboard [📑 Ctrl+C]" Click="BtnCopy_Click">
                     <Image Source="/Assets/Icons/copy.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
 
-                <!-- 6. 💾 Guardar imagen a disco -->
-                <Button x:Name="BtnSave" Style="{StaticResource EmojiBtnStyle}" ToolTip="Guardar imagen en disco [💾 Ctrl+S]" Click="BtnSave_Click">
+                <!-- 6. 💾 Save image to disk -->
+                <Button x:Name="BtnSave" Style="{StaticResource EmojiBtnStyle}" ToolTip="Save image to disk [💾 Ctrl+S]" Click="BtnSave_Click">
                     <Image Source="/Assets/Icons/save.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
 
-                <!-- Separador de grupo acciones 2 -->
+                <!-- Separator -->
                 <Rectangle Width="1" Fill="{DynamicResource ToolbarSeparator}" Margin="4,3"/>
 
-                <!-- 7. ❌ Cerrar / Cancelar -->
-                <Button x:Name="BtnClose" Style="{StaticResource EmojiBtnStyle}" ToolTip="Cancelar selección [❌ Esc]" Click="BtnClose_Click">
+                <!-- 7. ❌ Close / Cancel -->
+                <Button x:Name="BtnClose" Style="{StaticResource EmojiBtnStyle}" ToolTip="Cancel selection [❌ Esc]" Click="BtnClose_Click">
                     <Image Source="/Assets/Icons/close.png" Width="20" Height="20" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </Button>
             </StackPanel>

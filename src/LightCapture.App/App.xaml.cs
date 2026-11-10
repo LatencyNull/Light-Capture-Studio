@@ -63,12 +63,12 @@ public partial class App : Application
 
         DispatcherUnhandledException += (s, args) =>
         {
-            MessageBox.Show($"Ocurrió un error inesperado:\n{args.Exception}", "Light Capture Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"An unexpected error occurred:\n{args.Exception}", "Light Capture Studio", MessageBoxButton.OK, MessageBoxImage.Error);
         };
 
         AppDomain.CurrentDomain.UnhandledException += (s, args) =>
         {
-            MessageBox.Show($"Ocurrió un error inesperado:\n{args.ExceptionObject}", "Light Capture Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"An unexpected error occurred:\n{args.ExceptionObject}", "Light Capture Studio", MessageBoxButton.OK, MessageBoxImage.Error);
         };
 
         _singleInstanceMutex = new Mutex(true, "LightCaptureStudio_SingleInstance_Mutex", out bool createdNew);
@@ -153,7 +153,7 @@ public partial class App : Application
         _notifyIcon = new NotifyIcon
         {
             Icon = appIcon,
-            Text = $"Light Capture Studio - {HotkeySettingsManager.CurrentDisplayName} para capturar pantalla",
+            Text = $"Light Capture Studio - {HotkeySettingsManager.CurrentDisplayName} to capture screen",
             Visible = true,
             ContextMenuStrip = null // Reemplazado por el menú flotante moderno WPF One UI
         };
@@ -261,10 +261,10 @@ public partial class App : Application
         headerItem.Icon = appLogo;
         _trayContextMenu.Items.Add(headerItem);
 
-        // 2. 📸 Captura de pantalla (Menú padre con subelementos de captura, historial y configuración)
+        // 2. 📸 Screen Capture (Parent menu with subitems for capture, history and settings)
         var captureMenu = new WpfMenuItem
         {
-            Header = "Captura de pantalla",
+            Header = "Screen Capture",
             FontWeight = FontWeights.SemiBold
         };
         var camPath = new WpfPath
@@ -277,10 +277,10 @@ public partial class App : Application
         };
         captureMenu.Icon = camPath;
 
-        // Subítem: Capturar pantalla
+        // Subitem: Capture Screen
         _captureMenuItem = new WpfMenuItem
         {
-            Header = "Capturar pantalla",
+            Header = "Capture Screen",
             InputGestureText = HotkeySettingsManager.CurrentDisplayName,
             FontWeight = FontWeights.SemiBold
         };
@@ -296,10 +296,10 @@ public partial class App : Application
         _captureMenuItem.Click += (s, e) => StartCapture();
         captureMenu.Items.Add(_captureMenuItem);
 
-        // Subítem: Historial de capturas...
+        // Subitem: Capture History...
         var historyItem = new WpfMenuItem
         {
-            Header = "Historial de capturas..."
+            Header = "Capture History..."
         };
         var historyPath = new WpfPath
         {
@@ -313,10 +313,10 @@ public partial class App : Application
         historyItem.Click += (s, e) => OpenHistory();
         captureMenu.Items.Add(historyItem);
 
-        // Subítem: Abrir carpeta de capturas (Documentos\Light Capture)
+        // Subitem: Open Captures Folder
         var openFolderItem = new WpfMenuItem
         {
-            Header = "Abrir carpeta de capturas"
+            Header = "Open Captures Folder"
         };
         var folderPath = new WpfPath
         {
@@ -330,10 +330,10 @@ public partial class App : Application
         openFolderItem.Click += (s, e) => OpenCapturesFolder();
         captureMenu.Items.Add(openFolderItem);
 
-        // Subítem: Configurar tecla de captura...
+        // Subitem: Configure Capture Hotkey...
         _hotkeyMenuItem = new WpfMenuItem
         {
-            Header = $"Configurar tecla de captura ({HotkeySettingsManager.CurrentDisplayName})..."
+            Header = $"Configure Capture Hotkey ({HotkeySettingsManager.CurrentDisplayName})..."
         };
         var keyboardPath = new WpfPath
         {
@@ -351,7 +351,7 @@ public partial class App : Application
 
         _trayContextMenu.Items.Add(new WpfSeparator());
 
-        // 4. ☀️ / 🌙 Tema Oscuro / Claro
+        // 4. ☀️ / 🌙 Theme Dark / Light
         _themeIconPath = new WpfPath
         {
             Stretch = System.Windows.Media.Stretch.Uniform,
@@ -369,10 +369,10 @@ public partial class App : Application
         };
         _trayContextMenu.Items.Add(_menuItemTheme);
 
-        // 5. 🌐 Idioma de traducción (Submenú desplegable moderno)
+        // 5. 🌐 Translation Language (Modern flyout submenu)
         var langMenu = new WpfMenuItem
         {
-            Header = "Idioma de traducción"
+            Header = "Translation Language"
         };
         var globeImg = new WpfImage
         {
@@ -393,7 +393,7 @@ public partial class App : Application
         };
         _menuLangEs = new WpfMenuItem
         {
-            Header = "🇪🇸  Español (Predeterminado)",
+            Header = "🇪🇸  Spanish",
             Icon = _checkLangEs
         };
         _menuLangEs.Click += (s, e) =>
@@ -412,7 +412,7 @@ public partial class App : Application
         };
         _menuLangEn = new WpfMenuItem
         {
-            Header = "🇺🇸  Inglés (English)",
+            Header = "🇺🇸  English (Default)",
             Icon = _checkLangEn
         };
         _menuLangEn.Click += (s, e) =>
@@ -427,10 +427,10 @@ public partial class App : Application
 
         _trayContextMenu.Items.Add(new WpfSeparator());
 
-        // 6. ❌ Salir
+        // 6. ❌ Exit
         var exitItem = new WpfMenuItem
         {
-            Header = "Salir"
+            Header = "Exit"
         };
         var exitPath = new WpfPath
         {
@@ -453,7 +453,7 @@ public partial class App : Application
         if (_menuItemTheme != null && _themeIconPath != null)
         {
             bool isDark = ThemeManager.CurrentTheme == AppTheme.Dark;
-            _menuItemTheme.Header = isDark ? "Tema: Oscuro (Cambiar a Claro)" : "Tema: Claro (Cambiar a Oscuro)";
+            _menuItemTheme.Header = isDark ? "Theme: Dark (Switch to Light)" : "Theme: Light (Switch to Dark)";
             _themeIconPath.Data = isDark
                 ? System.Windows.Media.Geometry.Parse("M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z") // Luna cuando está en modo oscuro
                 : System.Windows.Media.Geometry.Parse("M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zm10-9a1 1 0 0 1-1 1h-2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1zM5 12a1 1 0 0 1-1 1H2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1z"); // Sol cuando está en modo claro
@@ -522,7 +522,7 @@ public partial class App : Application
             _notifyIcon?.ShowBalloonTip(
                 4000,
                 "Light Capture Studio",
-                $"La tecla '{userDisplay}' está asignada en otro programa. Usa 'Ctrl+Shift+X' o haz clic derecho en el icono para cambiarla.",
+                $"The key '{userDisplay}' is assigned to another program. Use 'Ctrl+Shift+X' or right-click the tray icon to change it.",
                 ToolTipIcon.Warning
             );
         }
@@ -541,7 +541,7 @@ public partial class App : Application
             _notifyIcon?.ShowBalloonTip(
                 4000,
                 "Light Capture Studio",
-                $"La tecla '{displayName}' no pudo registrarse (puede estar ocupada por Windows u otra app).",
+                $"The key '{displayName}' could not be registered (may be in use by Windows or another app).",
                 ToolTipIcon.Warning
             );
         }
@@ -550,7 +550,7 @@ public partial class App : Application
             _notifyIcon?.ShowBalloonTip(
                 2500,
                 "Light Capture Studio",
-                $"✅ Tecla de captura configurada: {displayName}",
+                $"✅ Capture hotkey configured: {displayName}",
                 ToolTipIcon.Info
             );
         }
@@ -560,7 +560,7 @@ public partial class App : Application
     {
         if (_notifyIcon != null)
         {
-            string text = $"Light Capture Studio - {displayName} para capturar pantalla";
+            string text = $"Light Capture Studio - {displayName} to capture screen";
             if (text.Length > 63) text = text[..63];
             _notifyIcon.Text = text;
         }
@@ -572,7 +572,7 @@ public partial class App : Application
 
         if (_hotkeyMenuItem != null)
         {
-            _hotkeyMenuItem.Header = $"Configurar tecla de captura ({displayName})...";
+            _hotkeyMenuItem.Header = $"Configure Capture Hotkey ({displayName})...";
         }
     }
 
@@ -591,7 +591,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Error al abrir la carpeta: {ex.Message}", "Carpeta de capturas", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Error opening folder: {ex.Message}", "Captures Folder", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -644,7 +644,7 @@ public partial class App : Application
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al capturar la pantalla: {ex.Message}", "Error de captura", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error capturing screen: {ex.Message}", "Capture Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         });
     }

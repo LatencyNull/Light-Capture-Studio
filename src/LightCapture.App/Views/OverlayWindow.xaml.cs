@@ -197,11 +197,11 @@ public partial class OverlayWindow : Window
             MainDrawingCanvas.CurrentTool = tool;
             if (tool == DrawingToolType.Text)
             {
-                ShowToast("🔤 Haz clic en la captura para escribir");
+                ShowToast("🔤 Click on capture to write");
             }
             else
             {
-                ShowToast($"Herramienta: {tool.ToString().ToUpper()}");
+                ShowToast($"Tool: {tool.ToString().ToUpper()}");
             }
         };
 
@@ -425,7 +425,7 @@ public partial class OverlayWindow : Window
         MainDrawingCanvas.ActiveSelectionBounds = _selectionBounds;
         MainToolbar.UpdatePosition(_selectionBounds, Width, Height);
         CheckForQrCodeAsync();
-        ShowToast("🧲 Ventana seleccionada automáticamente");
+        ShowToast("🧲 Window auto-selected");
     }
 
     private Point _floatingInputPos;
@@ -475,7 +475,7 @@ public partial class OverlayWindow : Window
             double posX = Canvas.GetLeft(FloatingTextContainer) + 3;
             double posY = Canvas.GetTop(FloatingTextContainer) + 1;
             MainDrawingCanvas.AddTextElement(new Point(posX, posY), text, _currentTextFontSize);
-            ShowToast($"✍️ Texto añadido ({_currentTextFontSize:0} pt)");
+            ShowToast($"✍️ Text added ({_currentTextFontSize:0} pt)");
         }
     }
 
@@ -908,7 +908,7 @@ public partial class OverlayWindow : Window
                 QrTextPreview.Text = qrResult;
                 QrCodeBanner.Visibility = Visibility.Visible;
                 UpdateQrBannerPosition();
-                ShowToast("¡Código QR detectado en la captura!");
+                ShowToast("QR Code detected in capture!");
             }
         }
         catch { }
@@ -919,7 +919,7 @@ public partial class OverlayWindow : Window
         if (!string.IsNullOrEmpty(_detectedQrCode))
         {
             Clipboard.SetText(_detectedQrCode);
-            ShowToast("Contenido del QR copiado al portapapeles 📋");
+            ShowToast("QR content copied to clipboard 📋");
         }
     }
 
@@ -948,12 +948,12 @@ public partial class OverlayWindow : Window
 
         if (string.IsNullOrWhiteSpace(textToSpeak))
         {
-            ShowToast("Pulsa Traducir o Copiar Texto antes de escuchar.");
+            ShowToast("Click Translate or Copy Text before listening.");
             return;
         }
 
         _speechService.Speak(textToSpeak);
-        ShowToast("🔊 Leyendo texto en voz alta...");
+        ShowToast("🔊 Reading text aloud...");
     }
 
     private void PinCaptureToScreen()
@@ -962,7 +962,7 @@ public partial class OverlayWindow : Window
         CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
-        _historyService.SaveCapture(flattened, "Fijado en pantalla " + _lastTranslatedPlainText + " " + _lastExtractedOcrText);
+        _historyService.SaveCapture(flattened, "Pinned on screen " + _lastTranslatedPlainText + " " + _lastExtractedOcrText);
         var pinWindow = new PinnedCaptureWindow(flattened);
         pinWindow.Show();
         Close();
@@ -972,7 +972,7 @@ public partial class OverlayWindow : Window
     {
         if (!_hasSelection) return;
 
-        ShowToast("Extrayendo texto de pantalla (OCR)...");
+        ShowToast("Extracting screen text (OCR)...");
 
         try
         {
@@ -986,7 +986,7 @@ public partial class OverlayWindow : Window
             var blocks = await _ocrService.RecognizeTextAsync(cropped);
             if (blocks == null || blocks.Count == 0)
             {
-                ShowToast("No se detectó texto en el área seleccionada.");
+                ShowToast("No text detected in selected area.");
                 return;
             }
 
@@ -996,11 +996,11 @@ public partial class OverlayWindow : Window
             var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
             _historyService.SaveCapture(flattened, _lastExtractedOcrText);
 
-            ShowToast("Texto extraído copiado al portapapeles 📋");
+            ShowToast("Extracted text copied to clipboard 📋");
         }
         catch (Exception ex)
         {
-            ShowToast($"Error OCR: {ex.Message}");
+            ShowToast($"OCR Error: {ex.Message}");
         }
     }
 
@@ -1008,7 +1008,7 @@ public partial class OverlayWindow : Window
     {
         if (!_hasSelection) return;
 
-        // Si ya está traducido, alternar (Toggle) entre Original y Traducción
+        // If already translated, toggle between Original and Translation
         if (MainDrawingCanvas.HasTranslatedBlocks)
         {
             MainDrawingCanvas.ToggleTranslationVisibility();
@@ -1017,11 +1017,11 @@ public partial class OverlayWindow : Window
 
             if (showingTranslation)
             {
-                ShowToast("👁️ Mostrando traducción (Clic de nuevo para ver original)");
+                ShowToast("👁️ Showing translation (Click again to view original)");
             }
             else
             {
-                ShowToast("🔄 Mostrando texto original (Clic de nuevo para traducir)");
+                ShowToast("🔄 Showing original text (Click again to translate)");
             }
             return;
         }
@@ -1035,14 +1035,14 @@ public partial class OverlayWindow : Window
 
         if (MainDrawingCanvas.HasTranslatedBlocks)
         {
-            ShowToast($"🌐 Cambiando traducción a {langName}...");
+            ShowToast($"🌐 Changing translation to {langName}...");
             MainDrawingCanvas.ClearTranslations();
             MainToolbar.SetTranslateActiveState(false, false);
             await ExecuteTranslationAsync();
         }
         else
         {
-            ShowToast($"🌐 Idioma de destino: {langName}");
+            ShowToast($"🌐 Target language: {langName}");
         }
     }
 
@@ -1050,7 +1050,7 @@ public partial class OverlayWindow : Window
     {
         if (!_hasSelection) return;
 
-        ShowToast("Extrayendo texto con OCR...");
+        ShowToast("Extracting text with OCR...");
 
         try
         {
@@ -1064,14 +1064,14 @@ public partial class OverlayWindow : Window
             var blocks = await _ocrService.RecognizeTextAsync(cropped);
             if (blocks == null || blocks.Count == 0)
             {
-                ShowToast("No se detectó texto en la selección.");
+                ShowToast("No text detected in selection.");
                 return;
             }
 
             string targetLang = TranslationLanguageManager.CurrentLanguage;
             string targetName = TranslationLanguageManager.CurrentLanguageDisplayName;
 
-            ShowToast($"Traduciendo a {targetName} ({blocks.Count} bloques en paralelo)...");
+            ShowToast($"Translating to {targetName} ({blocks.Count} blocks in parallel)...");
 
             var tasks = blocks.Select(async block =>
             {
@@ -1129,16 +1129,16 @@ public partial class OverlayWindow : Window
 
             if (successCount > 0)
             {
-                ShowToast($"¡Traducción a {targetName} lista! ({successCount}/{blocks.Count}) - Clic para alternar a original");
+                ShowToast($"Translation to {targetName} ready! ({successCount}/{blocks.Count}) - Click to toggle original");
             }
             else
             {
-                ShowToast("⚠️ No se pudo obtener traducción del servidor.");
+                ShowToast("⚠️ Could not retrieve translation from server.");
             }
         }
         catch (Exception ex)
         {
-            ShowToast($"Error al traducir: {ex.Message}");
+            ShowToast($"Translation error: {ex.Message}");
         }
     }
 
@@ -1152,7 +1152,7 @@ public partial class OverlayWindow : Window
 
         _historyService.SaveCapture(flattened, _lastTranslatedPlainText + " " + _lastExtractedOcrText);
 
-        ToastNotificationWindow.ShowToast("Captura copiada al portapapeles 📑", "pack://application:,,,/Assets/Icons/copy.png");
+        ToastNotificationWindow.ShowToast("Capture copied to clipboard 📑", "pack://application:,,,/Assets/Icons/copy.png");
         Close();
     }
 
@@ -1160,7 +1160,7 @@ public partial class OverlayWindow : Window
     {
         if (string.IsNullOrWhiteSpace(_lastTranslatedPlainText))
         {
-            ShowToast("No hay texto traducido aún. Pulsa Traducir primero.");
+            ShowToast("No translated text yet. Click Translate first.");
             return;
         }
 
@@ -1169,10 +1169,10 @@ public partial class OverlayWindow : Window
         if (_hasSelection)
         {
             var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
-            _historyService.SaveCapture(flattened, "Traducción: " + _lastTranslatedPlainText);
+            _historyService.SaveCapture(flattened, "Translation: " + _lastTranslatedPlainText);
         }
 
-        ShowToast("Texto traducido copiado al portapapeles 📋");
+        ShowToast("Translated text copied to clipboard 📋");
     }
 
     private void SaveCaptureToFile()
@@ -1185,7 +1185,7 @@ public partial class OverlayWindow : Window
         var sfd = new SaveFileDialog
         {
             InitialDirectory = _historyService.HistoryDirectory,
-            Filter = "Imagen PNG (*.png)|*.png|Imagen JPEG (*.jpg)|*.jpg",
+            Filter = "PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg",
             FileName = $"LightCapture_{DateTime.Now:yyyyMMdd_HHmmss}.png"
         };
 
@@ -1201,7 +1201,7 @@ public partial class OverlayWindow : Window
 
             _historyService.SaveCapture(flattened, _lastTranslatedPlainText + " " + _lastExtractedOcrText);
 
-            ShowToast("Imagen guardada e indexada en historial");
+            ShowToast("Image saved and indexed in history");
             Close();
         }
     }
@@ -1231,7 +1231,7 @@ public partial class OverlayWindow : Window
 
         if (_selectionBounds.Width < 32 || _selectionBounds.Height < 32)
         {
-            ShowToast("El área seleccionada es demasiado pequeña para grabar.");
+            ShowToast("Selected area is too small to record.");
             return;
         }
 
@@ -1242,7 +1242,7 @@ public partial class OverlayWindow : Window
 
         var dipBounds = new Rect(Left + _selectionBounds.Left, Top + _selectionBounds.Top, _selectionBounds.Width, _selectionBounds.Height);
 
-        // Ocultamos la ventana de captura congelada para dejar el escritorio 100% interactivo
+        // Hide frozen screenshot window to keep desktop fully interactive
         Visibility = Visibility.Collapsed;
 
         _recordingBorder = new RecordingBorderOverlay(dipBounds);
@@ -1252,7 +1252,7 @@ public partial class OverlayWindow : Window
         _recordingWidget.AudioToggled += enabled => _videoRecorder.SetAudioEnabled(enabled);
         _recordingWidget.MicToggled += enabled => _videoRecorder.SetMicEnabled(enabled);
 
-        // El usuario presiona "Iniciar" en el widget de control
+        // User clicks "Start" in recording control widget
         _recordingWidget.StartRequested += async (audio, mic, gif, fps) =>
         {
             try
@@ -1264,7 +1264,7 @@ public partial class OverlayWindow : Window
             catch (Exception ex)
             {
                 CloseRecordingOverlays();
-                System.Windows.MessageBox.Show($"No se pudo iniciar la grabación: {ex.Message}", "Grabador de Pantalla", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Could not start recording: {ex.Message}", "Screen Recorder", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
             }
         };
@@ -1283,7 +1283,7 @@ public partial class OverlayWindow : Window
             Dispatcher.Invoke(() =>
             {
                 CloseRecordingOverlays();
-                System.Windows.MessageBox.Show($"Error al grabar: {err}", "Grabador de Pantalla", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"Recording error: {err}", "Screen Recorder", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
             });
         };
@@ -1307,7 +1307,7 @@ public partial class OverlayWindow : Window
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Error al procesar el archivo: {ex.Message}");
+            System.Windows.MessageBox.Show($"Error processing file: {ex.Message}");
         }
 
         Close();
@@ -1352,33 +1352,30 @@ public partial class OverlayWindow : Window
         CommitFloatingText();
 
         _isSearchingLens = true;
-        ShowToast("Buscando en Google Lens... 🔍");
+        ShowToast("Searching Google Lens... 🔍");
 
         try
         {
             var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
             var pngBytes = ScreenCaptureService.BitmapSourceToPngBytes(flattened);
 
-            // Copia instantánea preventiva al portapapeles
             try { ClipboardHelper.CopyImageToClipboard(flattened); } catch { }
 
-            // Subir la imagen a FreeImage (enlace CDN directo y ultra rápido)
             string? publicUrl = await _cloudUploadService.UploadImageAsync(pngBytes);
 
             if (!string.IsNullOrEmpty(publicUrl))
             {
-                _historyService.SaveCapture(flattened, "Búsqueda Google Lens");
+                _historyService.SaveCapture(flattened, "Google Lens Search");
                 string lensUrl = GoogleLensService.BuildLensSearchUrl(publicUrl);
                 Process.Start(new ProcessStartInfo(lensUrl) { UseShellExecute = true });
-                ShowToast("¡Búsqueda abierta en Google Lens! 🔍");
+                ShowToast("Search opened in Google Lens! 🔍");
                 Close();
             }
             else
             {
-                // Fallback de contingencia: portal de Google Lens con la imagen lista en portapapeles
                 Process.Start(new ProcessStartInfo("https://lens.google.com/") { UseShellExecute = true });
-                _historyService.SaveCapture(flattened, "Búsqueda Google Lens");
-                ShowToast("Captura en portapapeles. Pega (Ctrl+V) en Google Lens 📋");
+                _historyService.SaveCapture(flattened, "Google Lens Search");
+                ShowToast("Capture on clipboard. Paste (Ctrl+V) into Google Lens 📋");
                 Close();
             }
         }
@@ -1401,7 +1398,7 @@ public partial class OverlayWindow : Window
     {
         if (!_hasSelection) return;
 
-        ShowToast("Buscando en Yandex Images... 🟡");
+        ShowToast("Searching Yandex Images... 🟡");
 
         try
         {
@@ -1412,10 +1409,10 @@ public partial class OverlayWindow : Window
             string? publicUrl = await _cloudUploadService.UploadImageAsync(pngBytes);
             if (!string.IsNullOrEmpty(publicUrl))
             {
-                _historyService.SaveCapture(flattened, "Búsqueda Yandex Images");
+                _historyService.SaveCapture(flattened, "Yandex Images Search");
                 string yandexUrl = $"https://yandex.com/images/search?rpt=imageview&url={Uri.EscapeDataString(publicUrl)}";
                 Process.Start(new ProcessStartInfo(yandexUrl) { UseShellExecute = true });
-                ShowToast("¡Búsqueda abierta en Yandex Images! 🟡");
+                ShowToast("Search opened in Yandex Images! 🟡");
                 Close();
             }
             else
@@ -1435,7 +1432,7 @@ public partial class OverlayWindow : Window
     {
         if (!_hasSelection) return;
 
-        ShowToast("Buscando en Bing Visual Search... 🟦");
+        ShowToast("Searching Bing Visual Search... 🟦");
 
         try
         {
@@ -1446,10 +1443,10 @@ public partial class OverlayWindow : Window
             string? publicUrl = await _cloudUploadService.UploadImageAsync(pngBytes);
             if (!string.IsNullOrEmpty(publicUrl))
             {
-                _historyService.SaveCapture(flattened, "Búsqueda Bing Visual");
+                _historyService.SaveCapture(flattened, "Bing Visual Search");
                 string bingUrl = $"https://www.bing.com/images/search?view=detailv2&iss=sbi&FORM=SBIHMP&sbisrc=UrlPaste&q=imgurl:{Uri.EscapeDataString(publicUrl)}";
                 Process.Start(new ProcessStartInfo(bingUrl) { UseShellExecute = true });
-                ShowToast("¡Búsqueda abierta en Bing! 🟦");
+                ShowToast("Search opened in Bing! 🟦");
                 Close();
             }
             else
@@ -1469,7 +1466,7 @@ public partial class OverlayWindow : Window
     {
         if (!_hasSelection) return;
 
-        ShowToast("Subiendo captura a la nube...");
+        ShowToast("Uploading capture to cloud...");
 
         try
         {
@@ -1480,17 +1477,17 @@ public partial class OverlayWindow : Window
             if (!string.IsNullOrEmpty(publicUrl))
             {
                 Clipboard.SetText(publicUrl);
-                ShowToast("¡Enlace copiado al portapapeles! ☁️");
+                ShowToast("Link copied to clipboard! ☁️");
                 Process.Start(new ProcessStartInfo(publicUrl) { UseShellExecute = true });
             }
             else
             {
-                ShowToast("⚠️ No se pudo completar la subida. Verifica tu conexión.");
+                ShowToast("⚠️ Could not complete upload. Check your connection.");
             }
         }
         catch (Exception ex)
         {
-            ShowToast($"Error de subida: {ex.Message}");
+            ShowToast($"Upload error: {ex.Message}");
         }
     }
 
@@ -1503,11 +1500,11 @@ public partial class OverlayWindow : Window
         {
             var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
             ClipboardHelper.CopyImageToClipboard(flattened);
-            _historyService.SaveCapture(flattened, "Consulta Gemini");
+            _historyService.SaveCapture(flattened, "Gemini Query");
 
             Process.Start(new ProcessStartInfo("https://gemini.google.com/app") { UseShellExecute = true });
-            ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en Gemini ✨", "/Assets/Icons/gemini.png");
-            App.ShowNotification("Google Gemini ✨", "¡Captura copiada! Pulsa Ctrl+V en la caja de Gemini para pegarla.");
+            ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in Gemini ✨", "/Assets/Icons/gemini.png");
+            App.ShowNotification("Google Gemini ✨", "Capture copied! Press Ctrl+V in Gemini to paste.");
             Close();
         }
         catch
@@ -1525,7 +1522,7 @@ public partial class OverlayWindow : Window
         {
             var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
             ClipboardHelper.CopyImageToClipboard(flattened);
-            _historyService.SaveCapture(flattened, "Consulta Gemini Web");
+            _historyService.SaveCapture(flattened, "Gemini Web Query");
 
             Process.Start(new ProcessStartInfo("https://gemini.google.com/app") { UseShellExecute = true });
             Close();
@@ -1557,7 +1554,7 @@ public partial class OverlayWindow : Window
                 ? string.Join(" ", blocks.Select(b => b.Text)).Trim()
                 : string.Empty;
 
-            string query = !string.IsNullOrWhiteSpace(ocrText) ? ocrText : "Análisis de captura";
+            string query = !string.IsNullOrWhiteSpace(ocrText) ? ocrText : "Capture Analysis";
             string perpUrl = $"https://www.perplexity.ai/search?q={Uri.EscapeDataString(query)}";
             Process.Start(new ProcessStartInfo(perpUrl) { UseShellExecute = true });
             Close();
@@ -1588,17 +1585,17 @@ public partial class OverlayWindow : Window
 
             if (!string.IsNullOrWhiteSpace(ocrText))
             {
-                string prompt = $"Por favor analiza detalladamente, explica o asísteme con lo siguiente:\n\n\"{ocrText}\"";
+                string prompt = $"Please analyze in detail, explain or assist me with the following:\n\n\"{ocrText}\"";
                 Clipboard.SetDataObject(new DataObject(DataFormats.UnicodeText, prompt), true);
-                ToastNotificationWindow.ShowToast("¡Prompt copiado! Pega con Ctrl+V en Gemini ✨", "/Assets/Icons/gemini.png");
-                App.ShowNotification("Google Gemini ✨", "¡Prompt y texto copiados! Pulsa Ctrl+V en Gemini para pegarlos.");
+                ToastNotificationWindow.ShowToast("Prompt copied! Paste with Ctrl+V in Gemini ✨", "/Assets/Icons/gemini.png");
+                App.ShowNotification("Google Gemini ✨", "Prompt and text copied! Press Ctrl+V in Gemini to paste.");
             }
             else
             {
                 var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
                 ClipboardHelper.CopyImageToClipboard(flattened);
-                ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en Gemini ✨", "/Assets/Icons/gemini.png");
-                App.ShowNotification("Google Gemini ✨", "¡Captura copiada! Pulsa Ctrl+V en la caja de Gemini para pegarla.");
+                ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in Gemini ✨", "/Assets/Icons/gemini.png");
+                App.ShowNotification("Google Gemini ✨", "Capture copied! Press Ctrl+V in Gemini to paste.");
             }
 
             Process.Start(new ProcessStartInfo("https://gemini.google.com/app") { UseShellExecute = true });
@@ -1652,7 +1649,7 @@ public partial class OverlayWindow : Window
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
-        _historyService.SaveCapture(flattened, "Compartir en WhatsApp (App)");
+        _historyService.SaveCapture(flattened, "Share on WhatsApp (App)");
 
         bool appOpened = false;
         try
@@ -1664,7 +1661,7 @@ public partial class OverlayWindow : Window
 
         if (appOpened)
         {
-            ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en WhatsApp App 💬", "/Assets/Icons/whatsapp.png");
+            ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in WhatsApp App 💬", "/Assets/Icons/whatsapp.png");
         }
         else
         {
@@ -1673,7 +1670,7 @@ public partial class OverlayWindow : Window
                 Process.Start(new ProcessStartInfo("https://web.whatsapp.com/") { UseShellExecute = true });
             }
             catch { }
-            ToastNotificationWindow.ShowToast("WhatsApp App no encontrado. Abriendo WhatsApp Web... 💬", "/Assets/Icons/whatsapp.png");
+            ToastNotificationWindow.ShowToast("WhatsApp App not found. Opening WhatsApp Web... 💬", "/Assets/Icons/whatsapp.png");
         }
 
         Close();
@@ -1686,7 +1683,7 @@ public partial class OverlayWindow : Window
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
-        _historyService.SaveCapture(flattened, "Compartir en WhatsApp Web");
+        _historyService.SaveCapture(flattened, "Share on WhatsApp Web");
 
         try
         {
@@ -1694,7 +1691,7 @@ public partial class OverlayWindow : Window
         }
         catch { }
 
-        ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en WhatsApp Web 💬", "/Assets/Icons/whatsapp.png");
+        ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in WhatsApp Web 💬", "/Assets/Icons/whatsapp.png");
         Close();
     }
 
@@ -1705,7 +1702,7 @@ public partial class OverlayWindow : Window
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
-        _historyService.SaveCapture(flattened, "Compartir en Discord");
+        _historyService.SaveCapture(flattened, "Share on Discord");
 
         try
         {
@@ -1713,7 +1710,7 @@ public partial class OverlayWindow : Window
         }
         catch { }
 
-        ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en Discord 💬", "pack://application:,,,/Assets/Icons/discord.png");
+        ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in Discord 💬", "pack://application:,,,/Assets/Icons/discord.png");
         Close();
     }
 
@@ -1724,7 +1721,7 @@ public partial class OverlayWindow : Window
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
-        _historyService.SaveCapture(flattened, "Compartir en Facebook");
+        _historyService.SaveCapture(flattened, "Share on Facebook");
 
         try
         {
@@ -1732,7 +1729,7 @@ public partial class OverlayWindow : Window
         }
         catch { }
 
-        ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en Facebook 🔵", "pack://application:,,,/Assets/Icons/facebook.png");
+        ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in Facebook 🔵", "pack://application:,,,/Assets/Icons/facebook.png");
         Close();
     }
 
@@ -1743,7 +1740,7 @@ public partial class OverlayWindow : Window
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
-        _historyService.SaveCapture(flattened, "Compartir en TikTok");
+        _historyService.SaveCapture(flattened, "Share on TikTok");
 
         try
         {
@@ -1751,7 +1748,7 @@ public partial class OverlayWindow : Window
         }
         catch { }
 
-        ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en TikTok 🎵", "/Assets/Icons/tiktok.png");
+        ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in TikTok 🎵", "/Assets/Icons/tiktok.png");
         Close();
     }
 
@@ -1762,7 +1759,7 @@ public partial class OverlayWindow : Window
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
-        _historyService.SaveCapture(flattened, "Compartir en Instagram");
+        _historyService.SaveCapture(flattened, "Share on Instagram");
 
         try
         {
@@ -1770,7 +1767,7 @@ public partial class OverlayWindow : Window
         }
         catch { }
 
-        ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en Instagram 📸", "pack://application:,,,/Assets/Icons/instagram.png");
+        ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in Instagram 📸", "pack://application:,,,/Assets/Icons/instagram.png");
         Close();
     }
 
@@ -1793,12 +1790,12 @@ public partial class OverlayWindow : Window
                 encoder.Save(fs);
             }
 
-            _historyService.SaveCapture(flattened, "Compartir por Correo");
-            Process.Start(new ProcessStartInfo("mailto:?subject=Captura%20de%20pantalla%20-%20LightCapture&body=Adjunto%20captura%20de%20pantalla%20(tambi%C3%A9n%20copiada%20al%20portapapeles%20para%20pegar).") { UseShellExecute = true });
+            _historyService.SaveCapture(flattened, "Share via Email");
+            Process.Start(new ProcessStartInfo("mailto:?subject=Screenshot%20-%20LightCapture&body=Attached%20screenshot%20(also%20copied%20to%20clipboard%20to%20paste).") { UseShellExecute = true });
         }
         catch { }
 
-        ToastNotificationWindow.ShowToast("Abriendo correo (Captura copiada al portapapeles) ✉️", "pack://application:,,,/Assets/Icons/email.png");
+        ToastNotificationWindow.ShowToast("Opening email (Capture copied to clipboard) ✉️", "pack://application:,,,/Assets/Icons/email.png");
         Close();
     }
 
@@ -1809,7 +1806,7 @@ public partial class OverlayWindow : Window
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
-        _historyService.SaveCapture(flattened, "Compartir en Telegram");
+        _historyService.SaveCapture(flattened, "Share on Telegram");
 
         try
         {
@@ -1817,7 +1814,7 @@ public partial class OverlayWindow : Window
         }
         catch { }
 
-        ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en Telegram ✈️", "pack://application:,,,/Assets/Icons/telegram.png");
+        ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V in Telegram ✈️", "pack://application:,,,/Assets/Icons/telegram.png");
         Close();
     }
 
@@ -1828,7 +1825,7 @@ public partial class OverlayWindow : Window
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
-        _historyService.SaveCapture(flattened, "Compartir en X");
+        _historyService.SaveCapture(flattened, "Share on X");
 
         try
         {
@@ -1836,7 +1833,7 @@ public partial class OverlayWindow : Window
         }
         catch { }
 
-        ToastNotificationWindow.ShowToast("¡Captura copiada! Pega con Ctrl+V en tu publicación ✖️", "pack://application:,,,/Assets/Icons/x.png");
+        ToastNotificationWindow.ShowToast("Capture copied! Paste with Ctrl+V into your post ✖️", "pack://application:,,,/Assets/Icons/x.png");
         Close();
     }
 
@@ -1901,11 +1898,11 @@ public partial class OverlayWindow : Window
         bool undone = MainDrawingCanvas.Undo();
         if (undone)
         {
-            ShowToast("↩️ Deshecho (Ctrl+Z)");
+            ShowToast("↩️ Undo (Ctrl+Z)");
         }
         else
         {
-            ShowToast("No hay trazos que deshacer");
+            ShowToast("Nothing to undo");
         }
     }
 

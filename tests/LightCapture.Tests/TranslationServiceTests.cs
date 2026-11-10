@@ -71,11 +71,11 @@ public class TranslationServiceTests
     [Fact]
     public void TranslationLanguageManager_DefaultsToSpanish()
     {
-        // Assert: solo español e inglés por defecto, arrancando en español
+        // Assert: only Spanish and English by default, starting in Spanish
         TranslationLanguageManager.SetLanguage(TranslationLanguageManager.Spanish);
         Assert.Equal("es", TranslationLanguageManager.CurrentLanguage);
         Assert.Equal("ES", TranslationLanguageManager.CurrentLanguageBadge);
-        Assert.Equal("Español", TranslationLanguageManager.CurrentLanguageDisplayName);
+        Assert.Equal("Spanish", TranslationLanguageManager.CurrentLanguageDisplayName);
     }
 
     [Fact]
@@ -87,9 +87,9 @@ public class TranslationServiceTests
         // Assert
         Assert.Equal("en", TranslationLanguageManager.CurrentLanguage);
         Assert.Equal("EN", TranslationLanguageManager.CurrentLanguageBadge);
-        Assert.Equal("Inglés (English)", TranslationLanguageManager.CurrentLanguageDisplayName);
+        Assert.Equal("English", TranslationLanguageManager.CurrentLanguageDisplayName);
 
-        // Cleanup: volver a español
+        // Cleanup: return to Spanish
         TranslationLanguageManager.SetLanguage(TranslationLanguageManager.Spanish);
     }
 

@@ -34,10 +34,10 @@ public static class TranslationLanguageManager
     }
 
     public static string CurrentLanguageDisplayName =>
-        CurrentLanguage == English ? "Inglés (English)" : "Español";
+        CurrentLanguage == English ? "English" : "Spanish";
 
     public static string CurrentLanguageShortName =>
-        CurrentLanguage == English ? "English" : "Español";
+        CurrentLanguage == English ? "English" : "Spanish";
 
     public static string CurrentLanguageBadge =>
         CurrentLanguage == English ? "EN" : "ES";
@@ -46,7 +46,7 @@ public static class TranslationLanguageManager
         CurrentLanguage == English ? Spanish : English;
 
     public static string OtherLanguageDisplayName =>
-        CurrentLanguage == English ? "Español" : "Inglés (English)";
+        CurrentLanguage == English ? "Spanish" : "English";
 
     public static event Action<string>? LanguageChanged;
 

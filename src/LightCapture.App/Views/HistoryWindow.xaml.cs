@@ -44,20 +44,20 @@ public partial class HistoryWindow : Window
         {
             string path = _historyService.GetImagePath(e);
             string snippet = string.IsNullOrWhiteSpace(e.OcrText)
-                ? "(Sin texto detectado)"
+                ? "(No text detected)"
                 : (e.OcrText.Length > 80 ? e.OcrText[..80] + "..." : e.OcrText);
 
             return new HistoryCardViewModel(
                 Id: e.Id,
                 ImagePath: path,
-                TimestampText: e.Timestamp.ToString("dd/MM/yyyy HH:mm:ss"),
+                TimestampText: e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"),
                 OcrTextSnippet: snippet,
                 FullOcrText: e.OcrText
             );
         }).ToList();
 
         HistoryItemsList.ItemsSource = viewModels;
-        TxtTotalCount.Text = $"{viewModels.Count} {(viewModels.Count == 1 ? "captura" : "capturas")}";
+        TxtTotalCount.Text = $"{viewModels.Count} {(viewModels.Count == 1 ? "capture" : "captures")}";
         if (EmptyHistoryPlaceholder != null)
         {
             EmptyHistoryPlaceholder.Visibility = viewModels.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -85,7 +85,7 @@ public partial class HistoryWindow : Window
                 bitmap.Freeze();
 
                 ClipboardHelper.CopyImageToClipboard(bitmap);
-                MessageBox.Show("Imagen copiada al portapapeles.", "Historial", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Image copied to clipboard.", "Capture History", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch { }
         }
@@ -98,11 +98,11 @@ public partial class HistoryWindow : Window
             if (!string.IsNullOrWhiteSpace(item.FullOcrText))
             {
                 Clipboard.SetText(item.FullOcrText);
-                MessageBox.Show("Texto copiado al portapapeles.", "Historial", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Text copied to clipboard.", "Capture History", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("Esta captura no contiene texto detectado.", "Historial", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("This capture contains no detected text.", "Capture History", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }
@@ -131,7 +131,7 @@ public partial class HistoryWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"No se pudo abrir la carpeta: {ex.Message}", "Historial", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Could not open folder: {ex.Message}", "Capture History", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -153,8 +153,8 @@ public partial class HistoryWindow : Window
     private void BtnClearAll_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
-            "¿Estás seguro de que deseas vaciar por completo todo el historial de capturas?\nEsta acción no se puede deshacer.",
-            "Vaciar Historial",
+            "Are you sure you want to completely clear the entire capture history?\nThis action cannot be undone.",
+            "Clear History",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning
         );

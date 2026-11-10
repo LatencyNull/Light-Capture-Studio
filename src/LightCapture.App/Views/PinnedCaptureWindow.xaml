@@ -13,14 +13,14 @@
 
     <Window.Resources>
         <ContextMenu x:Key="PinMenu">
-            <MenuItem Header="📋 Copiar imagen al portapapeles" Click="MenuCopy_Click"/>
+            <MenuItem Header="📋 Copy image to clipboard" Click="MenuCopy_Click"/>
             <Separator/>
-            <MenuItem Header="Opacidad: 100%" Click="MenuOpacity100_Click"/>
-            <MenuItem Header="Opacidad: 80%" Click="MenuOpacity80_Click"/>
-            <MenuItem Header="Opacidad: 60%" Click="MenuOpacity60_Click"/>
-            <MenuItem Header="Opacidad: 40%" Click="MenuOpacity40_Click"/>
+            <MenuItem Header="Opacity: 100%" Click="MenuOpacity100_Click"/>
+            <MenuItem Header="Opacity: 80%" Click="MenuOpacity80_Click"/>
+            <MenuItem Header="Opacity: 60%" Click="MenuOpacity60_Click"/>
+            <MenuItem Header="Opacity: 40%" Click="MenuOpacity40_Click"/>
             <Separator/>
-            <MenuItem Header="❌ Cerrar (Esc)" Click="MenuClose_Click"/>
+            <MenuItem Header="❌ Close (Esc)" Click="MenuClose_Click"/>
         </ContextMenu>
     </Window.Resources>
 

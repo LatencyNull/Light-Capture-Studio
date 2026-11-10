@@ -61,11 +61,11 @@ public partial class RecordingControlWidget : Window
     {
         _isRecording = true;
 
-        // Cambiar el botón principal de Iniciar (verde) a Detener (rojo)
+        // Change main button from Start (green) to Stop (red)
         BtnAction.Background = new SolidColorBrush(MediaColor.FromRgb(239, 68, 68)); // #EF4444
         TxtActionIcon.Text = "⏹";
-        TxtActionText.Text = "Detener";
-        BtnAction.ToolTip = "Detener grabación y abrir previsualización";
+        TxtActionText.Text = "Stop";
+        BtnAction.ToolTip = "Stop recording and open preview";
 
         // Bloquear cambio de formato y FPS durante la grabación activa
         BtnFpsToggle.IsEnabled = false;
@@ -110,12 +110,12 @@ public partial class RecordingControlWidget : Window
                 TxtTimer.Text = $"{duration.Minutes:D2}:{duration.Seconds:D2}";
             }
 
-            // Si el video supera los 15 segundos, la opción de GIF se sombrea/desactiva
+            // If video exceeds 15 seconds, GIF option is disabled
             if (duration.TotalSeconds > 15)
             {
                 BtnFormatGif.IsEnabled = false;
                 BtnFormatGif.Opacity = 0.35;
-                BtnFormatGif.ToolTip = "Formato GIF no disponible: la grabación superó los 15 segundos permitidos.";
+                BtnFormatGif.ToolTip = "GIF format unavailable: recording exceeded the 15-second limit.";
             }
         });
     }
@@ -196,14 +196,14 @@ public partial class RecordingControlWidget : Window
             TxtFpsIcon.Text = "⚡";
             TxtFps.Text = "60 FPS";
             TxtFps.Foreground = new SolidColorBrush(MediaColor.FromRgb(56, 189, 248)); // #38BDF8
-            BtnFpsToggle.ToolTip = "60 FPS (Ultra fluido para juegos, videos y animaciones suaves). Clic para cambiar a 30 FPS.";
+            BtnFpsToggle.ToolTip = "60 FPS (Ultra smooth for gaming, videos, and motion). Click to switch to 30 FPS.";
         }
         else
         {
             TxtFpsIcon.Text = "🎬";
             TxtFps.Text = "30 FPS";
-            TxtFps.Foreground = new SolidColorBrush(MediaColor.FromRgb(251, 191, 36)); // #FBBF24 Ámbar
-            BtnFpsToggle.ToolTip = "30 FPS (Modo ligero para tutoriales y archivos más pequeños). Clic para cambiar a 60 FPS.";
+            TxtFps.Foreground = new SolidColorBrush(MediaColor.FromRgb(251, 191, 36)); // #FBBF24 Amber
+            BtnFpsToggle.ToolTip = "30 FPS (Lightweight mode for tutorials and smaller file sizes). Click to switch to 60 FPS.";
         }
     }
 
@@ -211,12 +211,12 @@ public partial class RecordingControlWidget : Window
     {
         if (!_isRecording)
         {
-            // Arrancar grabación con FPS elegido
+            // Start recording with selected FPS
             StartRequested?.Invoke(_isAudioOn, _isMicOn, _isGif, _fps);
         }
         else
         {
-            // Detener grabación
+            // Stop recording
             StopRequested?.Invoke();
         }
     }
@@ -225,8 +225,8 @@ public partial class RecordingControlWidget : Window
     {
         TxtAudioIcon.Text = _isAudioOn ? "🔊" : "🔇";
         BtnAudioToggle.ToolTip = _isAudioOn
-            ? "Audio del sistema ACTIVADO. Clic para silenciar."
-            : "Audio del sistema SILENCIADO. Clic para activar.";
+            ? "System audio ENABLED. Click to mute."
+            : "System audio MUTED. Click to enable.";
         BtnAudioToggle.Opacity = _isAudioOn ? 1.0 : 0.55;
     }
 
@@ -234,8 +234,8 @@ public partial class RecordingControlWidget : Window
     {
         TxtMicIcon.Text = _isMicOn ? "🎙️" : "🔇";
         BtnMicToggle.ToolTip = _isMicOn
-            ? "Micrófono ACTIVADO. Clic para silenciar."
-            : "Micrófono SILENCIADO. Clic para activar.";
+            ? "Microphone ENABLED. Click to mute."
+            : "Microphone MUTED. Click to enable.";
         BtnMicToggle.Opacity = _isMicOn ? 1.0 : 0.55;
     }
 

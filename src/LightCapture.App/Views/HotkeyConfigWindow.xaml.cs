@@ -36,20 +36,20 @@ public partial class HotkeyConfigWindow : Window
     private void KeyCaptureBox_GotFocus(object sender, RoutedEventArgs e)
     {
         KeyCaptureBox.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246));
-        TxtKeyInstruction.Text = "⌨️ ¡Escuchando! Presiona ahora tu tecla en el teclado...";
+        TxtKeyInstruction.Text = "⌨️ Listening! Press your desired key on keyboard...";
         TxtKeyInstruction.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(96, 165, 250));
     }
 
     private void KeyCaptureBox_LostFocus(object sender, RoutedEventArgs e)
     {
         KeyCaptureBox.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(37, 99, 235));
-        TxtKeyInstruction.Text = "👉 Haz clic aquí y presiona cualquier tecla de tu teclado";
+        TxtKeyInstruction.Text = "👉 Click here and press any key on your keyboard";
         TxtKeyInstruction.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(147, 197, 253));
     }
 
     private void KeyCaptureBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
-        // Ignorar teclas modificadoras solitarias mientras se presionan
+        // Ignore standalone modifier keys while being pressed
         Key key = e.Key == Key.System ? e.SystemKey : e.Key;
         if (key is Key.LeftCtrl or Key.RightCtrl or Key.LeftShift or Key.RightShift or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin)
         {
@@ -57,7 +57,7 @@ public partial class HotkeyConfigWindow : Window
             return;
         }
 
-        // Si presiona Escape dentro de la caja, cancelar escucha
+        // If Escape pressed inside box, cancel listening
         if (key == Key.Escape && Keyboard.Modifiers == ModifierKeys.None)
         {
             Close();
@@ -88,14 +88,14 @@ public partial class HotkeyConfigWindow : Window
 
         string keyName = key switch
         {
-            Key.Snapshot => "Impr Pant",
+            Key.Snapshot => "Print Screen",
             Key.Insert => "Insert",
             Key.Delete => "Delete",
             Key.Home => "Home",
             Key.End => "End",
-            Key.PageUp => "RePág",
-            Key.PageDown => "AvPág",
-            Key.Pause => "Pausa",
+            Key.PageUp => "Page Up",
+            Key.PageDown => "Page Down",
+            Key.Pause => "Pause",
             _ => key.ToString()
         };
 
@@ -121,7 +121,7 @@ public partial class HotkeyConfigWindow : Window
     {
         _selectedVk = 0x2C;
         _selectedModifiers = 0;
-        _selectedDisplayName = "Impr Pant";
+        _selectedDisplayName = "Print Screen";
         UpdateDisplay();
     }
 

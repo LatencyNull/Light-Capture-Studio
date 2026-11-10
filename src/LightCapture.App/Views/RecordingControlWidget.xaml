@@ -73,19 +73,19 @@
             <!-- Selector de Formato: MP4 vs GIF -->
             <Border Background="{DynamicResource ActionBtnBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="10" Padding="2" Margin="0,0,10,0" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
-                    <!-- Opción MP4 -->
-                    <Button x:Name="BtnFormatMp4" Style="{StaticResource FormatToggleBtnStyle}" Click="BtnFormatMp4_Click" ToolTip="Grabar video MP4 con soporte de audio y micrófono">
+                    <!-- MP4 Option -->
+                    <Button x:Name="BtnFormatMp4" Style="{StaticResource FormatToggleBtnStyle}" Click="BtnFormatMp4_Click" ToolTip="Record MP4 video with audio and microphone support">
                         <TextBlock x:Name="TxtFormatMp4" Text="🎬 MP4" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF"/>
                     </Button>
 
-                    <!-- Opción GIF (máx 15s) -->
-                    <Button x:Name="BtnFormatGif" Style="{StaticResource FormatToggleBtnStyle}" Click="BtnFormatGif_Click" ToolTip="Grabar GIF Animado en bucle sin sonido (máximo 15 segundos)">
+                    <!-- GIF Option (max 15s) -->
+                    <Button x:Name="BtnFormatGif" Style="{StaticResource FormatToggleBtnStyle}" Click="BtnFormatGif_Click" ToolTip="Record looping Animated GIF without audio (max 15 seconds)">
                         <TextBlock x:Name="TxtFormatGif" Text="GIF (≤15s)" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryText}"/>
                     </Button>
                 </StackPanel>
             </Border>
 
-            <!-- ⏱️ Contador de Tiempo -->
+            <!-- ⏱️ Timer -->
             <TextBlock x:Name="TxtTimer"
                        Text="00:00"
                        FontFamily="Consolas, Segoe UI"
@@ -95,34 +95,34 @@
                        VerticalAlignment="Center"
                        Margin="0,0,10,0"/>
 
-            <!-- Separador Audio -->
+            <!-- Audio Separator -->
             <Rectangle x:Name="SepAudio" Width="1" Height="18" Fill="{DynamicResource ToolbarSeparator}" Margin="0,0,8,0" VerticalAlignment="Center"/>
 
-            <!-- 🔊 Botón Audio Sistema (solo MP4) -->
+            <!-- 🔊 System Audio Button (MP4 only) -->
             <Button x:Name="BtnAudioToggle"
                     Width="30" Height="30"
                     Background="Transparent"
                     BorderThickness="0"
                     Cursor="Hand"
                     Margin="0,0,4,0"
-                    ToolTip="Alternar audio del sistema"
+                    ToolTip="Toggle system audio"
                     Click="BtnAudioToggle_Click">
                 <TextBlock x:Name="TxtAudioIcon" Text="🔊" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button>
 
-            <!-- 🎙️ Botón Micrófono (solo MP4) -->
+            <!-- 🎙️ Microphone Button (MP4 only) -->
             <Button x:Name="BtnMicToggle"
                     Width="30" Height="30"
                     Background="Transparent"
                     BorderThickness="0"
                     Cursor="Hand"
                     Margin="0,0,6,0"
-                    ToolTip="Alternar micrófono / voz"
+                    ToolTip="Toggle microphone / voice"
                     Click="BtnMicToggle_Click">
                 <TextBlock x:Name="TxtMicIcon" Text="🎙️" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button>
 
-            <!-- ⚡ / 🎬 Selector de Tasa de Cuadros (60 FPS vs 30 FPS) -->
+            <!-- ⚡ / 🎬 Framerate Toggle (60 FPS vs 30 FPS) -->
             <Border x:Name="BorderFpsToggle"
                     Background="{DynamicResource ActionBtnBackground}"
                     BorderBrush="{DynamicResource CardBorder}"
@@ -136,7 +136,7 @@
                         Background="Transparent"
                         BorderThickness="0"
                         Cursor="Hand"
-                        ToolTip="Tasa de fotogramas (60 FPS ultra fluido o 30 FPS ligero). Clic para alternar."
+                        ToolTip="Framerate (60 FPS ultra smooth or 30 FPS light). Click to toggle."
                         Click="BtnFpsToggle_Click">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="TxtFpsIcon" Text="⚡" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"/>
@@ -145,30 +145,30 @@
                 </Button>
             </Border>
 
-            <!-- Separador Acción -->
+            <!-- Action Separator -->
             <Rectangle Width="1" Height="18" Fill="{DynamicResource ToolbarSeparator}" Margin="0,0,10,0" VerticalAlignment="Center"/>
 
-            <!-- ▶ / ⏹ Botón Dinámico de Grabación (Iniciar / Detener) -->
+            <!-- ▶ / ⏹ Dynamic Action Button (Start / Stop) -->
             <Button x:Name="BtnAction"
                     Style="{StaticResource ActionBtnStyle}"
                     Background="#10B981"
                     Margin="0,0,6,0"
                     Click="BtnAction_Click"
-                    ToolTip="Iniciar grabación de pantalla">
+                    ToolTip="Start screen recording">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtActionIcon" Text="▶" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="TxtActionText" Text="Iniciar" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtActionText" Text="Start" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
 
-            <!-- ❌ Botón Cancelar (Descartar y salir) -->
+            <!-- ❌ Cancel Button (Discard and exit) -->
             <Button x:Name="BtnCancel"
                     Width="28" Height="28"
                     Background="Transparent"
                     BorderThickness="0"
                     Foreground="{DynamicResource SecondaryText}"
                     Cursor="Hand"
-                    ToolTip="Cancelar (Descartar)"
+                    ToolTip="Cancel (Discard)"
                     Click="BtnCancel_Click">
                 <TextBlock Text="✕" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Button>

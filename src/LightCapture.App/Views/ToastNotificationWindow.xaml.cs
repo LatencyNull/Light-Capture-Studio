@@ -31,38 +31,38 @@ public partial class ToastNotificationWindow : Window
             ShortcutPanel.Visibility = Visibility.Visible;
             if (message.Contains("Gemini"))
             {
-                ToastTitle.Text = "¡Captura copiada al portapapeles!";
-                ToastActionSuffix.Text = " en Gemini para pegarla ✨";
+                ToastTitle.Text = "Capture copied to clipboard!";
+                ToastActionSuffix.Text = " in Gemini to paste ✨";
             }
             else if (message.Contains("WhatsApp") || message.Contains("chat"))
             {
-                ToastTitle.Text = "¡Captura copiada al portapapeles!";
-                ToastActionSuffix.Text = " en tu chat para enviarla 💬";
+                ToastTitle.Text = "Capture copied to clipboard!";
+                ToastActionSuffix.Text = " in your chat to send 💬";
             }
             else if (message.Contains("Facebook"))
             {
-                ToastTitle.Text = "¡Captura copiada al portapapeles!";
-                ToastActionSuffix.Text = " en Facebook para publicarla 🔵";
+                ToastTitle.Text = "Capture copied to clipboard!";
+                ToastActionSuffix.Text = " in Facebook to share 🔵";
             }
             else if (message.Contains("Instagram"))
             {
-                ToastTitle.Text = "¡Captura copiada al portapapeles!";
-                ToastActionSuffix.Text = " en Instagram para enviarla 📸";
+                ToastTitle.Text = "Capture copied to clipboard!";
+                ToastActionSuffix.Text = " in Instagram to share 📸";
             }
             else if (message.Contains("Telegram"))
             {
-                ToastTitle.Text = "¡Captura copiada al portapapeles!";
-                ToastActionSuffix.Text = " en Telegram para pegarla ✈️";
+                ToastTitle.Text = "Capture copied to clipboard!";
+                ToastActionSuffix.Text = " in Telegram to paste ✈️";
             }
             else if (message.Contains("X") || message.Contains("Twitter"))
             {
-                ToastTitle.Text = "¡Captura copiada al portapapeles!";
-                ToastActionSuffix.Text = " en X para publicar ✖️";
+                ToastTitle.Text = "Capture copied to clipboard!";
+                ToastActionSuffix.Text = " in X to post ✖️";
             }
             else
             {
-                ToastTitle.Text = "¡Captura copiada al portapapeles!";
-                ToastActionSuffix.Text = " donde desees pegarla";
+                ToastTitle.Text = "Capture copied to clipboard!";
+                ToastActionSuffix.Text = " wherever you want to paste";
             }
         }
         else

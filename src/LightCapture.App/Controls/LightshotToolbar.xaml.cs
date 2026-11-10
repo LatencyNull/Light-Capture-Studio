@@ -156,15 +156,15 @@ public partial class LightshotToolbar : UserControl
 
         if (_lastIsTranslated && _lastIsShowingTranslation)
         {
-            BtnTranslate.ToolTip = $"Mostrando Traducción a {langName}. Haz clic para volver al texto Original.\nClic derecho: Cambiar idioma a {otherName} o copiar texto.";
+            BtnTranslate.ToolTip = $"Showing Translation to {langName}. Click to return to Original text.\nRight-click: Change language to {otherName} or copy text.";
         }
         else if (_lastIsTranslated && !_lastIsShowingTranslation)
         {
-            BtnTranslate.ToolTip = $"Mostrando Original. Haz clic para ver el texto Traducido ({langName}).\nClic derecho: Cambiar idioma a {otherName} o copiar texto.";
+            BtnTranslate.ToolTip = $"Showing Original. Click to view Translated text ({langName}).\nRight-click: Change language to {otherName} or copy text.";
         }
         else
         {
-            BtnTranslate.ToolTip = $"Galaxy AI Traducir [🌐 Ctrl+T]\nDestino: {langName} (Clic para traducir / alternar original)\nClic derecho: Cambiar idioma a {otherName} o copiar texto.";
+            BtnTranslate.ToolTip = $"Galaxy AI Translate [🌐 Ctrl+T]\nTarget: {langName} (Click to translate / toggle original)\nRight-click: Change language to {otherName} or copy text.";
         }
     }
 

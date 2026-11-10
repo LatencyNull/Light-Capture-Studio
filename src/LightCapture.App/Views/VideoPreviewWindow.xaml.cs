@@ -68,8 +68,8 @@ public partial class VideoPreviewWindow : Window
         if (isGif)
         {
             TxtHeaderIcon.Text = "🎞️";
-            TxtHeaderTitle.Text = "Previsualización del GIF Animado";
-            Title = "Previsualización del GIF - Light Capture Studio";
+            TxtHeaderTitle.Text = "Animated GIF Preview";
+            Title = "GIF Preview - Light Capture Studio";
         }
 
         // Extraer peso del archivo
@@ -214,8 +214,8 @@ public partial class VideoPreviewWindow : Window
             ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248)) 
             : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 65, 85));
 
-        TxtCopyClipLabel.Text = isTrimmed ? "Copiar Recorte" : "Copiar Clip";
-        TxtSaveClipLabel.Text = isTrimmed ? "Guardar Recorte..." : "Guardar...";
+        TxtCopyClipLabel.Text = isTrimmed ? "Copy Trim" : "Copy Clip";
+        TxtSaveClipLabel.Text = isTrimmed ? "Save Trim..." : "Save...";
     }
 
     private void PinStart_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -937,7 +937,7 @@ public partial class VideoPreviewWindow : Window
         }
 
         ObjectTracksPanel.Visibility = Visibility.Visible;
-        TxtObjectTracksCount.Text = $"{elements.Count} {(elements.Count == 1 ? "objeto" : "objetos")}";
+        TxtObjectTracksCount.Text = $"{elements.Count} {(elements.Count == 1 ? "object" : "objects")}";
 
         foreach (var elem in elements)
         {
@@ -958,7 +958,7 @@ public partial class VideoPreviewWindow : Window
                 BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, 239, 68, 68)),
                 BorderThickness = new Thickness(1),
                 Cursor = System.Windows.Input.Cursors.Hand,
-                ToolTip = "Eliminar este objeto del video",
+                ToolTip = "Delete this object from video",
                 Margin = new Thickness(3, 0, 0, 0)
             };
             DockPanel.SetDock(btnDelete, Dock.Right);
@@ -1063,7 +1063,7 @@ public partial class VideoPreviewWindow : Window
                     Children =
                     {
                         new TextBlock { Text = "🗑️", FontSize = 10, Margin = new Thickness(0, 0, 3, 0), VerticalAlignment = VerticalAlignment.Center },
-                        new TextBlock { Text = "Borrar", FontSize = 10, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center }
+                        new TextBlock { Text = "Delete", FontSize = 10, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center }
                     }
                 },
                 Height = 22,
@@ -1073,7 +1073,7 @@ public partial class VideoPreviewWindow : Window
                 BorderThickness = new Thickness(1),
                 Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 113, 113)),
                 Cursor = System.Windows.Input.Cursors.Hand,
-                ToolTip = "Eliminar este objeto del video"
+                ToolTip = "Delete this object from video"
             };
             btnDeleteRight.Click += (s, e) => VideoDrawingCanvas.RemoveElement(elem);
             rightPanel.Child = btnDeleteRight;
@@ -1090,7 +1090,7 @@ public partial class VideoPreviewWindow : Window
                 BorderThickness = new Thickness(1.5),
                 Cursor = System.Windows.Input.Cursors.Hand,
                 ClipToBounds = true,
-                ToolTip = "Arrastra el bloque para moverlo en el tiempo, o los bordes para cambiar cuánto dura"
+                ToolTip = "Drag block to move in time, or edges to adjust duration"
             };
             Canvas.SetTop(pill, 2);
 
@@ -1376,8 +1376,8 @@ public partial class VideoPreviewWindow : Window
             }
 
             string toastMsg = hasAnnotations && isTrimmed
-                ? "✂️🎨 Procesando recorte y pistas del video..."
-                : (hasAnnotations ? "🎨 Estampando pistas de objetos en el video..." : "✂️ Procesando recorte del clip...");
+                ? "✂️🎨 Processing trim and video annotations..."
+                : (hasAnnotations ? "🎨 Burning annotations into video..." : "✂️ Processing clip trim...");
 
             new ToastNotificationWindow(toastMsg, "/Assets/Icons/save.png").Show();
             _cachedTrimmedPath = await VideoTrimmerService.TrimAsync(_videoPath, _trimStart, _trimEnd, null, timedOverlays);
@@ -1385,7 +1385,7 @@ public partial class VideoPreviewWindow : Window
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"No se pudo procesar el clip: {ex.Message}. Se usará el video original.", "Exportación de Clip");
+            System.Windows.MessageBox.Show($"Could not process clip: {ex.Message}. Using original video.", "Clip Export");
             return _videoPath;
         }
     }
@@ -1399,13 +1399,13 @@ public partial class VideoPreviewWindow : Window
             System.Windows.Clipboard.SetFileDropList(files);
 
             new ToastNotificationWindow(
-                "¡Clip de video copiado! Pega con Ctrl+V en tu chat 💬",
+                "Video clip copied! Paste with Ctrl+V in your chat 💬",
                 "/Assets/Icons/video.png"
             ).Show();
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Error al copiar clip: {ex.Message}");
+            System.Windows.MessageBox.Show($"Error copying clip: {ex.Message}");
         }
     }
 
@@ -1427,7 +1427,7 @@ public partial class VideoPreviewWindow : Window
         catch { }
 
         new ToastNotificationWindow(
-            appOpened ? "¡Clip copiado! Pega con Ctrl+V en WhatsApp App 💬" : "Abriendo WhatsApp Web... 💬",
+            appOpened ? "Clip copied! Paste with Ctrl+V in WhatsApp App 💬" : "Opening WhatsApp Web... 💬",
             "/Assets/Icons/whatsapp.png"
         ).Show();
     }
@@ -1443,7 +1443,7 @@ public partial class VideoPreviewWindow : Window
         catch { }
 
         new ToastNotificationWindow(
-            "¡Clip copiado para WhatsApp Web! Pega con Ctrl+V en tu chat 💬",
+            "Clip copied for WhatsApp Web! Paste with Ctrl+V in your chat 💬",
             "/Assets/Icons/whatsapp.png"
         ).Show();
     }
@@ -1458,7 +1458,7 @@ public partial class VideoPreviewWindow : Window
         catch { }
 
         new ToastNotificationWindow(
-            "¡Clip copiado para Discord! Pega con Ctrl+V en tu canal 🎮",
+            "Clip copied for Discord! Paste with Ctrl+V in your channel 🎮",
             "/Assets/Icons/discord.png"
         ).Show();
     }
@@ -1495,7 +1495,7 @@ public partial class VideoPreviewWindow : Window
         catch { }
 
         new ToastNotificationWindow(
-            "¡Clip copiado! Abriendo TikTok Web para subir... 🎵",
+            "Clip copied! Opening TikTok Web to upload... 🎵",
             "/Assets/Icons/tiktok.png"
         ).Show();
     }
@@ -1511,7 +1511,7 @@ public partial class VideoPreviewWindow : Window
         catch { }
 
         new ToastNotificationWindow(
-            "¡Clip copiado! Abriendo Instagram... 📷",
+            "Clip copied! Opening Instagram... 📷",
             "/Assets/Icons/instagram.png"
         ).Show();
     }
@@ -1527,7 +1527,7 @@ public partial class VideoPreviewWindow : Window
         catch { }
 
         new ToastNotificationWindow(
-            "¡Clip copiado! Abriendo Facebook... 📘",
+            "Clip copied! Opening Facebook... 📘",
             "/Assets/Icons/facebook.png"
         ).Show();
     }
@@ -1543,7 +1543,7 @@ public partial class VideoPreviewWindow : Window
         catch { }
 
         new ToastNotificationWindow(
-            "¡Clip copiado para Telegram! Pega con Ctrl+V en tu chat ✈️",
+            "Clip copied for Telegram! Paste with Ctrl+V in your chat ✈️",
             "/Assets/Icons/telegram.png"
         ).Show();
     }
@@ -1559,7 +1559,7 @@ public partial class VideoPreviewWindow : Window
         catch { }
 
         new ToastNotificationWindow(
-            "¡Clip copiado! Abriendo X / Twitter... ✖️",
+            "Clip copied! Opening X / Twitter... ✖️",
             "/Assets/Icons/twitter.png"
         ).Show();
     }
@@ -1571,8 +1571,8 @@ public partial class VideoPreviewWindow : Window
 
         var sfd = new Microsoft.Win32.SaveFileDialog
         {
-            Title = isGif ? "Guardar GIF animado" : "Guardar clip de video",
-            Filter = isGif ? "GIF Animado (*.gif)|*.gif|Todos los archivos (*.*)|*.*" : "Video MP4 (*.mp4)|*.mp4|Todos los archivos (*.*)|*.*",
+            Title = isGif ? "Save Animated GIF" : "Save Video Clip",
+            Filter = isGif ? "Animated GIF (*.gif)|*.gif|All files (*.*)|*.*" : "MP4 Video (*.mp4)|*.mp4|All files (*.*)|*.*",
             FileName = isGif ? $"Gif_{DateTime.Now:yyyyMMdd_HHmmss}.gif" : $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
         };
 
@@ -1582,13 +1582,13 @@ public partial class VideoPreviewWindow : Window
             {
                 File.Copy(path, sfd.FileName, true);
                 new ToastNotificationWindow(
-                    isGif ? "¡GIF animado guardado con éxito! 🎞️" : "¡Clip de video guardado con éxito! 💾",
+                    isGif ? "Animated GIF saved successfully! 🎞️" : "Video clip saved successfully! 💾",
                     "/Assets/Icons/save.png"
                 ).Show();
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error al guardar: {ex.Message}");
+                System.Windows.MessageBox.Show($"Error saving: {ex.Message}");
             }
         }
     }

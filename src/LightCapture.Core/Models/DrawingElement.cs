@@ -32,14 +32,14 @@ public abstract record DrawingElement(DrawingToolType ToolType, Color Color, dou
 
     public string DisplayName => ToolType switch
     {
-        DrawingToolType.Arrow => "Flecha",
-        DrawingToolType.Text => "Texto",
-        DrawingToolType.Pen => "Pluma",
-        DrawingToolType.Rectangle => "Rectángulo",
-        DrawingToolType.Redact => "Censura",
-        DrawingToolType.Marker => "Marcador",
-        DrawingToolType.NumberedStep => "Paso",
-        _ => "Objeto"
+        DrawingToolType.Arrow => "Arrow",
+        DrawingToolType.Text => "Text",
+        DrawingToolType.Pen => "Pen",
+        DrawingToolType.Rectangle => "Rectangle",
+        DrawingToolType.Redact => "Redact",
+        DrawingToolType.Marker => "Marker",
+        DrawingToolType.NumberedStep => "Step",
+        _ => "Object"
     };
 
     public string IconEmoji => ToolType switch

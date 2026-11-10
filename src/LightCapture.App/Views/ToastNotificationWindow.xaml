@@ -72,20 +72,20 @@
                 <!-- Icono de acción -->
                 <Image x:Name="ToastIcon" Grid.Column="0" Width="32" Height="32" Margin="0,0,14,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                <!-- Contenido estructurado -->
+                <!-- Structured Content -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock x:Name="ToastTitle"
-                               Text="¡Captura copiada al portapapeles!"
+                               Text="Capture copied to clipboard!"
                                Foreground="{DynamicResource PrimaryText}"
                                FontSize="14"
                                FontWeight="Bold"/>
                     <StackPanel x:Name="ShortcutPanel" Orientation="Horizontal" Margin="0,3,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Presiona " Foreground="{DynamicResource SecondaryText}" FontSize="12.5" VerticalAlignment="Center"/>
+                        <TextBlock Text="Press " Foreground="{DynamicResource SecondaryText}" FontSize="12.5" VerticalAlignment="Center"/>
                         <Border Background="{DynamicResource CardBackground}" BorderBrush="#38BDF8" BorderThickness="1.2" CornerRadius="4" Padding="6,1" Margin="3,0" VerticalAlignment="Center">
                             <TextBlock Text="Ctrl + V" Foreground="#38BDF8" FontWeight="Bold" FontSize="11.5" VerticalAlignment="Center"/>
                         </Border>
                         <TextBlock x:Name="ToastActionSuffix"
-                                   Text=" en Gemini para pegarla ✨"
+                                   Text=" in Gemini to paste ✨"
                                    Foreground="{DynamicResource SecondaryText}"
                                    FontSize="12.5"
                                    VerticalAlignment="Center"/>
