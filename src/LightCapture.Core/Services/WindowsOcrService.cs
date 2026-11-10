@@ -58,6 +58,27 @@ public class WindowsOcrService : IOcrService
         // Ejecutar OCR nativo
         var ocrResult = await engine.RecognizeAsync(softwareBitmap);
 
+        // Si no se detectó texto con el idioma inicial, probar los otros idiomas instalados (ej. en-US o es-ES)
+        if (ocrResult.Lines.Count == 0 && OcrEngine.AvailableRecognizerLanguages.Count > 1)
+        {
+            foreach (var altLang in OcrEngine.AvailableRecognizerLanguages)
+            {
+                if (altLang.LanguageTag.Equals(engine.RecognizerLanguage.LanguageTag, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var altEngine = OcrEngine.TryCreateFromLanguage(altLang);
+                if (altEngine != null)
+                {
+                    var altResult = await altEngine.RecognizeAsync(softwareBitmap);
+                    if (altResult.Lines.Count > 0)
+                    {
+                        ocrResult = altResult;
+                        break;
+                    }
+                }
+            }
+        }
+
         var blocks = new List<OcrTextBlock>();
         foreach (var line in ocrResult.Lines)
         {

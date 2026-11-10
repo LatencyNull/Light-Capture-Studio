@@ -1071,52 +1071,50 @@ public partial class OverlayWindow : Window
             string targetLang = TranslationLanguageManager.CurrentLanguage;
             string targetName = TranslationLanguageManager.CurrentLanguageDisplayName;
 
-            ShowToast($"Translating to {targetName} ({blocks.Count} blocks in parallel)...");
+            ShowToast($"Translating to {targetName} ({blocks.Count} blocks)...");
 
-            var tasks = blocks.Select(async block =>
-            {
-                var tr = await _translationService.TranslateAsync(block.Text, targetLang: targetLang, sourceLang: "auto");
-                return (Block: block, Result: tr);
-            }).ToList();
-
-            var results = await Task.WhenAll(tasks);
+            var textsToTranslate = blocks.Select(b => b.Text).ToList();
+            var results = await _translationService.TranslateBatchAsync(textsToTranslate, targetLang: targetLang, sourceLang: "auto");
 
             int successCount = 0;
             var lensBlocks = new List<TranslatedLensBlock>();
             var plainTextList = new List<string>();
 
-            foreach (var item in results)
+            for (int i = 0; i < blocks.Count; i++)
             {
+                var block = blocks[i];
+                var tr = i < results.Count ? results[i] : null;
+
                 string translated;
-                if (item.Result.IsSuccess && !string.IsNullOrWhiteSpace(item.Result.TranslatedText))
+                if (tr != null && tr.IsSuccess && !string.IsNullOrWhiteSpace(tr.TranslatedText))
                 {
-                    translated = item.Result.TranslatedText;
+                    translated = tr.TranslatedText;
                     successCount++;
                 }
                 else
                 {
-                    translated = item.Block.Text; // Fallback al texto original si falla
+                    translated = block.Text; // Fallback al texto original si falla
                 }
 
                 plainTextList.Add(translated);
 
-                double dipX = item.Block.X / ScaleX;
-                double dipY = item.Block.Y / ScaleY;
-                double dipW = item.Block.Width / ScaleX;
-                double dipH = item.Block.Height / ScaleY;
+                double dipX = block.X / ScaleX;
+                double dipY = block.Y / ScaleY;
+                double dipW = block.Width / ScaleX;
+                double dipH = block.Height / ScaleY;
 
                 var globalBox = new Rect(
                     _selectionBounds.X + dipX,
                     _selectionBounds.Y + dipY,
-                    dipW,
+                    Math.Max(12, dipW),
                     Math.Max(18, dipH)
                 );
 
                 lensBlocks.Add(new TranslatedLensBlock(
                     Bounds: globalBox,
                     TranslatedText: translated,
-                    BackgroundColor: Color.FromArgb(235, 20, 20, 24),
-                    TextColor: Color.FromRgb(244, 244, 245),
+                    BackgroundColor: Color.FromArgb(240, 24, 24, 27),
+                    TextColor: Color.FromRgb(250, 250, 250),
                     FontSize: Math.Max(11, Math.Min(22, dipH * 0.72))
                 ));
             }
@@ -1127,9 +1125,16 @@ public partial class OverlayWindow : Window
             MainDrawingCanvas.SetTranslatedBlocks(lensBlocks);
             MainToolbar.SetTranslateActiveState(true, true);
 
+            // Copiar automáticamente el texto traducido al portapapeles para máxima productividad
+            try
+            {
+                ClipboardHelper.CopyText(_lastTranslatedPlainText);
+            }
+            catch { }
+
             if (successCount > 0)
             {
-                ShowToast($"Translation to {targetName} ready! ({successCount}/{blocks.Count}) - Click to toggle original");
+                ShowToast($"Traducción al {targetName} lista! 🌐 (Copiada al portapapeles)");
             }
             else
             {
@@ -1361,12 +1366,23 @@ public partial class OverlayWindow : Window
 
             try { ClipboardHelper.CopyImageToClipboard(flattened); } catch { }
 
-            string? publicUrl = await _cloudUploadService.UploadImageAsync(pngBytes);
+            // 1. Subir directamente a Google Lens oficial (sin intermediarios de terceros)
+            string? lensUrl = await GoogleLensService.UploadAndGetSearchUrlAsync(pngBytes);
 
-            if (!string.IsNullOrEmpty(publicUrl))
+            // 2. Si falló la subida directa (ej. firewall o timeout), intentar mediante nube pública
+            if (string.IsNullOrEmpty(lensUrl))
+            {
+                string? publicUrl = await _cloudUploadService.UploadImageAsync(pngBytes);
+                if (!string.IsNullOrEmpty(publicUrl))
+                {
+                    lensUrl = GoogleLensService.BuildLensSearchUrl(publicUrl);
+                }
+            }
+
+            // 3. Abrir en el navegador los resultados visuales interactivos de Lens
+            if (!string.IsNullOrEmpty(lensUrl))
             {
                 _historyService.SaveCapture(flattened, "Google Lens Search");
-                string lensUrl = GoogleLensService.BuildLensSearchUrl(publicUrl);
                 Process.Start(new ProcessStartInfo(lensUrl) { UseShellExecute = true });
                 ShowToast("Search opened in Google Lens! 🔍");
                 Close();

@@ -41,8 +41,10 @@ public class OcrBoundingBoxTests
     {
         // Act
         var isAvailable = WindowsOcrService.IsOcrAvailable();
+        var langs = WindowsOcrService.GetAvailableLanguages();
 
         // Assert: En cualquier Windows 10/11 moderno debe estar disponible al menos un reconocedor
         Assert.True(isAvailable);
+        Assert.NotEmpty(langs);
     }
 }

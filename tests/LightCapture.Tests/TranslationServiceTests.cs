@@ -53,19 +53,12 @@ public class TranslationServiceTests
         var service = new GoogleTranslationService();
 
         // Act
-        var result = await service.TranslateAsync("Screen capture with instant translation", targetLang: "es", sourceLang: "en");
+        var result = await service.TranslateAsync("Screen capture with instant translation", targetLang: "es", sourceLang: "auto");
 
         // Assert
         Assert.NotNull(result);
-        Assert.False(string.IsNullOrWhiteSpace(result.TranslatedText));
-        if (result.IsSuccess)
-        {
-            Assert.Contains("traducci", result.TranslatedText, StringComparison.OrdinalIgnoreCase);
-        }
-        else
-        {
-            Assert.Equal("Screen capture with instant translation", result.TranslatedText);
-        }
+        Assert.True(result.IsSuccess, $"Failed: {result.ErrorMessage}");
+        Assert.Contains("traducci", result.TranslatedText, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -121,6 +114,35 @@ public class TranslationServiceTests
         string toggledBack = TranslationLanguageManager.ToggleLanguage();
         Assert.Equal("es", toggledBack);
         Assert.Equal("ES", TranslationLanguageManager.CurrentLanguageBadge);
+    }
+
+    [Fact]
+    public void ParseDictChromeResponse_MultipleBlocks_ParsesCorrectly()
+    {
+        string mockJson = "[[\"Hola mundo\",\"en\"],[\"Captura de pantalla\",\"en\"]]";
+        var original = new[] { "Hello world", "Screen capture" };
+
+        var results = GoogleTranslationService.ParseDictChromeResponse(mockJson, original, "es", "auto");
+
+        Assert.NotNull(results);
+        Assert.Equal(2, results.Count);
+        Assert.Equal("Hola mundo", results[0].TranslatedText);
+        Assert.Equal("en", results[0].DetectedSourceLanguage);
+        Assert.Equal("Captura de pantalla", results[1].TranslatedText);
+    }
+
+    [Fact]
+    public async Task TranslateBatchAsync_MultipleSentences_TranslatesAllInSingleCall()
+    {
+        var service = new GoogleTranslationService();
+        var inputs = new[] { "Settings", "Account", "Full screen" };
+
+        var results = await service.TranslateBatchAsync(inputs, targetLang: "es", sourceLang: "en");
+
+        Assert.NotNull(results);
+        Assert.Equal(3, results.Count);
+        Assert.All(results, r => Assert.True(r.IsSuccess));
+        Assert.Contains(results, r => r.TranslatedText.Contains("pantalla", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

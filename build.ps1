@@ -117,10 +117,16 @@ if (Test-Path $exePath) {
     }
 
     $zipName = "LightCapture-Studio-Standalone-win-x64.zip"
+    $releaseExeName = "LightCapture-Studio-v1.0.0-Standalone-win-x64.exe"
     if (-not $SelfContained) {
         $zipName = "LightCapture-Studio-FrameworkDependent-win-x64.zip"
+        $releaseExeName = "LightCapture-Studio-v1.0.0-FrameworkDependent-win-x64.exe"
     }
     $zipPath = Join-Path $releaseDir $zipName
+    $releaseExePath = Join-Path $releaseDir $releaseExeName
+
+    # Copiar ejecutable directo nombrado
+    Copy-Item -Path $exePath -Destination $releaseExePath -Force
 
     Write-Host "[*] Empaquetando archivo ZIP en $zipPath..." -ForegroundColor Cyan
     Compress-Archive -Path "$publishDir\*" -DestinationPath $zipPath -Force

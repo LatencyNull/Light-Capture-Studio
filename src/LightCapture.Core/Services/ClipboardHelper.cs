@@ -64,4 +64,24 @@ public static class ClipboardHelper
             catch { }
         }
     }
+
+    public static void CopyText(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+        try
+        {
+            var dataObject = new DataObject();
+            dataObject.SetData(DataFormats.UnicodeText, text, true);
+            dataObject.SetData(DataFormats.Text, text, true);
+            Clipboard.SetDataObject(dataObject, copy: true);
+        }
+        catch
+        {
+            try
+            {
+                Clipboard.SetText(text);
+            }
+            catch { }
+        }
+    }
 }

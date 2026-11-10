@@ -288,12 +288,9 @@ public class DrawingCanvas : Canvas
         // 1. Renderizar bloques de Google Lens In-Place Translation si están activados
         if (ShowTranslations && _lensBlocks.Count > 0)
         {
+            double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             foreach (var block in _lensBlocks)
             {
-                var bgBrush = new SolidColorBrush(block.BackgroundColor);
-                bgBrush.Freeze();
-                dc.DrawRoundedRectangle(bgBrush, null, block.Bounds, 3, 3);
-
                 var formattedText = new FormattedText(
                     block.TranslatedText,
                     System.Globalization.CultureInfo.CurrentCulture,
@@ -301,14 +298,22 @@ public class DrawingCanvas : Canvas
                     new Typeface("Segoe UI Semibold"),
                     block.FontSize,
                     new SolidColorBrush(block.TextColor),
-                    VisualTreeHelper.GetDpi(this).PixelsPerDip
+                    dpi
                 )
                 {
-                    MaxTextWidth = Math.Max(10, block.Bounds.Width),
-                    MaxTextHeight = Math.Max(10, block.Bounds.Height)
+                    MaxTextWidth = Math.Max(16, block.Bounds.Width * 1.25)
                 };
 
-                dc.DrawText(formattedText, new Point(block.Bounds.X + 2, block.Bounds.Y + 1));
+                // Píldora de fondo inteligente: cubre el texto original y se adapta a la longitud en español
+                double pillWidth = Math.Max(block.Bounds.Width, formattedText.Width + 8);
+                double pillHeight = Math.Max(block.Bounds.Height, formattedText.Height + 4);
+                var pillRect = new Rect(block.Bounds.X, block.Bounds.Y, pillWidth, pillHeight);
+
+                var bgBrush = new SolidColorBrush(block.BackgroundColor);
+                bgBrush.Freeze();
+                dc.DrawRoundedRectangle(bgBrush, null, pillRect, 4, 4);
+
+                dc.DrawText(formattedText, new Point(pillRect.X + 3, pillRect.Y + 2));
             }
         }
 
@@ -465,10 +470,6 @@ public class DrawingCanvas : Canvas
             {
                 foreach (var block in _lensBlocks)
                 {
-                    var bgBrush = new SolidColorBrush(block.BackgroundColor);
-                    bgBrush.Freeze();
-                    dc.DrawRoundedRectangle(bgBrush, null, block.Bounds, 3, 3);
-
                     var ft = new FormattedText(
                         block.TranslatedText,
                         System.Globalization.CultureInfo.CurrentCulture,
@@ -479,10 +480,18 @@ public class DrawingCanvas : Canvas
                         96.0 / 96.0
                     )
                     {
-                        MaxTextWidth = Math.Max(10, block.Bounds.Width),
-                        MaxTextHeight = Math.Max(10, block.Bounds.Height)
+                        MaxTextWidth = Math.Max(16, block.Bounds.Width * 1.25)
                     };
-                    dc.DrawText(ft, new Point(block.Bounds.X + 2, block.Bounds.Y + 1));
+
+                    double pillWidth = Math.Max(block.Bounds.Width, ft.Width + 8);
+                    double pillHeight = Math.Max(block.Bounds.Height, ft.Height + 4);
+                    var pillRect = new Rect(block.Bounds.X, block.Bounds.Y, pillWidth, pillHeight);
+
+                    var bgBrush = new SolidColorBrush(block.BackgroundColor);
+                    bgBrush.Freeze();
+                    dc.DrawRoundedRectangle(bgBrush, null, pillRect, 4, 4);
+
+                    dc.DrawText(ft, new Point(pillRect.X + 3, pillRect.Y + 2));
                 }
             }
 
