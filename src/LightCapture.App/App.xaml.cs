@@ -28,7 +28,6 @@ public partial class App : Application
     private HotkeyManager? _hotkeyManager;
     private HwndSource? _messageHwndSource;
 
-    private Window? _trayHelperWindow;
     private WpfContextMenu? _trayContextMenu;
     private WpfMenuItem? _menuItemTheme;
     private WpfMenuItem? _menuLangEs;
@@ -178,54 +177,45 @@ public partial class App : Application
 
     private void ShowTrayContextMenu()
     {
-        if (_trayContextMenu != null && _trayContextMenu.IsOpen)
-        {
-            _trayContextMenu.IsOpen = false;
-        }
-
-        if (_trayHelperWindow == null)
-        {
-            _trayHelperWindow = new Window
-            {
-                Width = 0,
-                Height = 0,
-                WindowStyle = WindowStyle.None,
-                ShowInTaskbar = false,
-                ShowActivated = false,
-                Left = -10000,
-                Top = -10000,
-                Visibility = Visibility.Hidden
-            };
-            _trayHelperWindow.Show();
-            _trayHelperWindow.Hide();
-        }
-
         if (_trayContextMenu == null)
         {
             BuildTrayContextMenu();
         }
 
+        if (_trayContextMenu != null && _trayContextMenu.IsOpen)
+        {
+            _trayContextMenu.IsOpen = false;
+            return;
+        }
+
         UpdateTrayMenuItems();
 
-        _trayHelperWindow.Show();
-        _trayHelperWindow.Activate();
-        var helper = new WindowInteropHelper(_trayHelperWindow);
-        SetForegroundWindow(helper.Handle);
+        var cursorPos = System.Windows.Forms.Cursor.Position;
+        double scaleX = 1.0;
+        double scaleY = 1.0;
+        try
+        {
+            using (var g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+            {
+                scaleX = g.DpiX / 96.0;
+                scaleY = g.DpiY / 96.0;
+            }
+        }
+        catch { }
 
         if (_trayContextMenu != null)
         {
-            _trayContextMenu.PlacementTarget = _trayHelperWindow;
-            _trayContextMenu.Placement = PlacementMode.MousePoint;
+            _trayContextMenu.PlacementTarget = null;
+            _trayContextMenu.Placement = PlacementMode.AbsolutePoint;
+            _trayContextMenu.HorizontalOffset = cursorPos.X / scaleX;
+            _trayContextMenu.VerticalOffset = cursorPos.Y / scaleY;
+
             _trayContextMenu.IsOpen = true;
 
-            // Asegurar que el PopupRoot del menú WPF reciba inmediatamente el foco de primer plano en Windows
-            Dispatcher.BeginInvoke(new Action(() =>
+            if (PresentationSource.FromVisual(_trayContextMenu) is HwndSource source)
             {
-                if (_trayContextMenu != null && _trayContextMenu.IsOpen && PresentationSource.FromVisual(_trayContextMenu) is HwndSource hwndSource)
-                {
-                    SetForegroundWindow(hwndSource.Handle);
-                }
-            }), System.Windows.Threading.DispatcherPriority.Input);
+                SetForegroundWindow(source.Handle);
+            }
         }
     }
 
@@ -239,11 +229,9 @@ public partial class App : Application
 
         _trayContextMenu.Closed += (s, e) =>
         {
-            if (_trayHelperWindow != null)
+            if (PresentationSource.FromVisual(_trayContextMenu) is HwndSource source)
             {
-                _trayHelperWindow.Hide();
-                var helper = new WindowInteropHelper(_trayHelperWindow);
-                PostMessage(helper.Handle, WM_NULL, IntPtr.Zero, IntPtr.Zero);
+                PostMessage(source.Handle, WM_NULL, IntPtr.Zero, IntPtr.Zero);
             }
         };
 
