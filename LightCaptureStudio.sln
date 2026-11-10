@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightCapture.Tests", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightCapture.App", "src\LightCapture.App\LightCapture.App.csproj", "{EA0D4EE8-3350-4F79-9140-F274FC75D2CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightCapture.Recorder", "src\LightCapture.Recorder\LightCapture.Recorder.csproj", "{90A1C7DC-F86C-401A-B811-5F878DE95758}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,10 +36,15 @@ Global
 		{EA0D4EE8-3350-4F79-9140-F274FC75D2CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA0D4EE8-3350-4F79-9140-F274FC75D2CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA0D4EE8-3350-4F79-9140-F274FC75D2CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90A1C7DC-F86C-401A-B811-5F878DE95758}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{90A1C7DC-F86C-401A-B811-5F878DE95758}.Debug|Any CPU.Build.0 = Debug|x64
+		{90A1C7DC-F86C-401A-B811-5F878DE95758}.Release|Any CPU.ActiveCfg = Release|x64
+		{90A1C7DC-F86C-401A-B811-5F878DE95758}.Release|Any CPU.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F0784E1D-AD62-485F-A8E2-782B8DF1B309} = {57AC9584-FF59-4331-8EE3-20653F1F5C32}
 		{626CCAE5-120D-4E51-A308-CE165B816963} = {65ECA2C0-31FE-41A2-93EC-435D5505F048}
 		{EA0D4EE8-3350-4F79-9140-F274FC75D2CB} = {57AC9584-FF59-4331-8EE3-20653F1F5C32}
+		{90A1C7DC-F86C-401A-B811-5F878DE95758} = {57AC9584-FF59-4331-8EE3-20653F1F5C32}
 	EndGlobalSection
 EndGlobal

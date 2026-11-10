@@ -1,0 +1,45 @@
+name: Automated Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish Portable Release
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore LightCaptureStudio.sln
+
+    - name: Run Unit Tests
+      run: dotnet test LightCaptureStudio.sln -c Release --verbosity normal
+
+    - name: Publish Self-Contained Portable App
+      run: |
+        dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish-portable
+
+    - name: Compress Release Archive
+      run: |
+        Compress-Archive -Path publish-portable\* -DestinationPath "LightCapture-Studio-${{ github.ref_name }}-Windows-x64-Portable.zip"
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: "LightCapture-Studio-${{ github.ref_name }}-Windows-x64-Portable.zip"
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

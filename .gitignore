@@ -5,6 +5,7 @@
 [Ll]ogs/
 publish/
 publish-standalone/
+release/
 
 # Visual Studio / Rider / VS Code
 .vs/
@@ -12,23 +13,19 @@ publish-standalone/
 .vscode/
 .commandcode/
 .superpowers/
+docs/superpowers/
 *.user
 *.userosscache
 *.sln.docstates
 *.suo
 *.userprefs
 
-# Build results
+# Build results and compiled binaries
 *.exe
 *.dll
 *.pdb
 *.mp4
 *.zip
-
-# Exception: keep embedded resources and pre-compiled native binaries needed for build/run
-!src/LightCapture.App/Resources/*
-!ScreenRecorderLib.dll
-!LightCapture.Recorder.exe
 
 # Temporary files & tests
 test_rec_run.*

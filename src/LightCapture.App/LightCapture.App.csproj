@@ -29,29 +29,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.exe;
+                     ..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.dll;
+                     ..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.runtimeconfig.json;
+                     ..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\ScreenRecorderLib.dll">
+      <Link>%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
     <EmbeddedResource Include="app.ico" />
-    <EmbeddedResource Include="Resources\ScreenRecorderLib.dll" Link="Resources\ScreenRecorderLib.dll" />
-    <EmbeddedResource Include="Resources\LightCapture.Recorder.exe" Link="Resources\LightCapture.Recorder.exe" />
     <Content Include="app.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\ScreenRecorderLib.dll">
-      <Link>ScreenRecorderLib.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </Content>
-    <Content Include="Resources\LightCapture.Recorder.exe">
-      <Link>LightCapture.Recorder.exe</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
     <Resource Include="Assets\Icons\*.png" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LightCapture.Core\LightCapture.Core.csproj" />
+    <ProjectReference Include="..\LightCapture.Recorder\LightCapture.Recorder.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,6 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20(x64)-0078D6.svg)](https://microsoft.com)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20WPF-512BD4.svg)](https://dotnet.microsoft.com/)
+[![CI Build &amp; Test](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/ci.yml)
 
 [Features](#-key-features) • [Comparison](#-why-light-capture-studio-vs-classic-lightshot) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Portable Version](#-portable-version) • [Privacy](#-privacy-first-architecture)
 
@@ -121,18 +122,37 @@ Unlike classic Lightshot and older utilities that upload screenshots to public w
 
 ## 📦 Building from Source
 
-Clone the repository and build the standalone portable executable using the .NET 8 SDK:
+Clone the repository, build the solution and run tests using the .NET 8 SDK:
 
 ```powershell
 # Clone the repository
 git clone https://github.com/LatencyNull/Light-Capture-Studio.git
 cd Light-Capture-Studio
 
+# Restore and build the complete solution
+dotnet build LightCaptureStudio.sln
+
+# Run automated tests
+dotnet test LightCaptureStudio.sln
+
 # Publish self-contained portable executable (x64)
 dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish-standalone
 ```
 
 The resulting file in `publish-standalone\LightCapture.exe` is completely portable and ready to run.
+
+---
+
+## 🔒 Optional Cloud Upload Configuration
+
+By default, Light Capture Studio operates **100% locally**. If you choose to use the *"Upload to Cloud & Copy Link"* feature, you can optionally supply your own free FreeImage.host API key:
+- Via environment variable: `LIGHTCAPTURE_FREEIMAGE_KEY="your_api_key"`
+- Or via configuration file at `%AppData%\LightCaptureStudio\cloud_settings.json`:
+  ```json
+  {
+    "freeimage_key": "your_api_key"
+  }
+  ```
 
 ---
 

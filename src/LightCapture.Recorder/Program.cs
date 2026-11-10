@@ -12,14 +12,14 @@ namespace LightCapture.RecorderWorker
 {
     class Program
     {
-        private static Recorder _recorder;
-        private static string _outputPath;
+        private static Recorder? _recorder;
+        private static string? _outputPath;
         private static bool _isCancelled = false;
         private static readonly ManualResetEvent _completeEvent = new ManualResetEvent(false);
         private static readonly Stopwatch _stopwatch = new Stopwatch();
-        private static System.Threading.Timer _tickTimer;
-        private static LoopbackAudioSource _loopbackSource;
-        private static CaptureAudioSource _micSource;
+        private static System.Threading.Timer? _tickTimer;
+        private static LoopbackAudioSource? _loopbackSource;
+        private static CaptureAudioSource? _micSource;
 
         static void Main(string[] args)
         {
@@ -197,7 +197,7 @@ namespace LightCapture.RecorderWorker
                 };
 
                 // Asegurar que el directorio de salida existe
-                string dir = Path.GetDirectoryName(_outputPath);
+                string? dir = !string.IsNullOrEmpty(_outputPath) ? Path.GetDirectoryName(_outputPath) : null;
                 if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
@@ -223,7 +223,7 @@ namespace LightCapture.RecorderWorker
                 {
                     while (true)
                     {
-                        string line = Console.ReadLine();
+                        string? line = Console.ReadLine();
                         if (line == null) break;
                         line = line.Trim();
                         if (line.Equals("STOP", StringComparison.OrdinalIgnoreCase))
@@ -307,7 +307,7 @@ namespace LightCapture.RecorderWorker
 
             try
             {
-                string dir = Path.GetDirectoryName(outputPath);
+                string? dir = !string.IsNullOrEmpty(outputPath) ? Path.GetDirectoryName(outputPath) : null;
                 if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
@@ -317,7 +317,7 @@ namespace LightCapture.RecorderWorker
                 {
                     while (true)
                     {
-                        string line = Console.ReadLine();
+                        string? line = Console.ReadLine();
                         if (line == null) break;
                         line = line.Trim();
                         if (line.Equals("STOP", StringComparison.OrdinalIgnoreCase))

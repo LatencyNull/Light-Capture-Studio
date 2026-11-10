@@ -696,7 +696,10 @@ public partial class App : Application
             ExtractResourceIfMissing("ScreenRecorderLib.dll", Path.Combine(baseDir, "ScreenRecorderLib.dll"));
             ExtractResourceIfMissing("LightCapture.Recorder.exe", Path.Combine(baseDir, "LightCapture.Recorder.exe"));
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] Error ensuring native dependencies: {ex.Message}");
+        }
     }
 
     private static void ExtractResourceIfMissing(string resourceSuffix, string targetPath)
@@ -721,6 +724,9 @@ public partial class App : Application
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[App] Error extracting resource {resourceSuffix}: {ex.Message}");
+        }
     }
 }

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <Platforms>x64</Platforms>
+    <Platform>x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
+    <SupportedOSPlatformVersion>10.0.10240.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>..\..\app.ico</ApplicationIcon>
+    <AssemblyName>LightCapture.Recorder</AssemblyName>
+  </PropertyGroup>
+
+  <Target Name="ForceX64Platform" BeforeTargets="PlatformCheck;InjectReference;ResolveAssemblyReferences">
+    <PropertyGroup>
+      <Platform>x64</Platform>
+    </PropertyGroup>
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="ScreenRecorderLib" Version="7.0.1" />
+  </ItemGroup>
+
+</Project>

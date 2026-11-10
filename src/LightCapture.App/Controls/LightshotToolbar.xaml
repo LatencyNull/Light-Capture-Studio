@@ -285,16 +285,6 @@
                                     <Image Source="/Assets/Icons/facebook.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="TikTok" Click="ShareTikTok_Click">
-                                <MenuItem.Icon>
-                                    <Image Source="/Assets/Icons/tiktok.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Header="Instagram" Click="ShareInstagram_Click">
-                                <MenuItem.Icon>
-                                    <Image Source="/Assets/Icons/instagram.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
                             <MenuItem Header="X (Twitter)" Click="ShareTwitter_Click">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/Icons/x.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
