@@ -51,7 +51,7 @@ public partial class VideoPreviewWindow : Window
     private bool _isScrubbingTimeline;
     private DateTime _lastScrubSeekTime = DateTime.MinValue;
 
-    private readonly List<(DrawingElement Element, Border Pill, TextBlock TimeBadge, Border BadgeBorder, Canvas Canvas)> _trackPillBindings = new();
+    private readonly List<(DrawingElement Element, Border Pill, TextBlock TimeBadge, Border BadgeBorder, Canvas Canvas, Border TrackPlayhead)> _trackPillBindings = new();
 
     public VideoPreviewWindow(string videoPath)
     {
@@ -155,16 +155,8 @@ public partial class VideoPreviewWindow : Window
                 pos = _trimEnd;
             }
 
-            // Actualizar aguja de reproducción (playhead) en el espacio del track
-            double trackWidth = TimelineContainer.ActualWidth;
-            double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
-            double maxTravel = trackWidth - pinWidth;
-            if (maxTravel > 0)
-            {
-                double ratio = Math.Max(0, Math.Min(pos.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
-                double needleX = Math.Max(0, Math.Min(ratio * maxTravel + (pinWidth / 2) - 1, trackWidth - 3));
-                Canvas.SetLeft(Playhead, needleX);
-            }
+            // Actualizar aguja de reproducción (playhead) sincronizada en el timeline principal y pistas
+            UpdateAllPlayheads(pos);
 
             TxtPlaybackPosition.Text = $"{pos.Minutes:D2}:{pos.Seconds:D2} / {_totalDuration.Minutes:D2}:{_totalDuration.Seconds:D2}";
             VideoDrawingCanvas.CurrentPlaybackTime = pos;
@@ -737,6 +729,24 @@ public partial class VideoPreviewWindow : Window
 
     #region Pistas de Objetos estilo CapCut
 
+    private void UpdateAllPlayheads(TimeSpan pos)
+    {
+        double trackWidth = TimelineContainer.ActualWidth;
+        double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+        double maxTravel = trackWidth - pinWidth;
+        if (maxTravel <= 0 || _totalDuration.TotalSeconds <= 0) return;
+
+        double ratio = Math.Max(0, Math.Min(pos.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
+        double needleX = Math.Max(0, Math.Min(ratio * maxTravel + (pinWidth / 2.0) - 1, trackWidth - 3));
+
+        Canvas.SetLeft(Playhead, needleX);
+
+        foreach (var b in _trackPillBindings)
+        {
+            Canvas.SetLeft(b.TrackPlayhead, needleX);
+        }
+    }
+
     private void RebuildObjectTracks()
     {
         _trackPillBindings.Clear();
@@ -755,22 +765,23 @@ public partial class VideoPreviewWindow : Window
         foreach (var elem in elements)
         {
             var rowGrid = new Grid { Margin = new Thickness(0, 2, 0, 2), Height = 28 };
-            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(190) });
-            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(178) }); // Suma exacta de Col 0 (68) + Col 1 (110) del timeline principal
+            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Pista interactiva alineada al píxel con TimelineContainer
+            rowGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) }); // Ancho idéntico a Col 3 (80) de duración/reset
 
             // Columna 0: Información y botón de eliminar
-            var infoPanel = new DockPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
+            var infoPanel = new DockPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) };
 
             var btnDelete = new System.Windows.Controls.Button
             {
                 Content = new TextBlock { Text = "✕", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68)) },
-                Width = 20,
-                Height = 20,
+                Width = 18,
+                Height = 18,
                 Background = System.Windows.Media.Brushes.Transparent,
                 BorderThickness = new Thickness(0),
                 Cursor = System.Windows.Input.Cursors.Hand,
                 ToolTip = "Eliminar este objeto del video",
-                Margin = new Thickness(4, 0, 0, 0)
+                Margin = new Thickness(2, 0, 0, 0)
             };
             DockPanel.SetDock(btnDelete, Dock.Right);
             btnDelete.Click += (s, e) => VideoDrawingCanvas.RemoveElement(elem);
@@ -782,14 +793,14 @@ public partial class VideoPreviewWindow : Window
                 BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, 56, 189, 248)),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(5, 1, 5, 1),
-                Margin = new Thickness(4, 0, 0, 0),
+                Padding = new Thickness(4, 1, 4, 1),
+                Margin = new Thickness(2, 0, 0, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
             var txtTimeBadge = new TextBlock
             {
                 FontFamily = new System.Windows.Media.FontFamily("Consolas, Segoe UI"),
-                FontSize = 10,
+                FontSize = 9.5,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(56, 189, 248)),
                 VerticalAlignment = VerticalAlignment.Center
@@ -799,13 +810,13 @@ public partial class VideoPreviewWindow : Window
             infoPanel.Children.Add(badgeBorder);
 
             var leftStack = new StackPanel { Orientation = System.Windows.Controls.Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-            var txtIcon = new TextBlock { Text = elem.IconEmoji, FontSize = 12, Margin = new Thickness(0, 0, 5, 0), VerticalAlignment = VerticalAlignment.Center };
+            var txtIcon = new TextBlock { Text = elem.IconEmoji, FontSize = 11, Margin = new Thickness(0, 0, 4, 0), VerticalAlignment = VerticalAlignment.Center };
             var colorDot = new System.Windows.Shapes.Ellipse
             {
-                Width = 8,
-                Height = 8,
+                Width = 7,
+                Height = 7,
                 Fill = new SolidColorBrush(elem.Color),
-                Margin = new Thickness(0, 0, 5, 0),
+                Margin = new Thickness(0, 0, 4, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
@@ -813,19 +824,19 @@ public partial class VideoPreviewWindow : Window
             if (elem is TextDrawingElement tde && !string.IsNullOrWhiteSpace(tde.Text))
             {
                 string clean = tde.Text.Replace("\r", " ").Replace("\n", " ").Trim();
-                string preview = clean.Length > 8 ? clean.Substring(0, 8) + "…" : clean;
+                string preview = clean.Length > 6 ? clean.Substring(0, 6) + "…" : clean;
                 labelText = $"\"{preview}\"";
             }
 
             var txtName = new TextBlock
             {
                 Text = labelText,
-                FontSize = 11,
+                FontSize = 10.5,
                 FontWeight = FontWeights.Medium,
                 Foreground = (System.Windows.Media.Brush)FindResource("PrimaryText"),
                 VerticalAlignment = VerticalAlignment.Center,
                 TextTrimming = TextTrimming.CharacterEllipsis,
-                MaxWidth = 65
+                MaxWidth = 52
             };
             leftStack.Children.Add(txtIcon);
             leftStack.Children.Add(colorDot);
@@ -843,6 +854,7 @@ public partial class VideoPreviewWindow : Window
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(5),
                 Height = 22,
+                Margin = new Thickness(4, 0, 4, 0), // Margen idéntico a TimelineContainer (4,0)
                 VerticalAlignment = VerticalAlignment.Center,
                 ClipToBounds = true
             };
@@ -850,11 +862,17 @@ public partial class VideoPreviewWindow : Window
             {
                 Background = System.Windows.Media.Brushes.Transparent,
                 ClipToBounds = true,
-                Height = 22
+                Height = 22,
+                Cursor = System.Windows.Input.Cursors.Hand
             };
             trackBorder.Child = trackCanvas;
             Grid.SetColumn(trackBorder, 1);
             rowGrid.Children.Add(trackBorder);
+
+            // Columna 2: Espaciador idéntico al panel derecho del timeline (80 px)
+            var spacer = new Border { Width = 80 };
+            Grid.SetColumn(spacer, 2);
+            rowGrid.Children.Add(spacer);
 
             // Bloque / Pill arrastrable y redimensionable
             var pill = new Border
@@ -907,7 +925,22 @@ public partial class VideoPreviewWindow : Window
 
             trackCanvas.Children.Add(pill);
 
-            var binding = (elem, pill, txtTimeBadge, badgeBorder, trackCanvas);
+            // Aguja de reproducción en la pista (sincronizada al pixel con la principal)
+            var trackPlayhead = new Border
+            {
+                Width = 2,
+                Height = 22,
+                Background = System.Windows.Media.Brushes.White,
+                CornerRadius = new CornerRadius(1),
+                IsHitTestVisible = false,
+                Opacity = 0.9
+            };
+            trackPlayhead.Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 4, ShadowDepth = 0, Color = System.Windows.Media.Colors.White, Opacity = 0.8 };
+            Canvas.SetLeft(trackPlayhead, 0);
+            Canvas.SetTop(trackPlayhead, 0);
+            trackCanvas.Children.Add(trackPlayhead);
+
+            var binding = (elem, pill, txtTimeBadge, badgeBorder, trackCanvas, trackPlayhead);
             _trackPillBindings.Add(binding);
 
             SetupPillInteractions(elem, pill, trackCanvas, txtTimeBadge);
@@ -924,6 +957,17 @@ public partial class VideoPreviewWindow : Window
         double dragStartMouseX = 0;
         TimeSpan initialStart = TimeSpan.Zero;
         TimeSpan initialEnd = TimeSpan.Zero;
+
+        // Clic en la pista para saltar directamente a esa posición de reproducción
+        trackCanvas.MouseLeftButtonDown += (s, e) =>
+        {
+            if (e.OriginalSource == trackCanvas)
+            {
+                Point pt = e.GetPosition(trackCanvas);
+                SeekToTimelinePosition(pt.X);
+                e.Handled = true;
+            }
+        };
 
         pill.MouseMove += (s, e) =>
         {
@@ -944,9 +988,11 @@ public partial class VideoPreviewWindow : Window
             double currentMouseX = e.GetPosition(trackCanvas).X;
             double deltaX = currentMouseX - dragStartMouseX;
             double cWidth = trackCanvas.ActualWidth;
-            if (cWidth <= 0 || _totalDuration.TotalSeconds <= 0) return;
+            double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+            double maxTravel = cWidth - pinWidth;
+            if (maxTravel <= 0 || _totalDuration.TotalSeconds <= 0) return;
 
-            double deltaSec = (deltaX / cWidth) * _totalDuration.TotalSeconds;
+            double deltaSec = (deltaX / maxTravel) * _totalDuration.TotalSeconds;
 
             if (dragMode == 1) // Mover bloque completo
             {
@@ -974,6 +1020,7 @@ public partial class VideoPreviewWindow : Window
 
             var targetTime = (dragMode == 3) ? (elem.EndTime ?? TimeSpan.Zero) : (elem.StartTime ?? TimeSpan.Zero);
             MediaVideoPlayer.Position = targetTime;
+            UpdateAllPlayheads(targetTime);
             e.Handled = true;
         };
 
@@ -1013,6 +1060,7 @@ public partial class VideoPreviewWindow : Window
         trackCanvas.SizeChanged += (s, e) =>
         {
             UpdateSinglePillPosition(elem, pill, trackCanvas, txtTimeBadge);
+            UpdateAllPlayheads(MediaVideoPlayer.Position);
         };
     }
 
@@ -1020,6 +1068,10 @@ public partial class VideoPreviewWindow : Window
     {
         double cWidth = trackCanvas.ActualWidth;
         if (cWidth <= 0 || _totalDuration.TotalSeconds <= 0) return;
+
+        double pinWidth = PinStart.ActualWidth > 0 ? PinStart.ActualWidth : 14;
+        double maxTravel = cWidth - pinWidth;
+        if (maxTravel <= 0) return;
 
         var start = elem.StartTime ?? TimeSpan.Zero;
         var end = elem.EndTime ?? _totalDuration;
@@ -1029,8 +1081,9 @@ public partial class VideoPreviewWindow : Window
         double startRatio = Math.Max(0, Math.Min(start.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
         double endRatio = Math.Max(0, Math.Min(end.TotalSeconds / _totalDuration.TotalSeconds, 1.0));
 
-        double x = startRatio * cWidth;
-        double w = Math.Max(18, (endRatio - startRatio) * cWidth);
+        double x = startRatio * maxTravel + (pinWidth / 2.0);
+        double endX = endRatio * maxTravel + (pinWidth / 2.0);
+        double w = Math.Max(18, endX - x);
 
         Canvas.SetLeft(pill, x);
         pill.Width = Math.Min(w, cWidth - x);
@@ -1044,10 +1097,13 @@ public partial class VideoPreviewWindow : Window
         {
             UpdateSinglePillPosition(b.Element, b.Pill, b.Canvas, b.TimeBadge);
         }
+        UpdateAllPlayheads(MediaVideoPlayer.Position);
     }
 
     private void HighlightActiveTracks(TimeSpan currentPos)
     {
+        UpdateAllPlayheads(currentPos);
+
         foreach (var b in _trackPillBindings)
         {
             var start = b.Element.StartTime ?? TimeSpan.Zero;

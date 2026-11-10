@@ -417,7 +417,7 @@
             </Border>
 
             <!-- 2.8 Pistas de Objetos estilo CapCut (Aparece automáticamente al insertar flechas, texto, etc.) -->
-            <Border x:Name="ObjectTracksPanel" Grid.Row="3" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="10" Padding="10,6" Margin="0,0,0,10" Visibility="Collapsed">
+            <Border x:Name="ObjectTracksPanel" Grid.Row="3" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="12" Padding="12,8" Margin="0,0,0,14" Visibility="Collapsed">
                 <StackPanel>
                     <!-- Cabecera de pistas -->
                     <Grid Margin="0,0,0,6">
