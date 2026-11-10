@@ -39,11 +39,58 @@ public static class GoogleLensService
     }
 
     /// <summary>
+    /// Resuelve la redirección 303 de uploadbyurl para forzar la pestaña de Coincidencias Visuales (udm=44).
+    /// </summary>
+    public static async Task<string> ResolveLensUploadByUrlAsync(string publicImageUrl)
+    {
+        string fallback = BuildLensSearchUrl(publicImageUrl);
+        try
+        {
+            var response = await _httpClient.GetAsync(fallback);
+            if ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400 && response.Headers.Location != null)
+            {
+                var targetUri = response.Headers.Location;
+                if (!targetUri.IsAbsoluteUri)
+                {
+                    targetUri = new Uri(new Uri("https://lens.google.com/"), targetUri);
+                }
+                return FormatLensUrlForVisualMatches(targetUri.ToString());
+            }
+        }
+        catch
+        {
+            // Silencioso, usar fallback
+        }
+        return fallback;
+    }
+
+    /// <summary>
     /// Construye la URL clásica de búsqueda inversa por imagen de Google.
     /// </summary>
     public static string BuildGoogleImagesSearchUrl(string publicImageUrl)
     {
         return $"https://www.google.com/searchbyimage?image_url={Uri.EscapeDataString(publicImageUrl)}";
+    }
+
+    /// <summary>
+    /// Formatea cualquier URL de búsqueda de Google Lens para fijar de manera estricta
+    /// el modo 'udm=44' (Coincidencias Visuales / Visual Matches), evitando que Google
+    /// caiga en la pestaña de texto 'Todo' vacía o con un cuadro AI Overview sin resultados.
+    /// </summary>
+    public static string FormatLensUrlForVisualMatches(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return url;
+
+        if (System.Text.RegularExpressions.Regex.IsMatch(url, @"udm=\d+"))
+        {
+            url = System.Text.RegularExpressions.Regex.Replace(url, @"udm=\d+", "udm=44");
+        }
+        else
+        {
+            url += (url.Contains('?') ? "&" : "?") + "udm=44";
+        }
+
+        return url;
     }
 
     /// <summary>
@@ -71,14 +118,7 @@ public static class GoogleLensService
                 {
                     targetUri = new Uri(new Uri("https://lens.google.com/"), targetUri);
                 }
-                string url = targetUri.ToString();
-                // Forzar que abra la pestaña de Coincidencias Visuales (udm=24)
-                // para evitar que el buscador caiga en la pestaña de texto "Todo" vacía
-                if (url.Contains("udm=26"))
-                {
-                    url = url.Replace("udm=26", "udm=24");
-                }
-                return url;
+                return FormatLensUrlForVisualMatches(targetUri.ToString());
             }
 
             if (response.IsSuccessStatusCode)

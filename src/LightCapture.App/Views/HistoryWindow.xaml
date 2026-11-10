@@ -39,6 +39,8 @@
 
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                 <CheckBox x:Name="ChkIncognito" Content="Incognito Mode" Foreground="#A1A1AA" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Pauses saving captures to disk for privacy" Checked="ChkIncognito_Checked" Unchecked="ChkIncognito_Unchecked"/>
+                <CheckBox x:Name="ChkSelectAll" Content="Select All" Foreground="#E4E4E7" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Select or deselect all visible captures" Checked="ChkSelectAll_Checked" Unchecked="ChkSelectAll_Unchecked"/>
+                <Button x:Name="BtnDeleteSelected" Content="🗑️ Delete Selected" Background="#450A0A" Foreground="#FCA5A5" BorderBrush="#991B1B" Padding="10,6" Margin="0,0,8,0" Cursor="Hand" ToolTip="Delete selected captures from disk and history" Click="BtnDeleteSelected_Click"/>
                 <Button Content="📁 Open Folder" Background="#1E293B" Foreground="#93C5FD" BorderBrush="#3B82F6" Padding="10,6" Margin="0,0,8,0" Cursor="Hand" ToolTip="Open Documents\Light Capture folder in Windows Explorer" Click="BtnOpenFolder_Click"/>
                 <Button Content="Clear All" Background="#3F1D1D" Foreground="#FCA5A5" BorderBrush="#7F1D1D" Padding="10,6" Margin="0,0,8,0" Cursor="Hand" Click="BtnClearAll_Click"/>
                 <Button Content="Close" Background="#27272A" Foreground="#E4E4E7" BorderBrush="#3F3F46" Padding="14,6" Cursor="Hand" Click="BtnClose_Click"/>
@@ -61,10 +63,17 @@
                                     <DropShadowEffect BlurRadius="8" ShadowDepth="2" Direction="315" Opacity="0.3"/>
                                 </Border.Effect>
                                 <StackPanel>
-                                    <!-- Thumbnail -->
-                                    <Border Height="140" Background="#0D0D11" CornerRadius="4" ClipToBounds="True" Margin="0,0,0,8">
-                                        <Image Source="{Binding ImagePath}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
+                                    <!-- Thumbnail with Selection Checkbox overlay -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Border Height="140" Background="#0D0D11" CornerRadius="4" ClipToBounds="True">
+                                            <Image Source="{Binding Thumbnail}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="6" Cursor="Hand" ToolTip="Select for batch delete" Checked="ItemCheckBox_Changed" Unchecked="ItemCheckBox_Changed">
+                                            <CheckBox.LayoutTransform>
+                                                <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                                            </CheckBox.LayoutTransform>
+                                        </CheckBox>
+                                    </Grid>
 
                                     <!-- Timestamp -->
                                     <TextBlock Text="{Binding TimestampText}" FontSize="11" Foreground="#A1A1AA" Margin="0,0,0,4"/>

@@ -220,4 +220,72 @@ public class KillerFeaturesTests
         Assert.StartsWith("https://www.google.com/searchbyimage?image_url=", searchUrl);
         Assert.Contains(Uri.EscapeDataString(sampleUrl), searchUrl);
     }
+
+    [Theory]
+    [InlineData("https://www.google.com/search?vsrid=abc&udm=26&lns_mode=un", "https://www.google.com/search?vsrid=abc&udm=44&lns_mode=un")]
+    [InlineData("https://www.google.com/search?vsrid=abc&udm=24", "https://www.google.com/search?vsrid=abc&udm=44")]
+    [InlineData("https://www.google.com/search?vsrid=abc", "https://www.google.com/search?vsrid=abc&udm=44")]
+    public void GoogleLensService_FormatLensUrlForVisualMatches_ForcesUdm44(string input, string expected)
+    {
+        string formatted = GoogleLensService.FormatLensUrlForVisualMatches(input);
+        Assert.Equal(expected, formatted);
+        Assert.Contains("udm=44", formatted);
+    }
+
+    [Fact]
+    public void CaptureHistoryService_DeleteEntry_RemovesFromDiskAndList()
+    {
+        var historyService = new CaptureHistoryService();
+        byte[] dummyPng = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJAD/sY6AnFAAAAAElFTkSuQmCC");
+        using var ms = new MemoryStream(dummyPng);
+        var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+        bitmap.BeginInit();
+        bitmap.StreamSource = ms;
+        bitmap.EndInit();
+        bitmap.Freeze();
+
+        historyService.SaveCapture(bitmap, "Test Deletion OCR");
+        var items = historyService.GetHistory();
+        Assert.NotEmpty(items);
+
+        var first = items.First(i => i.OcrText == "Test Deletion OCR");
+        string filePath = historyService.GetImagePath(first);
+        Assert.True(File.Exists(filePath));
+
+        historyService.DeleteEntry(first.Id);
+
+        var updated = historyService.GetHistory();
+        Assert.DoesNotContain(updated, i => i.Id == first.Id);
+        Assert.False(File.Exists(filePath));
+    }
+
+    [Fact]
+    public void CaptureHistoryService_DeleteEntries_BatchRemovesFromDiskAndList()
+    {
+        var historyService = new CaptureHistoryService();
+        byte[] dummyPng = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJAD/sY6AnFAAAAAElFTkSuQmCC");
+        using var ms = new MemoryStream(dummyPng);
+        var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+        bitmap.BeginInit();
+        bitmap.StreamSource = ms;
+        bitmap.EndInit();
+        bitmap.Freeze();
+
+        historyService.SaveCapture(bitmap, "Batch 1");
+        historyService.SaveCapture(bitmap, "Batch 2");
+
+        var items = historyService.GetHistory();
+        var b1 = items.First(i => i.OcrText == "Batch 1");
+        var b2 = items.First(i => i.OcrText == "Batch 2");
+        string p1 = historyService.GetImagePath(b1);
+        string p2 = historyService.GetImagePath(b2);
+
+        historyService.DeleteEntries(new[] { b1.Id, b2.Id });
+
+        var after = historyService.GetHistory();
+        Assert.DoesNotContain(after, i => i.Id == b1.Id);
+        Assert.DoesNotContain(after, i => i.Id == b2.Id);
+        Assert.False(File.Exists(p1));
+        Assert.False(File.Exists(p2));
+    }
 }

@@ -20,6 +20,7 @@ public interface ICaptureHistoryService
     IReadOnlyList<HistoryEntry> Search(string query);
     string GetImagePath(HistoryEntry entry);
     void DeleteEntry(string id);
+    void DeleteEntries(IEnumerable<string> ids);
     void ClearAllHistory();
 }
 
@@ -272,9 +273,51 @@ public class CaptureHistoryService : ICaptureHistoryService
                 string path = Path.Combine(_historyDir, entry.ImageFileName);
                 if (File.Exists(path))
                 {
-                    try { File.Delete(path); } catch { }
+                    try
+                    {
+                        File.SetAttributes(path, FileAttributes.Normal);
+                        File.Delete(path);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[CaptureHistoryService] Failed to delete file '{path}': {ex.Message}");
+                    }
                 }
                 _entries.Remove(entry);
+                SaveMetadata();
+            }
+        }
+    }
+
+    public void DeleteEntries(IEnumerable<string> ids)
+    {
+        if (ids == null) return;
+        var idSet = new HashSet<string>(ids, StringComparer.Ordinal);
+        if (idSet.Count == 0) return;
+
+        lock (_lock)
+        {
+            var toRemove = _entries.Where(e => idSet.Contains(e.Id)).ToList();
+            foreach (var entry in toRemove)
+            {
+                string path = Path.Combine(_historyDir, entry.ImageFileName);
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        File.SetAttributes(path, FileAttributes.Normal);
+                        File.Delete(path);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[CaptureHistoryService] Failed to delete file '{path}': {ex.Message}");
+                    }
+                }
+                _entries.Remove(entry);
+            }
+
+            if (toRemove.Count > 0)
+            {
                 SaveMetadata();
             }
         }
@@ -284,14 +327,39 @@ public class CaptureHistoryService : ICaptureHistoryService
     {
         lock (_lock)
         {
+            // 1. Eliminar archivos indexados
             foreach (var entry in _entries)
             {
                 string path = Path.Combine(_historyDir, entry.ImageFileName);
                 if (File.Exists(path))
                 {
-                    try { File.Delete(path); } catch { }
+                    try
+                    {
+                        File.SetAttributes(path, FileAttributes.Normal);
+                        File.Delete(path);
+                    }
+                    catch { }
                 }
             }
+
+            // 2. Limpieza exhaustiva de cualquier remanente LightCapture_*.*
+            try
+            {
+                if (Directory.Exists(_historyDir))
+                {
+                    foreach (var file in Directory.GetFiles(_historyDir, "LightCapture_*.*"))
+                    {
+                        try
+                        {
+                            File.SetAttributes(file, FileAttributes.Normal);
+                            File.Delete(file);
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { }
+
             _entries.Clear();
             SaveMetadata();
         }

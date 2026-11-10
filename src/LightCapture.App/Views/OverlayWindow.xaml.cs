@@ -1375,7 +1375,7 @@ public partial class OverlayWindow : Window
                 string? publicUrl = await _cloudUploadService.UploadImageAsync(pngBytes);
                 if (!string.IsNullOrEmpty(publicUrl))
                 {
-                    lensUrl = GoogleLensService.BuildLensSearchUrl(publicUrl);
+                    lensUrl = await GoogleLensService.ResolveLensUploadByUrlAsync(publicUrl);
                 }
             }
 
