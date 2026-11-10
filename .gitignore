@@ -10,6 +10,8 @@ publish-standalone/
 .vs/
 .idea/
 .vscode/
+.commandcode/
+.superpowers/
 *.user
 *.userosscache
 *.sln.docstates
