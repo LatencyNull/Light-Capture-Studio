@@ -1381,6 +1381,16 @@ public partial class VideoPreviewWindow : Window
 
             new ToastNotificationWindow(toastMsg, "/Assets/Icons/save.png").Show();
             _cachedTrimmedPath = await VideoTrimmerService.TrimAsync(_videoPath, _trimStart, _trimEnd, null, timedOverlays);
+
+            // Clean up temporary element overlays
+            if (timedOverlays != null)
+            {
+                foreach (var overlay in timedOverlays)
+                {
+                    try { if (File.Exists(overlay.ImagePath)) File.Delete(overlay.ImagePath); } catch { }
+                }
+            }
+
             return _cachedTrimmedPath;
         }
         catch (Exception ex)
@@ -1569,8 +1579,15 @@ public partial class VideoPreviewWindow : Window
         string path = await GetEffectiveVideoPathAsync();
         bool isGif = path.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
 
+        string defaultFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture");
+        if (!Directory.Exists(defaultFolder))
+        {
+            Directory.CreateDirectory(defaultFolder);
+        }
+
         var sfd = new Microsoft.Win32.SaveFileDialog
         {
+            InitialDirectory = defaultFolder,
             Title = isGif ? "Save Animated GIF" : "Save Video Clip",
             Filter = isGif ? "Animated GIF (*.gif)|*.gif|All files (*.*)|*.*" : "MP4 Video (*.mp4)|*.mp4|All files (*.*)|*.*",
             FileName = isGif ? $"Gif_{DateTime.Now:yyyyMMdd_HHmmss}.gif" : $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
@@ -1580,7 +1597,10 @@ public partial class VideoPreviewWindow : Window
         {
             try
             {
-                File.Copy(path, sfd.FileName, true);
+                if (!string.Equals(path, sfd.FileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    File.Copy(path, sfd.FileName, true);
+                }
                 new ToastNotificationWindow(
                     isGif ? "Animated GIF saved successfully! 🎞️" : "Video clip saved successfully! 💾",
                     "/Assets/Icons/save.png"
@@ -1596,6 +1616,18 @@ public partial class VideoPreviewWindow : Window
     private void BtnDiscard_Click(object sender, RoutedEventArgs e)
     {
         CleanupAndClose();
+        try
+        {
+            if (!string.IsNullOrEmpty(_videoPath) && File.Exists(_videoPath))
+            {
+                File.Delete(_videoPath);
+            }
+            if (!string.IsNullOrEmpty(_cachedTrimmedPath) && File.Exists(_cachedTrimmedPath))
+            {
+                File.Delete(_cachedTrimmedPath);
+            }
+        }
+        catch { }
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)

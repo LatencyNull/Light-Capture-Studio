@@ -37,14 +37,14 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
             throw new ArgumentException("The selected area is too small to record video.");
         }
 
-        string tempFolder = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
-        if (!Directory.Exists(tempFolder))
+        string capturesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture");
+        if (!Directory.Exists(capturesFolder))
         {
-            Directory.CreateDirectory(tempFolder);
+            Directory.CreateDirectory(capturesFolder);
         }
 
         string ext = isGif ? "gif" : "mp4";
-        _currentFilePath = Path.Combine(tempFolder, $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.{ext}");
+        _currentFilePath = Path.Combine(capturesFolder, $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.{ext}");
         _isCancelled = false;
         _stopTcs = new TaskCompletionSource<string>();
 

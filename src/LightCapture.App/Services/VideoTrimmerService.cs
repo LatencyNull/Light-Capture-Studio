@@ -126,13 +126,12 @@ public static class VideoTrimmerService
             catch { }
         }
 
-        string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
-        if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
+        string capturesDir = GetCapturesDirectory();
 
         string destFileName = $"Trim_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.mp4";
-        string destPath = Path.Combine(tempDir, destFileName);
+        string destPath = Path.Combine(capturesDir, destFileName);
 
-        var destFolder = await StorageFolder.GetFolderFromPathAsync(tempDir);
+        var destFolder = await StorageFolder.GetFolderFromPathAsync(capturesDir);
         var destFile = await destFolder.CreateFileAsync(destFileName, CreationCollisionOption.ReplaceExisting);
 
         await composition.RenderToFileAsync(destFile);
@@ -177,10 +176,8 @@ public static class VideoTrimmerService
         {
             try
             {
-                string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
-                if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
-
-                string destPath = Path.Combine(tempDir, $"Annotated_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.mp4");
+                string capturesDir = GetCapturesDirectory();
+                string destPath = Path.Combine(capturesDir, $"Annotated_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.mp4");
                 double startSec = Math.Max(0, startTime.TotalSeconds);
                 double durationSec = Math.Max(0.05, (endTime - startTime).TotalSeconds);
 
@@ -354,9 +351,8 @@ public static class VideoTrimmerService
 
             if (extractedBitmaps.Count == 0) return sourcePath;
 
-            string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
-            if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
-            string destPath = Path.Combine(tempDir, $"Trim_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.gif");
+            string capturesDir = GetCapturesDirectory();
+            string destPath = Path.Combine(capturesDir, $"Trim_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.gif");
 
             SaveAsAnimatedGif(extractedBitmaps, destPath, 7);
 
@@ -477,5 +473,15 @@ public static class VideoTrimmerService
                 offset++;
             }
         }
+    }
+
+    private static string GetCapturesDirectory()
+    {
+        string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture");
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+        return dir;
     }
 }
