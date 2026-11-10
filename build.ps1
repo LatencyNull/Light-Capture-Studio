@@ -126,10 +126,10 @@ if (Test-Path $exePath) {
         }
     }
 
-    $zipName = "LightCapture-Studio-Standalone-win-x64.zip"
+    $zipName = "LightCapture-Studio-v$appVersion-Standalone-win-x64.zip"
     $releaseExeName = "LightCapture-Studio-v$appVersion-Standalone-win-x64.exe"
     if (-not $SelfContained) {
-        $zipName = "LightCapture-Studio-FrameworkDependent-win-x64.zip"
+        $zipName = "LightCapture-Studio-v$appVersion-FrameworkDependent-win-x64.zip"
         $releaseExeName = "LightCapture-Studio-v$appVersion-FrameworkDependent-win-x64.exe"
     }
     $zipPath = Join-Path $releaseDir $zipName
