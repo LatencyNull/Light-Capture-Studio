@@ -218,6 +218,20 @@ public record TextDrawingElement(Color Color, double FontSize, Point Position, s
     {
         if (string.IsNullOrEmpty(Text)) return;
 
+        // Sombra sutil para máxima legibilidad estilo Photoshop contra cualquier fondo
+        var shadowBrush = new SolidColorBrush(Color.FromArgb(150, 0, 0, 0));
+        shadowBrush.Freeze();
+        var shadowText = new FormattedText(
+            Text,
+            System.Globalization.CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            new Typeface("Segoe UI Semibold"),
+            Math.Max(8, FontSize),
+            shadowBrush,
+            1.0
+        );
+        dc.DrawText(shadowText, new Point(Position.X + 1.2, Position.Y + 1.2));
+
         var formattedText = GetFormattedText(1.0);
         dc.DrawText(formattedText, Position);
     }

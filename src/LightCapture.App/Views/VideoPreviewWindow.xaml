@@ -247,61 +247,56 @@
                                             PreviewMouseMove="VideoDrawingCanvas_MouseMove"
                                             PreviewMouseLeftButtonUp="VideoDrawingCanvas_MouseUp"/>
 
-                    <!-- Contenedor flotante de texto para escribir en el video con estiramiento y cambio de tamaño -->
+                    <!-- Cuadro de texto interactivo estilo Photoshop: directo sobre el video, sin marcos pesados -->
                     <Border x:Name="VideoFloatingTextContainer"
                             Visibility="Collapsed"
-                            Background="#E60F172A"
+                            Background="#10000000"
                             BorderBrush="#38BDF8"
-                            BorderThickness="1.5"
-                            CornerRadius="6"
-                            MinWidth="140"
-                            MinHeight="56"
+                            BorderThickness="1"
+                            CornerRadius="2"
+                            MinWidth="100"
+                            MinHeight="32"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
+                            SnapsToDevicePixels="True"
                             Panel.ZIndex="85">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Color="#000000" Opacity="0.5"/>
+                        </Border.Effect>
                         <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-
-                            <!-- Barra superior del editor de texto: Mover + Indicador + Botones -->
-                            <DockPanel Grid.Row="0" x:Name="VideoFloatingTextHeader" Background="#2638BDF8" LastChildFill="True" Cursor="SizeAll" Height="22" PreviewMouseLeftButtonDown="VideoFloatingTextHeader_MouseDown" PreviewMouseMove="VideoFloatingTextHeader_MouseMove" PreviewMouseLeftButtonUp="VideoFloatingTextHeader_MouseUp">
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,2,0">
-                                    <TextBlock x:Name="TxtVideoFontSizeIndicator" Text="18 pt" FontSize="9" FontWeight="SemiBold" Foreground="#38BDF8" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <Button x:Name="BtnConfirmVideoText" Width="18" Height="18" Content="✓" FontSize="11" FontWeight="Bold" Foreground="#10B981" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Confirmar y estampar texto (Enter)" Click="BtnConfirmVideoText_Click" Margin="0,0,2,0"/>
-                                    <Button x:Name="BtnCancelVideoText" Width="18" Height="18" Content="✕" FontSize="10" FontWeight="Bold" Foreground="#EF4444" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Cancelar (Esc)" Click="BtnCancelVideoText_Click" Margin="0,0,2,0"/>
-                                </StackPanel>
-                                <TextBlock Text="✎ Texto (Estira ↘ o usa la rueda para cambiar tamaño)" FontSize="9" Foreground="#94A3B8" FontWeight="Medium" VerticalAlignment="Center" Margin="6,0,0,0" IsHitTestVisible="False"/>
-                            </DockPanel>
-
-                            <!-- Caja de texto editable -->
-                            <TextBox Grid.Row="1" x:Name="VideoFloatingInput"
+                            <!-- TextBox directo, transparente y de máxima legibilidad con sombra de texto -->
+                            <TextBox x:Name="VideoFloatingInput"
                                      Background="Transparent"
                                      BorderThickness="0"
                                      Foreground="#EF4444"
-                                     FontSize="18"
-                                     FontWeight="Bold"
-                                     Padding="6,4,18,16"
+                                     FontFamily="Segoe UI Semibold"
+                                     FontSize="20"
+                                     Padding="3,1,10,10"
                                      AcceptsReturn="True"
                                      TextWrapping="Wrap"
-                                     CaretBrush="#38BDF8"
+                                     CaretBrush="#FFFFFF"
                                      KeyDown="VideoFloatingInput_KeyDown"
                                      LostFocus="VideoFloatingInput_LostFocus"
-                                     PreviewMouseWheel="VideoFloatingInput_PreviewMouseWheel"/>
+                                     PreviewMouseWheel="VideoFloatingInput_PreviewMouseWheel">
+                                <TextBox.Effect>
+                                    <DropShadowEffect BlurRadius="3" ShadowDepth="1" Color="#000000" Opacity="0.85"/>
+                                </TextBox.Effect>
+                            </TextBox>
 
-                            <!-- Tirador de estiramiento en la esquina inferior derecha ↘ -->
-                            <Border Grid.Row="1" x:Name="VideoFloatingTextResizeGrip"
-                                    Width="18" Height="18"
-                                    HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                                    Background="Transparent"
-                                    Cursor="SizeNWSE"
-                                    ToolTip="Arrastra para estirar y agrandar/achicar el tamaño del texto"
-                                    PreviewMouseLeftButtonDown="VideoFloatingTextResizeGrip_MouseDown"
-                                    PreviewMouseMove="VideoFloatingTextResizeGrip_MouseMove"
-                                    PreviewMouseLeftButtonUp="VideoFloatingTextResizeGrip_MouseUp">
-                                <Path Data="M6 14L14 6M10 14L14 10M2 14L14 2" Stroke="#38BDF8" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,3,3"/>
-                            </Border>
+                            <!-- Tirador sutil de esquina estilo transformación libre de Photoshop -->
+                            <Rectangle x:Name="VideoFloatingTextResizeGrip"
+                                       Width="8" Height="8"
+                                       Fill="#FFFFFF"
+                                       Stroke="#0284C7"
+                                       StrokeThickness="1.5"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Bottom"
+                                       Cursor="SizeNWSE"
+                                       Margin="0,0,-4,-4"
+                                       ToolTip="Estirar para agrandar/achicar tamaño"
+                                       PreviewMouseLeftButtonDown="VideoFloatingTextResizeGrip_MouseDown"
+                                       PreviewMouseMove="VideoFloatingTextResizeGrip_MouseMove"
+                                       PreviewMouseLeftButtonUp="VideoFloatingTextResizeGrip_MouseUp"/>
                         </Grid>
                     </Border>
 

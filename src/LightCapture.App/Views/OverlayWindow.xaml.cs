@@ -429,22 +429,19 @@ public partial class OverlayWindow : Window
     }
 
     private Point _floatingInputPos;
-    private double _currentTextFontSize = 18;
+    private double _currentTextFontSize = 20;
     private bool _isStretchingText = false;
     private Point _textStretchStartMouse;
     private double _textStretchStartWidth;
     private double _textStretchStartHeight;
-    private bool _isDraggingTextContainer = false;
-    private Point _textDragStartMouse;
-    private Point _textDragStartPos;
 
-    private void ShowFloatingInputAt(Point p, string initialText = "", double initialFontSize = 18)
+    private void ShowFloatingInputAt(Point p, string initialText = "", double initialFontSize = 20)
     {
         _floatingInputPos = p;
-        _currentTextFontSize = Math.Max(10, initialFontSize);
+        _currentTextFontSize = Math.Max(12, initialFontSize);
 
-        double defaultWidth = Math.Max(180, Math.Min(340, _selectionBounds.Width - 20));
-        double defaultHeight = Math.Max(60, _currentTextFontSize * 3.2);
+        double defaultWidth = Math.Max(120, Math.Min(300, _selectionBounds.Width - 10));
+        double defaultHeight = Math.Max(34, _currentTextFontSize * 1.8);
 
         double inputX = Math.Max(_selectionBounds.Left, Math.Min(_selectionBounds.Right - defaultWidth, p.X));
         double inputY = Math.Max(_selectionBounds.Top, Math.Min(_selectionBounds.Bottom - defaultHeight, p.Y));
@@ -456,7 +453,6 @@ public partial class OverlayWindow : Window
 
         FloatingInputBox.Foreground = new SolidColorBrush(MainDrawingCanvas.CurrentColor);
         FloatingInputBox.FontSize = _currentTextFontSize;
-        TxtFontSizeIndicator.Text = $"{(int)_currentTextFontSize} pt";
         FloatingInputBox.Text = initialText;
 
         FloatingTextContainer.Visibility = Visibility.Visible;
@@ -476,22 +472,11 @@ public partial class OverlayWindow : Window
 
         if (!string.IsNullOrEmpty(text))
         {
-            double posX = Canvas.GetLeft(FloatingTextContainer) + 6;
-            double posY = Canvas.GetTop(FloatingTextContainer) + 26; // compensar header
+            double posX = Canvas.GetLeft(FloatingTextContainer) + 3;
+            double posY = Canvas.GetTop(FloatingTextContainer) + 1;
             MainDrawingCanvas.AddTextElement(new Point(posX, posY), text, _currentTextFontSize);
             ShowToast($"✍️ Texto añadido ({_currentTextFontSize:0} pt)");
         }
-    }
-
-    private void BtnConfirmText_Click(object sender, RoutedEventArgs e)
-    {
-        CommitFloatingText();
-    }
-
-    private void BtnCancelText_Click(object sender, RoutedEventArgs e)
-    {
-        FloatingInputBox.Text = string.Empty;
-        FloatingTextContainer.Visibility = Visibility.Collapsed;
     }
 
     private void FloatingInputBox_KeyDown(object sender, KeyEventArgs e)
@@ -511,8 +496,7 @@ public partial class OverlayWindow : Window
 
     private void FloatingInputBox_LostFocus(object sender, RoutedEventArgs e)
     {
-        // Solo commitear si no estamos arrastrando o estirando con el mouse
-        if (!_isStretchingText && !_isDraggingTextContainer)
+        if (!_isStretchingText)
         {
             CommitFloatingText();
         }
@@ -525,47 +509,11 @@ public partial class OverlayWindow : Window
         double newSize = Math.Max(10, Math.Min(120, _currentTextFontSize + delta));
         _currentTextFontSize = newSize;
         FloatingInputBox.FontSize = newSize;
-        TxtFontSizeIndicator.Text = $"{(int)newSize} pt";
 
-        double minH = Math.Max(60, newSize * 2.8);
+        double minH = Math.Max(32, newSize * 1.8);
         if (FloatingTextContainer.Height < minH)
         {
             FloatingTextContainer.Height = minH;
-        }
-    }
-
-    private void FloatingTextHeader_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.LeftButton == MouseButtonState.Pressed)
-        {
-            _isDraggingTextContainer = true;
-            _textDragStartMouse = e.GetPosition(this);
-            _textDragStartPos = new Point(Canvas.GetLeft(FloatingTextContainer), Canvas.GetTop(FloatingTextContainer));
-            FloatingTextHeader.CaptureMouse();
-            e.Handled = true;
-        }
-    }
-
-    private void FloatingTextHeader_MouseMove(object sender, MouseEventArgs e)
-    {
-        if (_isDraggingTextContainer && e.LeftButton == MouseButtonState.Pressed)
-        {
-            Point cur = e.GetPosition(this);
-            double newX = _textDragStartPos.X + (cur.X - _textDragStartMouse.X);
-            double newY = _textDragStartPos.Y + (cur.Y - _textDragStartMouse.Y);
-            Canvas.SetLeft(FloatingTextContainer, newX);
-            Canvas.SetTop(FloatingTextContainer, newY);
-            e.Handled = true;
-        }
-    }
-
-    private void FloatingTextHeader_MouseUp(object sender, MouseButtonEventArgs e)
-    {
-        if (_isDraggingTextContainer)
-        {
-            _isDraggingTextContainer = false;
-            FloatingTextHeader.ReleaseMouseCapture();
-            e.Handled = true;
         }
     }
 
@@ -590,17 +538,16 @@ public partial class OverlayWindow : Window
             double deltaX = current.X - _textStretchStartMouse.X;
             double deltaY = current.Y - _textStretchStartMouse.Y;
 
-            double newW = Math.Max(140, _textStretchStartWidth + deltaX);
-            double newH = Math.Max(56, _textStretchStartHeight + deltaY);
+            double newW = Math.Max(80, _textStretchStartWidth + deltaX);
+            double newH = Math.Max(28, _textStretchStartHeight + deltaY);
 
             FloatingTextContainer.Width = newW;
             FloatingTextContainer.Height = newH;
 
-            // Escalar el tamaño del texto proporcionalmente a la altura del contenedor
-            double newSize = Math.Max(10, Math.Min(120, Math.Round((newH - 24) * 0.45)));
+            // Escalar el tamaño del texto proporcionalmente al alto del cuadro (Free Transform estilo Photoshop)
+            double newSize = Math.Max(10, Math.Min(120, Math.Round(newH * 0.55)));
             _currentTextFontSize = newSize;
             FloatingInputBox.FontSize = newSize;
-            TxtFontSizeIndicator.Text = $"{(int)newSize} pt";
 
             e.Handled = true;
         }
@@ -620,15 +567,6 @@ public partial class OverlayWindow : Window
     private void Window_MouseMove(object sender, MouseEventArgs e)
     {
         Point current = e.GetPosition(this);
-
-        if (_isDraggingTextContainer && e.LeftButton == MouseButtonState.Pressed)
-        {
-            double newX = _textDragStartPos.X + (current.X - _textDragStartMouse.X);
-            double newY = _textDragStartPos.Y + (current.Y - _textDragStartMouse.Y);
-            Canvas.SetLeft(FloatingTextContainer, newX);
-            Canvas.SetTop(FloatingTextContainer, newY);
-            return;
-        }
 
         if (!_hasSelection && !_isSelecting)
         {
@@ -746,13 +684,6 @@ public partial class OverlayWindow : Window
     private void Window_MouseUp(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton != MouseButton.Left) return;
-
-        if (_isDraggingTextContainer)
-        {
-            _isDraggingTextContainer = false;
-            FloatingTextHeader.ReleaseMouseCapture();
-            return;
-        }
 
         Point p = e.GetPosition(this);
 

@@ -661,20 +661,17 @@ public partial class VideoPreviewWindow : Window
         e.Handled = true;
     }
 
-    private double _currentVideoTextFontSize = 18;
+    private double _currentVideoTextFontSize = 20;
     private bool _isVideoStretchingText = false;
     private Point _videoTextStretchStartMouse;
     private double _videoTextStretchStartWidth;
     private double _videoTextStretchStartHeight;
-    private bool _isVideoDraggingTextContainer = false;
-    private Point _videoTextDragStartMouse;
-    private Thickness _videoTextDragStartMargin;
 
-    private void ShowFloatingTextInput(Point p, string initialText = "", double initialFontSize = 18)
+    private void ShowFloatingTextInput(Point p, string initialText = "", double initialFontSize = 20)
     {
-        _currentVideoTextFontSize = Math.Max(10, initialFontSize);
-        double defaultWidth = Math.Max(180, Math.Min(340, VideoContainer.ActualWidth - 20));
-        double defaultHeight = Math.Max(60, _currentVideoTextFontSize * 3.2);
+        _currentVideoTextFontSize = Math.Max(12, initialFontSize);
+        double defaultWidth = Math.Max(120, Math.Min(300, VideoContainer.ActualWidth - 10));
+        double defaultHeight = Math.Max(34, _currentVideoTextFontSize * 1.8);
 
         double maxLeft = Math.Max(0, VideoContainer.ActualWidth - defaultWidth);
         double maxTop = Math.Max(0, VideoContainer.ActualHeight - defaultHeight);
@@ -687,7 +684,6 @@ public partial class VideoPreviewWindow : Window
 
         VideoFloatingInput.Foreground = new SolidColorBrush(VideoDrawingCanvas.CurrentColor);
         VideoFloatingInput.FontSize = _currentVideoTextFontSize;
-        TxtVideoFontSizeIndicator.Text = $"{(int)_currentVideoTextFontSize} pt";
         VideoFloatingInput.Text = initialText;
 
         VideoFloatingTextContainer.Visibility = Visibility.Visible;
@@ -705,21 +701,10 @@ public partial class VideoPreviewWindow : Window
         VideoFloatingTextContainer.Visibility = Visibility.Collapsed;
         if (!string.IsNullOrEmpty(text))
         {
-            double posX = VideoFloatingTextContainer.Margin.Left + 6;
-            double posY = VideoFloatingTextContainer.Margin.Top + 26;
+            double posX = VideoFloatingTextContainer.Margin.Left + 3;
+            double posY = VideoFloatingTextContainer.Margin.Top + 1;
             VideoDrawingCanvas.AddTextElement(new Point(posX, posY), text, _currentVideoTextFontSize);
         }
-    }
-
-    private void BtnConfirmVideoText_Click(object sender, RoutedEventArgs e)
-    {
-        CommitFloatingText();
-    }
-
-    private void BtnCancelVideoText_Click(object sender, RoutedEventArgs e)
-    {
-        VideoFloatingInput.Text = string.Empty;
-        VideoFloatingTextContainer.Visibility = Visibility.Collapsed;
     }
 
     private void VideoFloatingInput_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -739,7 +724,7 @@ public partial class VideoPreviewWindow : Window
 
     private void VideoFloatingInput_LostFocus(object sender, RoutedEventArgs e)
     {
-        if (!_isVideoStretchingText && !_isVideoDraggingTextContainer)
+        if (!_isVideoStretchingText)
         {
             CommitFloatingText();
         }
@@ -752,46 +737,11 @@ public partial class VideoPreviewWindow : Window
         double newSize = Math.Max(10, Math.Min(120, _currentVideoTextFontSize + delta));
         _currentVideoTextFontSize = newSize;
         VideoFloatingInput.FontSize = newSize;
-        TxtVideoFontSizeIndicator.Text = $"{(int)newSize} pt";
 
-        double minH = Math.Max(60, newSize * 2.8);
+        double minH = Math.Max(32, newSize * 1.8);
         if (VideoFloatingTextContainer.Height < minH)
         {
             VideoFloatingTextContainer.Height = minH;
-        }
-    }
-
-    private void VideoFloatingTextHeader_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.LeftButton == MouseButtonState.Pressed)
-        {
-            _isVideoDraggingTextContainer = true;
-            _videoTextDragStartMouse = e.GetPosition(this);
-            _videoTextDragStartMargin = VideoFloatingTextContainer.Margin;
-            VideoFloatingTextHeader.CaptureMouse();
-            e.Handled = true;
-        }
-    }
-
-    private void VideoFloatingTextHeader_MouseMove(object sender, MouseEventArgs e)
-    {
-        if (_isVideoDraggingTextContainer && e.LeftButton == MouseButtonState.Pressed)
-        {
-            Point cur = e.GetPosition(this);
-            double newLeft = _videoTextDragStartMargin.Left + (cur.X - _videoTextDragStartMouse.X);
-            double newTop = _videoTextDragStartMargin.Top + (cur.Y - _videoTextDragStartMouse.Y);
-            VideoFloatingTextContainer.Margin = new Thickness(newLeft, newTop, 0, 0);
-            e.Handled = true;
-        }
-    }
-
-    private void VideoFloatingTextHeader_MouseUp(object sender, MouseButtonEventArgs e)
-    {
-        if (_isVideoDraggingTextContainer)
-        {
-            _isVideoDraggingTextContainer = false;
-            VideoFloatingTextHeader.ReleaseMouseCapture();
-            e.Handled = true;
         }
     }
 
@@ -816,16 +766,16 @@ public partial class VideoPreviewWindow : Window
             double deltaX = current.X - _videoTextStretchStartMouse.X;
             double deltaY = current.Y - _videoTextStretchStartMouse.Y;
 
-            double newW = Math.Max(140, _videoTextStretchStartWidth + deltaX);
-            double newH = Math.Max(56, _videoTextStretchStartHeight + deltaY);
+            double newW = Math.Max(80, _videoTextStretchStartWidth + deltaX);
+            double newH = Math.Max(28, _videoTextStretchStartHeight + deltaY);
 
             VideoFloatingTextContainer.Width = newW;
             VideoFloatingTextContainer.Height = newH;
 
-            double newSize = Math.Max(10, Math.Min(120, Math.Round((newH - 24) * 0.45)));
+            // Escalar proporcionalmente al alto del cuadro (estilo transformación libre de Photoshop)
+            double newSize = Math.Max(10, Math.Min(120, Math.Round(newH * 0.55)));
             _currentVideoTextFontSize = newSize;
             VideoFloatingInput.FontSize = newSize;
-            TxtVideoFontSizeIndicator.Text = $"{(int)newSize} pt";
 
             e.Handled = true;
         }
