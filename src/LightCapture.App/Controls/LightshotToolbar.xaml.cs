@@ -170,28 +170,97 @@ public partial class LightshotToolbar : UserControl
 
     public void UpdatePosition(Rect sel, double screenWidth, double screenHeight)
     {
-        // 1. Barra vertical a la derecha
-        double vertX = sel.Right + 6;
-        double vertY = sel.Top;
-
-        if (vertX + 44 > screenWidth)
+        // 1. Medir dimensiones dinámicas reales de ambas barras (con respaldo robusto)
+        if (VerticalBar.ActualWidth <= 0 || VerticalBar.ActualHeight <= 0)
         {
-            vertX = Math.Max(6, sel.Right - 44);
+            VerticalBar.Measure(new System.Windows.Size(double.PositiveInfinity, double.PositiveInfinity));
         }
+        if (HorizontalBar.ActualWidth <= 0 || HorizontalBar.ActualHeight <= 0)
+        {
+            HorizontalBar.Measure(new System.Windows.Size(double.PositiveInfinity, double.PositiveInfinity));
+        }
+
+        double vertWidth = VerticalBar.ActualWidth > 0 ? VerticalBar.ActualWidth : (VerticalBar.DesiredSize.Width > 0 ? VerticalBar.DesiredSize.Width : 42);
+        double vertHeight = VerticalBar.ActualHeight > 0 ? VerticalBar.ActualHeight : (VerticalBar.DesiredSize.Height > 0 ? VerticalBar.DesiredSize.Height : 275);
+
+        double horizWidth = HorizontalBar.ActualWidth > 0 ? HorizontalBar.ActualWidth : (HorizontalBar.DesiredSize.Width > 0 ? HorizontalBar.DesiredSize.Width : 352);
+        double horizHeight = HorizontalBar.ActualHeight > 0 ? HorizontalBar.ActualHeight : (HorizontalBar.DesiredSize.Height > 0 ? HorizontalBar.DesiredSize.Height : 42);
+
+        // 2. Parámetros de márgenes y separaciones
+        const double ScreenMargin = 12;   // Margen seguro respecto a los bordes de la pantalla (evita cortes, taskbar y sombras)
+        const double SelectionGap = 6;    // Separación exterior respecto al borde de selección
+        const double ToolbarsGap = 8;     // Separación entre ambas barras cuando se colocan juntas
+
+        // 3. Evaluar si cabe en el exterior de la selección (Comportamiento clásico Lightshot)
+        bool canFitRightOutside = (sel.Right + SelectionGap + vertWidth + ScreenMargin <= screenWidth);
+        bool canFitBottomOutside = (sel.Bottom + SelectionGap + horizHeight + ScreenMargin <= screenHeight);
+
+        double vertX;
+        double vertY;
+        double horizX;
+        double horizY;
+
+        if (canFitRightOutside && canFitBottomOutside)
+        {
+            // CASO 1: Selección con espacio exterior (Derecha e Inferior)
+            vertX = sel.Right + SelectionGap;
+            double preferredVertY = Math.Max(sel.Top, sel.Bottom - vertHeight);
+            vertY = Math.Max(ScreenMargin, Math.Min(preferredVertY, screenHeight - vertHeight - ScreenMargin));
+
+            horizX = Math.Max(ScreenMargin, Math.Min(sel.Right - horizWidth, screenWidth - horizWidth - ScreenMargin));
+            horizY = sel.Bottom + SelectionGap;
+        }
+        else if (!canFitRightOutside && canFitBottomOutside)
+        {
+            // CASO 2: Sin espacio a la derecha exterior -> Barra vertical se invierte adentro
+            vertX = Math.Max(ScreenMargin, sel.Right - vertWidth - ScreenMargin);
+            double preferredVertY = Math.Max(sel.Top, sel.Bottom - vertHeight);
+            vertY = Math.Max(ScreenMargin, Math.Min(preferredVertY, screenHeight - vertHeight - ScreenMargin));
+
+            horizX = Math.Max(ScreenMargin, Math.Min(sel.Right - horizWidth, screenWidth - horizWidth - ScreenMargin));
+            horizY = sel.Bottom + SelectionGap;
+        }
+        else if (canFitRightOutside && !canFitBottomOutside)
+        {
+            // CASO 3: Sin espacio abajo exterior -> Barra horizontal se invierte adentro
+            vertX = sel.Right + SelectionGap;
+            vertY = Math.Max(ScreenMargin, Math.Min(sel.Bottom - vertHeight, screenHeight - vertHeight - ScreenMargin));
+
+            horizX = Math.Max(ScreenMargin, Math.Min(sel.Right - horizWidth, screenWidth - horizWidth - ScreenMargin));
+            horizY = Math.Max(ScreenMargin, sel.Bottom - horizHeight - ScreenMargin);
+        }
+        else
+        {
+            // CASO 4: PANTALLA COMPLETA O ESQUINA INFERIOR DERECHA (Ambas se invierten adentro sin cortarse)
+            // Barra horizontal abajo adentro
+            horizY = Math.Max(ScreenMargin, Math.Min(sel.Bottom - horizHeight - ScreenMargin, screenHeight - horizHeight - ScreenMargin));
+
+            // Barra vertical a la derecha adentro
+            vertX = Math.Max(ScreenMargin, Math.Min(sel.Right - vertWidth - ScreenMargin, screenWidth - vertWidth - ScreenMargin));
+
+            // Colocar la barra vertical directamente SOBRE la barra horizontal (esquina inferior derecha idéntica a Lightshot)
+            double vertYAboveHorizontal = horizY - vertHeight - ToolbarsGap;
+            if (vertYAboveHorizontal >= ScreenMargin && vertYAboveHorizontal >= sel.Top)
+            {
+                vertY = vertYAboveHorizontal;
+                horizX = Math.Max(ScreenMargin, Math.Min(sel.Right - horizWidth - ScreenMargin, screenWidth - horizWidth - ScreenMargin));
+            }
+            else
+            {
+                // Si la selección tiene muy poca altura para apilarlas verticalmente, se colocan lado a lado
+                vertY = Math.Max(ScreenMargin, Math.Min(sel.Bottom - vertHeight - ScreenMargin, screenHeight - vertHeight - ScreenMargin));
+                horizX = Math.Max(ScreenMargin, vertX - horizWidth - ToolbarsGap);
+            }
+        }
+
+        // 4. Clamping estricto de seguridad para garantizar visibilidad al 100% dentro de la pantalla
+        vertX = Math.Max(ScreenMargin, Math.Min(vertX, screenWidth - vertWidth - ScreenMargin));
+        vertY = Math.Max(ScreenMargin, Math.Min(vertY, screenHeight - vertHeight - ScreenMargin));
+        horizX = Math.Max(ScreenMargin, Math.Min(horizX, screenWidth - horizWidth - ScreenMargin));
+        horizY = Math.Max(ScreenMargin, Math.Min(horizY, screenHeight - horizHeight - ScreenMargin));
 
         Canvas.SetLeft(VerticalBar, vertX);
-        Canvas.SetTop(VerticalBar, Math.Max(6, Math.Min(vertY, screenHeight - 315)));
-
-        // 2. Barra horizontal abajo a la derecha (11 herramientas limpias con IA, Video, Compartir e Imprimir)
-        const double horizWidth = 390;
-        double horizX = sel.Right - horizWidth;
-        double horizY = sel.Bottom + 6;
-
-        if (horizX < 6) horizX = 6;
-        if (horizY + 48 > screenHeight)
-        {
-            horizY = Math.Max(6, sel.Bottom - 48);
-        }
+        Canvas.SetTop(VerticalBar, vertY);
 
         Canvas.SetLeft(HorizontalBar, horizX);
         Canvas.SetTop(HorizontalBar, horizY);

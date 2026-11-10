@@ -657,8 +657,9 @@ public partial class OverlayWindow : Window
 
         DimensionTag.Visibility = Visibility.Visible;
         DimensionText.Text = $"{(int)r.Width}x{(int)r.Height}";
-        double tagY = r.Y > 26 ? r.Y - 24 : r.Y + 4;
-        Canvas.SetLeft(DimensionTag, r.X);
+        double tagX = Math.Max(6, Math.Min(r.X, Width - 80));
+        double tagY = r.Y > 26 ? r.Y - 24 : r.Y + 6;
+        Canvas.SetLeft(DimensionTag, tagX);
         Canvas.SetTop(DimensionTag, tagY);
 
         UpdateHandlesPosition(r);
@@ -1668,6 +1669,10 @@ public partial class OverlayWindow : Window
         else if (e.Key == Key.Enter)
         {
             CopyCaptureToClipboard();
+        }
+        else if (e.Key == Key.A && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            ApplyWindowSnap(new Rect(0, 0, Width, Height));
         }
         else if (e.Key == Key.C && Keyboard.Modifiers == ModifierKeys.Control)
         {

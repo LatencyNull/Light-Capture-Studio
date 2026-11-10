@@ -87,7 +87,7 @@
                      KeyDown="FloatingInputBox_KeyDown"/>
 
             <!-- Barras de herramientas de Lightshot -->
-            <controls:LightshotToolbar x:Name="MainToolbar" Visibility="Collapsed"/>
+            <controls:LightshotToolbar x:Name="MainToolbar" Visibility="Collapsed" Panel.ZIndex="100"/>
         </Canvas>
 
         <!-- 4. Notificación flotante (Toast) -->
