@@ -1,0 +1,77 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [ "main", "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Package (Windows)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Dependencies
+        run: dotnet restore LightCaptureStudio.sln
+
+      - name: Build Solution (Release)
+        run: dotnet build LightCaptureStudio.sln -c Release --no-restore --nologo
+
+      - name: Run Tests
+        run: dotnet test LightCaptureStudio.sln -c Release --no-build --nologo --verbosity normal
+
+      - name: Publish Framework-Dependent (~25MB)
+        run: |
+          dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --no-build --nologo `
+            --self-contained false `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            -o publish/framework-dependent
+
+      - name: Publish Standalone Self-Contained (~81MB)
+        run: |
+          dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --nologo `
+            --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:EnableCompressionInSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            -o publish/standalone
+
+      - name: Package Artifacts
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish/framework-dependent/* -DestinationPath LightCapture-Studio-FrameworkDependent-win-x64.zip -Force
+          Compress-Archive -Path publish/standalone/* -DestinationPath LightCapture-Studio-Standalone-win-x64.zip -Force
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LightCapture-Studio-Binaries
+          path: |
+            LightCapture-Studio-FrameworkDependent-win-x64.zip
+            LightCapture-Studio-Standalone-win-x64.zip
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            LightCapture-Studio-FrameworkDependent-win-x64.zip
+            LightCapture-Studio-Standalone-win-x64.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true

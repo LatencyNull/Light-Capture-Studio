@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20(x64)-0078D6.svg)](https://microsoft.com)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20WPF-512BD4.svg)](https://dotnet.microsoft.com/)
-[![CI Build &amp; Test](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/ci.yml)
+[![CI Build &amp; Release](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/build-release.yml/badge.svg)](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/build-release.yml)
 
 [Features](#-key-features) • [Comparison](#-why-light-capture-studio-vs-classic-lightshot) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Portable Version](#-portable-version) • [Privacy](#-privacy-first-architecture)
 
@@ -122,8 +122,18 @@ Unlike classic Lightshot and older utilities that upload screenshots to public w
 
 ## 📦 Building from Source
 
-Clone the repository, build the solution and run tests using the .NET 8 SDK:
+### Option 1: Automated Build Script (Recommended)
+You can build the full standalone portable release with one command:
 
+```powershell
+# Build self-contained standalone executable and package ZIP
+.\build.ps1
+
+# Clean build and immediately launch the app
+.\build.ps1 -Clean -Run
+```
+
+### Option 2: Standard .NET CLI
 ```powershell
 # Clone the repository
 git clone https://github.com/LatencyNull/Light-Capture-Studio.git
@@ -136,7 +146,7 @@ dotnet build LightCaptureStudio.sln
 dotnet test LightCaptureStudio.sln
 
 # Publish self-contained portable executable (x64)
-dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish-standalone
+dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/standalone
 ```
 
 The resulting file in `publish-standalone\LightCapture.exe` is completely portable and ready to run.

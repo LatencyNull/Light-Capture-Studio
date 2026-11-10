@@ -5,6 +5,7 @@
 [Ll]ogs/
 publish/
 publish-standalone/
+publish-portable/
 release/
 
 # Visual Studio / Rider / VS Code
