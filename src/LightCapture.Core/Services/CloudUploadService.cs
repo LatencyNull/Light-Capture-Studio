@@ -109,34 +109,55 @@ public class CloudUploadService : ICloudUploadService
             }
         }
 
-        // Intento 2: Tmpfiles.org (almacenamiento temporal para compartir rápido)
+        // Intento 2: Litterbox (Catbox ephemeral) - Auto-eliminación tras 1 hora (máxima privacidad)
         try
         {
             using var form = new MultipartFormDataContent();
+            form.Add(new StringContent("fileupload"), "reqtype");
+            form.Add(new StringContent("1h"), "time");
             var fileContent = new ByteArrayContent(imageBytes);
             fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-            form.Add(fileContent, "file", fileName);
+            form.Add(fileContent, "fileToUpload", fileName);
 
-            var response = await _httpClient.PostAsync("https://tmpfiles.org/api/v1/upload", form);
+            var response = await _httpClient.PostAsync("https://litterbox.catbox.moe/resources/internals/api.php", form);
             if (response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync();
-                using var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("data", out var dataElem) &&
-                    dataElem.TryGetProperty("url", out var urlElem))
+                string rawUrl = await response.Content.ReadAsStringAsync();
+                rawUrl = rawUrl?.Trim() ?? string.Empty;
+                if (rawUrl.StartsWith("https://litter.catbox.moe/", StringComparison.OrdinalIgnoreCase))
                 {
-                    string rawUrl = urlElem.GetString() ?? string.Empty;
-                    if (rawUrl.Contains("tmpfiles.org/"))
-                    {
-                        return rawUrl.Replace("tmpfiles.org/", "tmpfiles.org/dl/");
-                    }
                     return rawUrl;
                 }
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[CloudUploadService] Tmpfiles upload failed: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[CloudUploadService] Litterbox upload failed: {ex.Message}");
+        }
+
+        // Intento 3: Catbox permanente como respaldo si Litterbox estuviera ocupado
+        try
+        {
+            using var form = new MultipartFormDataContent();
+            form.Add(new StringContent("fileupload"), "reqtype");
+            var fileContent = new ByteArrayContent(imageBytes);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            form.Add(fileContent, "fileToUpload", fileName);
+
+            var response = await _httpClient.PostAsync("https://catbox.moe/user/api.php", form);
+            if (response.IsSuccessStatusCode)
+            {
+                string rawUrl = await response.Content.ReadAsStringAsync();
+                rawUrl = rawUrl?.Trim() ?? string.Empty;
+                if (rawUrl.StartsWith("https://files.catbox.moe/", StringComparison.OrdinalIgnoreCase))
+                {
+                    return rawUrl;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[CloudUploadService] Catbox upload failed: {ex.Message}");
         }
 
         return null;

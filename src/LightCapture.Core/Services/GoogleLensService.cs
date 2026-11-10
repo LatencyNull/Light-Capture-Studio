@@ -71,7 +71,14 @@ public static class GoogleLensService
                 {
                     targetUri = new Uri(new Uri("https://lens.google.com/"), targetUri);
                 }
-                return targetUri.ToString();
+                string url = targetUri.ToString();
+                // Forzar que abra la pestaña de Coincidencias Visuales (udm=24)
+                // para evitar que el buscador caiga en la pestaña de texto "Todo" vacía
+                if (url.Contains("udm=26"))
+                {
+                    url = url.Replace("udm=26", "udm=24");
+                }
+                return url;
             }
 
             if (response.IsSuccessStatusCode)
