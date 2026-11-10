@@ -80,7 +80,9 @@ $publishArgs = @(
     "--nologo",
     "-o", $publishDir,
     "/p:PublishSingleFile=true",
-    "/p:IncludeNativeLibrariesForSelfExtract=true"
+    "/p:IncludeNativeLibrariesForSelfExtract=true",
+    "/p:DebugType=none",
+    "/p:DebugSymbols=false"
 )
 
 if ($SelfContained) {
@@ -98,6 +100,9 @@ if ($LASTEXITCODE -ne 0) {
     Write-Error "Error durante la publicacion."
     exit $LASTEXITCODE
 }
+
+# Limpiar archivos auxiliares de depuracion para dejar un unico .EXE 100% limpio
+Get-ChildItem -Path "$publishDir\*" -Include *.pdb, *.xml, *.json -File | Remove-Item -Force -ErrorAction SilentlyContinue
 
 $exePath = Join-Path $publishDir "LightCapture.exe"
 if (Test-Path $exePath) {

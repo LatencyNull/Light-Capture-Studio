@@ -692,9 +692,13 @@ public partial class App : Application
     {
         try
         {
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            ExtractResourceIfMissing("ScreenRecorderLib.dll", Path.Combine(baseDir, "ScreenRecorderLib.dll"));
-            ExtractResourceIfMissing("LightCapture.Recorder.exe", Path.Combine(baseDir, "LightCapture.Recorder.exe"));
+            string appDataBin = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCapture", "bin");
+            Directory.CreateDirectory(appDataBin);
+
+            ExtractResourceIfMissing("ScreenRecorderLib.dll", Path.Combine(appDataBin, "ScreenRecorderLib.dll"));
+            ExtractResourceIfMissing("LightCapture.Recorder.exe", Path.Combine(appDataBin, "LightCapture.Recorder.exe"));
+            ExtractResourceIfMissing("LightCapture.Recorder.dll", Path.Combine(appDataBin, "LightCapture.Recorder.dll"));
+            ExtractResourceIfMissing("LightCapture.Recorder.runtimeconfig.json", Path.Combine(appDataBin, "LightCapture.Recorder.runtimeconfig.json"));
         }
         catch (Exception ex)
         {

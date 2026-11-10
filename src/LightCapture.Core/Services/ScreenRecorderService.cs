@@ -50,7 +50,14 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
 
         // Localizar el ejecutable del grabador
         string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        string appDataBin = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCapture", "bin");
+
         string workerExe = Path.Combine(baseDir, "LightCapture.Recorder.exe");
+        if (!File.Exists(workerExe))
+        {
+            workerExe = Path.Combine(appDataBin, "LightCapture.Recorder.exe");
+        }
+
         if (!File.Exists(workerExe))
         {
             string[] possiblePaths = new[]
