@@ -116,11 +116,21 @@ if (Test-Path $exePath) {
         New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
     }
 
+    # Extraer version dinamicamente desde LightCapture.App.csproj
+    $appVersion = "1.0.0"
+    $csprojPath = Join-Path $ScriptDir "src\LightCapture.App\LightCapture.App.csproj"
+    if (Test-Path $csprojPath) {
+        $match = Select-String -Path $csprojPath -Pattern "<Version>(.*?)</Version>"
+        if ($match -and $match.Matches.Groups.Count -gt 1) {
+            $appVersion = $match.Matches.Groups[1].Value.Trim()
+        }
+    }
+
     $zipName = "LightCapture-Studio-Standalone-win-x64.zip"
-    $releaseExeName = "LightCapture-Studio-v1.0.0-Standalone-win-x64.exe"
+    $releaseExeName = "LightCapture-Studio-v$appVersion-Standalone-win-x64.exe"
     if (-not $SelfContained) {
         $zipName = "LightCapture-Studio-FrameworkDependent-win-x64.zip"
-        $releaseExeName = "LightCapture-Studio-v1.0.0-FrameworkDependent-win-x64.exe"
+        $releaseExeName = "LightCapture-Studio-v$appVersion-FrameworkDependent-win-x64.exe"
     }
     $zipPath = Join-Path $releaseDir $zipName
     $releaseExePath = Join-Path $releaseDir $releaseExeName

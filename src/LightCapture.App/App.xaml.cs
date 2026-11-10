@@ -249,7 +249,7 @@ public partial class App : Application
                 Foreground = (System.Windows.Media.Brush)FindResource("PrimaryText"),
                 VerticalAlignment = VerticalAlignment.Center
             },
-            InputGestureText = "v1.0"
+            InputGestureText = typeof(App).Assembly.GetName().Version is { } v ? $"v{v.Major}.{v.Minor}.{v.Build}" : "v1.0.0"
         };
         var appLogo = new WpfImage
         {
