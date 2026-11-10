@@ -38,15 +38,37 @@ public class CaptureHistoryService : ICaptureHistoryService
         if (!string.IsNullOrWhiteSpace(customHistoryDir))
         {
             _historyDir = customHistoryDir;
+            _metadataFile = Path.Combine(_historyDir, "history.json");
         }
         else
         {
             string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             _historyDir = Path.Combine(docs, "Light Capture");
+
+            string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCapture");
+            Directory.CreateDirectory(appData);
+            _metadataFile = Path.Combine(appData, "history.json");
+
+            // Migración y limpieza para no dejar archivos .json técnicos en Documentos\Light Capture
+            string legacyInDocs = Path.Combine(_historyDir, "history.json");
+            if (File.Exists(legacyInDocs))
+            {
+                try
+                {
+                    if (!File.Exists(_metadataFile))
+                    {
+                        File.Move(legacyInDocs, _metadataFile);
+                    }
+                    else
+                    {
+                        File.Delete(legacyInDocs);
+                    }
+                }
+                catch { }
+            }
         }
 
         Directory.CreateDirectory(_historyDir);
-        _metadataFile = Path.Combine(_historyDir, "history.json");
 
         // Migración transparente de capturas de rutas anteriores si existieran
         try
@@ -64,13 +86,26 @@ public class CaptureHistoryService : ICaptureHistoryService
                 {
                     foreach (var file in Directory.GetFiles(oldDir))
                     {
-                        string dest = Path.Combine(_historyDir, Path.GetFileName(file));
+                        string fileName = Path.GetFileName(file);
+                        if (fileName.Equals("history.json", StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue; // Jamás copiar archivos JSON a la carpeta de capturas del usuario
+                        }
+
+                        string dest = Path.Combine(_historyDir, fileName);
                         if (!File.Exists(dest))
                         {
                             File.Copy(file, dest, false);
                         }
                     }
                 }
+            }
+
+            // Asegurar que no quede ningún history.json dentro de _historyDir
+            string lingeringInDocs = Path.Combine(_historyDir, "history.json");
+            if (File.Exists(lingeringInDocs))
+            {
+                File.Delete(lingeringInDocs);
             }
         }
         catch { }
