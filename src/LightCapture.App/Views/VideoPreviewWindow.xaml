@@ -250,7 +250,7 @@
                     <!-- Cuadro de texto interactivo estilo Photoshop: directo sobre el video, sin marcos pesados -->
                     <Border x:Name="VideoFloatingTextContainer"
                             Visibility="Collapsed"
-                            Background="#10000000"
+                            Background="#12000000"
                             BorderBrush="#38BDF8"
                             BorderThickness="1"
                             CornerRadius="2"
@@ -264,6 +264,33 @@
                             <DropShadowEffect BlurRadius="4" ShadowDepth="1" Color="#000000" Opacity="0.5"/>
                         </Border.Effect>
                         <Grid>
+                            <!-- Mini barra flotante de confirmación estilo Photoshop (Palomita verde ✓ y Cancelar ✕) -->
+                            <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Margin="0,-24,0,0" Background="#1E293B" BorderBrush="#38BDF8" BorderThickness="1"
+                                    CornerRadius="10" Padding="3,2" SnapsToDevicePixels="True">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Color="#000000" Opacity="0.6"/>
+                                </Border.Effect>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- Palomita verde de confirmar ✓ -->
+                                    <Border x:Name="BtnConfirmVideoText" Width="18" Height="18" CornerRadius="9"
+                                            Background="#10B981" Cursor="Hand" Margin="1,0,3,0"
+                                            ToolTip="Confirmar y añadir texto al video (Enter)"
+                                            PreviewMouseLeftButtonDown="BtnConfirmVideoText_MouseDown">
+                                        <TextBlock Text="✓" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0"/>
+                                    </Border>
+                                    <!-- Botón cancelar ✕ -->
+                                    <Border x:Name="BtnCancelVideoText" Width="18" Height="18" CornerRadius="9"
+                                            Background="#EF4444" Cursor="Hand" Margin="0,0,1,0"
+                                            ToolTip="Cancelar y descartar (Esc)"
+                                            PreviewMouseLeftButtonDown="BtnCancelVideoText_MouseDown">
+                                        <TextBlock Text="✕" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0"/>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
                             <!-- TextBox directo, transparente y de máxima legibilidad con sombra de texto -->
                             <TextBox x:Name="VideoFloatingInput"
                                      Background="Transparent"
@@ -275,8 +302,8 @@
                                      AcceptsReturn="True"
                                      TextWrapping="Wrap"
                                      CaretBrush="#FFFFFF"
-                                     KeyDown="VideoFloatingInput_KeyDown"
                                      LostFocus="VideoFloatingInput_LostFocus"
+                                     PreviewKeyDown="VideoFloatingInput_PreviewKeyDown"
                                      PreviewMouseWheel="VideoFloatingInput_PreviewMouseWheel">
                                 <TextBox.Effect>
                                     <DropShadowEffect BlurRadius="3" ShadowDepth="1" Color="#000000" Opacity="0.85"/>

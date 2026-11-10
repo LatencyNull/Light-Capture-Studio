@@ -707,18 +707,37 @@ public partial class VideoPreviewWindow : Window
         }
     }
 
-    private void VideoFloatingInput_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void BtnConfirmVideoText_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.Key == System.Windows.Input.Key.Enter && (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Shift) == 0)
+        e.Handled = true;
+        CommitFloatingText();
+    }
+
+    private void BtnCancelVideoText_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        VideoFloatingInput.Text = string.Empty;
+        VideoFloatingTextContainer.Visibility = Visibility.Collapsed;
+    }
+
+    private void VideoFloatingInput_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
         {
-            CommitFloatingText();
+            if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Shift) == System.Windows.Input.ModifierKeys.Shift)
+            {
+                // Shift + Enter -> permitir salto de línea
+                return;
+            }
+            // Enter normal -> CONFIRMAR Y AÑADIR AL VIDEO
             e.Handled = true;
+            CommitFloatingText();
         }
         else if (e.Key == System.Windows.Input.Key.Escape)
         {
+            e.Handled = true;
             VideoFloatingInput.Text = string.Empty;
             VideoFloatingTextContainer.Visibility = Visibility.Collapsed;
-            e.Handled = true;
         }
     }
 

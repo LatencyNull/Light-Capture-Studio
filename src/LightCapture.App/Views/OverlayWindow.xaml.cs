@@ -479,10 +479,29 @@ public partial class OverlayWindow : Window
         }
     }
 
-    private void FloatingInputBox_KeyDown(object sender, KeyEventArgs e)
+    private void BtnConfirmText_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.Key == Key.Enter && (Keyboard.Modifiers & ModifierKeys.Shift) == 0)
+        e.Handled = true;
+        CommitFloatingText();
+    }
+
+    private void BtnCancelText_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        FloatingInputBox.Text = string.Empty;
+        FloatingTextContainer.Visibility = Visibility.Collapsed;
+    }
+
+    private void FloatingInputBox_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
         {
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+            {
+                // Shift + Enter -> permitir salto de línea
+                return;
+            }
+            // Enter normal -> CONFIRMAR Y AÑADIR AL LIENZO
             e.Handled = true;
             CommitFloatingText();
         }
