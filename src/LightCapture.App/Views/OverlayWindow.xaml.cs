@@ -208,7 +208,7 @@ public partial class OverlayWindow : Window
         MainToolbar.ColorSelected += color =>
         {
             MainDrawingCanvas.CurrentColor = color;
-            if (FloatingInputBox.Visibility == Visibility.Visible)
+            if (FloatingTextContainer.Visibility == Visibility.Visible)
             {
                 FloatingInputBox.Foreground = new SolidColorBrush(color);
             }
@@ -318,8 +318,30 @@ public partial class OverlayWindow : Window
                 {
                     if (MainDrawingCanvas.CurrentTool == DrawingToolType.Text)
                     {
+                        // Si ya hay texto activo en el contenedor, comprobar si el clic es dentro del contenedor
+                        if (FloatingTextContainer.Visibility == Visibility.Visible)
+                        {
+                            double boxLeft = Canvas.GetLeft(FloatingTextContainer);
+                            double boxTop = Canvas.GetTop(FloatingTextContainer);
+                            Rect boxRect = new Rect(boxLeft, boxTop, FloatingTextContainer.ActualWidth > 0 ? FloatingTextContainer.ActualWidth : FloatingTextContainer.Width, FloatingTextContainer.ActualHeight > 0 ? FloatingTextContainer.ActualHeight : FloatingTextContainer.Height);
+                            if (boxRect.Contains(p))
+                            {
+                                return; // Clic dentro del contenedor, dejar interactuar
+                            }
+                        }
+
+                        // Si hacemos clic sobre un texto ya existente, permitir re-estirarlo y editarlo
+                        var existingText = MainDrawingCanvas.Elements.OfType<TextDrawingElement>().LastOrDefault(t => t.GetBounds().Contains(p));
+                        if (existingText != null)
+                        {
+                            CommitFloatingText();
+                            MainDrawingCanvas.RemoveElement(existingText);
+                            ShowFloatingInputAt(existingText.Position, existingText.Text, existingText.FontSize);
+                            return;
+                        }
+
                         CommitFloatingText();
-                        ShowFloatingInputAt(p);
+                        ShowFloatingInputAt(p, "", _currentTextFontSize);
                         return;
                     }
 
@@ -407,33 +429,69 @@ public partial class OverlayWindow : Window
     }
 
     private Point _floatingInputPos;
+    private double _currentTextFontSize = 18;
+    private bool _isStretchingText = false;
+    private Point _textStretchStartMouse;
+    private double _textStretchStartWidth;
+    private double _textStretchStartHeight;
+    private bool _isDraggingTextContainer = false;
+    private Point _textDragStartMouse;
+    private Point _textDragStartPos;
 
-    private void ShowFloatingInputAt(Point p)
+    private void ShowFloatingInputAt(Point p, string initialText = "", double initialFontSize = 18)
     {
         _floatingInputPos = p;
-        double inputX = Math.Max(_selectionBounds.Left, Math.Min(_selectionBounds.Right - 130, p.X));
-        double inputY = Math.Max(_selectionBounds.Top, Math.Min(_selectionBounds.Bottom - 35, p.Y));
+        _currentTextFontSize = Math.Max(10, initialFontSize);
 
-        Canvas.SetLeft(FloatingInputBox, inputX);
-        Canvas.SetTop(FloatingInputBox, inputY);
+        double defaultWidth = Math.Max(180, Math.Min(340, _selectionBounds.Width - 20));
+        double defaultHeight = Math.Max(60, _currentTextFontSize * 3.2);
+
+        double inputX = Math.Max(_selectionBounds.Left, Math.Min(_selectionBounds.Right - defaultWidth, p.X));
+        double inputY = Math.Max(_selectionBounds.Top, Math.Min(_selectionBounds.Bottom - defaultHeight, p.Y));
+
+        Canvas.SetLeft(FloatingTextContainer, inputX);
+        Canvas.SetTop(FloatingTextContainer, inputY);
+        FloatingTextContainer.Width = defaultWidth;
+        FloatingTextContainer.Height = defaultHeight;
+
         FloatingInputBox.Foreground = new SolidColorBrush(MainDrawingCanvas.CurrentColor);
-        FloatingInputBox.Text = string.Empty;
-        FloatingInputBox.Visibility = Visibility.Visible;
+        FloatingInputBox.FontSize = _currentTextFontSize;
+        TxtFontSizeIndicator.Text = $"{(int)_currentTextFontSize} pt";
+        FloatingInputBox.Text = initialText;
+
+        FloatingTextContainer.Visibility = Visibility.Visible;
         FloatingInputBox.Focus();
+        if (!string.IsNullOrEmpty(initialText))
+        {
+            FloatingInputBox.SelectAll();
+        }
     }
 
     private void CommitFloatingText()
     {
-        if (FloatingInputBox.Visibility != Visibility.Visible) return;
+        if (FloatingTextContainer.Visibility != Visibility.Visible) return;
 
         string text = FloatingInputBox.Text.Trim();
-        FloatingInputBox.Visibility = Visibility.Collapsed;
+        FloatingTextContainer.Visibility = Visibility.Collapsed;
 
         if (!string.IsNullOrEmpty(text))
         {
-            MainDrawingCanvas.AddTextElement(_floatingInputPos, text);
-            ShowToast("✍️ Texto añadido");
+            double posX = Canvas.GetLeft(FloatingTextContainer) + 6;
+            double posY = Canvas.GetTop(FloatingTextContainer) + 26; // compensar header
+            MainDrawingCanvas.AddTextElement(new Point(posX, posY), text, _currentTextFontSize);
+            ShowToast($"✍️ Texto añadido ({_currentTextFontSize:0} pt)");
         }
+    }
+
+    private void BtnConfirmText_Click(object sender, RoutedEventArgs e)
+    {
+        CommitFloatingText();
+    }
+
+    private void BtnCancelText_Click(object sender, RoutedEventArgs e)
+    {
+        FloatingInputBox.Text = string.Empty;
+        FloatingTextContainer.Visibility = Visibility.Collapsed;
     }
 
     private void FloatingInputBox_KeyDown(object sender, KeyEventArgs e)
@@ -447,18 +505,130 @@ public partial class OverlayWindow : Window
         {
             e.Handled = true;
             FloatingInputBox.Text = string.Empty;
-            FloatingInputBox.Visibility = Visibility.Collapsed;
+            FloatingTextContainer.Visibility = Visibility.Collapsed;
         }
     }
 
     private void FloatingInputBox_LostFocus(object sender, RoutedEventArgs e)
     {
-        CommitFloatingText();
+        // Solo commitear si no estamos arrastrando o estirando con el mouse
+        if (!_isStretchingText && !_isDraggingTextContainer)
+        {
+            CommitFloatingText();
+        }
+    }
+
+    private void FloatingInputBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        e.Handled = true;
+        double delta = e.Delta > 0 ? 2.0 : -2.0;
+        double newSize = Math.Max(10, Math.Min(120, _currentTextFontSize + delta));
+        _currentTextFontSize = newSize;
+        FloatingInputBox.FontSize = newSize;
+        TxtFontSizeIndicator.Text = $"{(int)newSize} pt";
+
+        double minH = Math.Max(60, newSize * 2.8);
+        if (FloatingTextContainer.Height < minH)
+        {
+            FloatingTextContainer.Height = minH;
+        }
+    }
+
+    private void FloatingTextHeader_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            _isDraggingTextContainer = true;
+            _textDragStartMouse = e.GetPosition(this);
+            _textDragStartPos = new Point(Canvas.GetLeft(FloatingTextContainer), Canvas.GetTop(FloatingTextContainer));
+            FloatingTextHeader.CaptureMouse();
+            e.Handled = true;
+        }
+    }
+
+    private void FloatingTextHeader_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isDraggingTextContainer && e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point cur = e.GetPosition(this);
+            double newX = _textDragStartPos.X + (cur.X - _textDragStartMouse.X);
+            double newY = _textDragStartPos.Y + (cur.Y - _textDragStartMouse.Y);
+            Canvas.SetLeft(FloatingTextContainer, newX);
+            Canvas.SetTop(FloatingTextContainer, newY);
+            e.Handled = true;
+        }
+    }
+
+    private void FloatingTextHeader_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isDraggingTextContainer)
+        {
+            _isDraggingTextContainer = false;
+            FloatingTextHeader.ReleaseMouseCapture();
+            e.Handled = true;
+        }
+    }
+
+    private void FloatingTextResizeGrip_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            _isStretchingText = true;
+            _textStretchStartMouse = e.GetPosition(this);
+            _textStretchStartWidth = FloatingTextContainer.ActualWidth > 0 ? FloatingTextContainer.ActualWidth : FloatingTextContainer.Width;
+            _textStretchStartHeight = FloatingTextContainer.ActualHeight > 0 ? FloatingTextContainer.ActualHeight : FloatingTextContainer.Height;
+            FloatingTextResizeGrip.CaptureMouse();
+            e.Handled = true;
+        }
+    }
+
+    private void FloatingTextResizeGrip_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isStretchingText && e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point current = e.GetPosition(this);
+            double deltaX = current.X - _textStretchStartMouse.X;
+            double deltaY = current.Y - _textStretchStartMouse.Y;
+
+            double newW = Math.Max(140, _textStretchStartWidth + deltaX);
+            double newH = Math.Max(56, _textStretchStartHeight + deltaY);
+
+            FloatingTextContainer.Width = newW;
+            FloatingTextContainer.Height = newH;
+
+            // Escalar el tamaño del texto proporcionalmente a la altura del contenedor
+            double newSize = Math.Max(10, Math.Min(120, Math.Round((newH - 24) * 0.45)));
+            _currentTextFontSize = newSize;
+            FloatingInputBox.FontSize = newSize;
+            TxtFontSizeIndicator.Text = $"{(int)newSize} pt";
+
+            e.Handled = true;
+        }
+    }
+
+    private void FloatingTextResizeGrip_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isStretchingText)
+        {
+            _isStretchingText = false;
+            FloatingTextResizeGrip.ReleaseMouseCapture();
+            FloatingInputBox.Focus();
+            e.Handled = true;
+        }
     }
 
     private void Window_MouseMove(object sender, MouseEventArgs e)
     {
         Point current = e.GetPosition(this);
+
+        if (_isDraggingTextContainer && e.LeftButton == MouseButtonState.Pressed)
+        {
+            double newX = _textDragStartPos.X + (current.X - _textDragStartMouse.X);
+            double newY = _textDragStartPos.Y + (current.Y - _textDragStartMouse.Y);
+            Canvas.SetLeft(FloatingTextContainer, newX);
+            Canvas.SetTop(FloatingTextContainer, newY);
+            return;
+        }
 
         if (!_hasSelection && !_isSelecting)
         {
@@ -576,6 +746,13 @@ public partial class OverlayWindow : Window
     private void Window_MouseUp(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton != MouseButton.Left) return;
+
+        if (_isDraggingTextContainer)
+        {
+            _isDraggingTextContainer = false;
+            FloatingTextHeader.ReleaseMouseCapture();
+            return;
+        }
 
         Point p = e.GetPosition(this);
 
@@ -793,6 +970,7 @@ public partial class OverlayWindow : Window
     private void PinCaptureToScreen()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         _historyService.SaveCapture(flattened, "Fijado en pantalla " + _lastTranslatedPlainText + " " + _lastExtractedOcrText);
@@ -978,6 +1156,7 @@ public partial class OverlayWindow : Window
     private void CopyCaptureToClipboard()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1010,6 +1189,7 @@ public partial class OverlayWindow : Window
     private void SaveCaptureToFile()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
 
@@ -1040,6 +1220,7 @@ public partial class OverlayWindow : Window
     private void PrintCapture()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         var printDlg = new PrintDialog();
@@ -1179,6 +1360,7 @@ public partial class OverlayWindow : Window
     private async void SearchOnGoogle()
     {
         if (!_hasSelection || _isSearchingLens) return;
+        CommitFloatingText();
 
         _isSearchingLens = true;
         ShowToast("Buscando en Google Lens... 🔍");
@@ -1326,6 +1508,7 @@ public partial class OverlayWindow : Window
     private void AskGeminiAboutCapture()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         try
         {
@@ -1476,6 +1659,7 @@ public partial class OverlayWindow : Window
     private void ShareOnWhatsAppApp()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1509,6 +1693,7 @@ public partial class OverlayWindow : Window
     private void ShareOnWhatsAppWeb()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1527,6 +1712,7 @@ public partial class OverlayWindow : Window
     private void ShareOnDiscord()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1545,6 +1731,7 @@ public partial class OverlayWindow : Window
     private void ShareOnFacebook()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1563,6 +1750,7 @@ public partial class OverlayWindow : Window
     private void ShareOnTikTok()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1581,6 +1769,7 @@ public partial class OverlayWindow : Window
     private void ShareOnInstagram()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1599,6 +1788,7 @@ public partial class OverlayWindow : Window
     private void ShareByEmail()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1626,6 +1816,7 @@ public partial class OverlayWindow : Window
     private void ShareOnTelegram()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);
@@ -1644,6 +1835,7 @@ public partial class OverlayWindow : Window
     private void ShareOnTwitter()
     {
         if (!_hasSelection) return;
+        CommitFloatingText();
 
         var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
         ClipboardHelper.CopyImageToClipboard(flattened);

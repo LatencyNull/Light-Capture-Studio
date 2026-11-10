@@ -606,8 +606,28 @@ public partial class VideoPreviewWindow : Window
 
         if (_currentVideoTool == DrawingToolType.Text)
         {
+            if (VideoFloatingTextContainer.Visibility == Visibility.Visible)
+            {
+                Rect boxRect = new Rect(VideoFloatingTextContainer.Margin.Left, VideoFloatingTextContainer.Margin.Top, VideoFloatingTextContainer.ActualWidth > 0 ? VideoFloatingTextContainer.ActualWidth : VideoFloatingTextContainer.Width, VideoFloatingTextContainer.ActualHeight > 0 ? VideoFloatingTextContainer.ActualHeight : VideoFloatingTextContainer.Height);
+                if (boxRect.Contains(p))
+                {
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            var existingText = VideoDrawingCanvas.Elements.OfType<TextDrawingElement>().LastOrDefault(t => t.GetBounds().Contains(p));
+            if (existingText != null)
+            {
+                CommitFloatingText();
+                VideoDrawingCanvas.RemoveElement(existingText);
+                ShowFloatingTextInput(existingText.Position, existingText.Text, existingText.FontSize);
+                e.Handled = true;
+                return;
+            }
+
             CommitFloatingText();
-            ShowFloatingTextInput(p);
+            ShowFloatingTextInput(p, "", _currentVideoTextFontSize);
             e.Handled = true;
             return;
         }
@@ -641,48 +661,185 @@ public partial class VideoPreviewWindow : Window
         e.Handled = true;
     }
 
-    private void ShowFloatingTextInput(Point p)
+    private double _currentVideoTextFontSize = 18;
+    private bool _isVideoStretchingText = false;
+    private Point _videoTextStretchStartMouse;
+    private double _videoTextStretchStartWidth;
+    private double _videoTextStretchStartHeight;
+    private bool _isVideoDraggingTextContainer = false;
+    private Point _videoTextDragStartMouse;
+    private Thickness _videoTextDragStartMargin;
+
+    private void ShowFloatingTextInput(Point p, string initialText = "", double initialFontSize = 18)
     {
-        double maxLeft = Math.Max(0, VideoContainer.ActualWidth - 140);
-        double maxTop = Math.Max(0, VideoContainer.ActualHeight - 40);
+        _currentVideoTextFontSize = Math.Max(10, initialFontSize);
+        double defaultWidth = Math.Max(180, Math.Min(340, VideoContainer.ActualWidth - 20));
+        double defaultHeight = Math.Max(60, _currentVideoTextFontSize * 3.2);
+
+        double maxLeft = Math.Max(0, VideoContainer.ActualWidth - defaultWidth);
+        double maxTop = Math.Max(0, VideoContainer.ActualHeight - defaultHeight);
         Point adjusted = new Point(Math.Min(maxLeft, Math.Max(0, p.X)), Math.Min(maxTop, Math.Max(0, p.Y)));
         _textInputPosition = adjusted;
 
-        VideoFloatingInput.Margin = new Thickness(adjusted.X, adjusted.Y, 0, 0);
+        VideoFloatingTextContainer.Margin = new Thickness(adjusted.X, adjusted.Y, 0, 0);
+        VideoFloatingTextContainer.Width = defaultWidth;
+        VideoFloatingTextContainer.Height = defaultHeight;
+
         VideoFloatingInput.Foreground = new SolidColorBrush(VideoDrawingCanvas.CurrentColor);
-        VideoFloatingInput.Text = string.Empty;
-        VideoFloatingInput.Visibility = Visibility.Visible;
+        VideoFloatingInput.FontSize = _currentVideoTextFontSize;
+        TxtVideoFontSizeIndicator.Text = $"{(int)_currentVideoTextFontSize} pt";
+        VideoFloatingInput.Text = initialText;
+
+        VideoFloatingTextContainer.Visibility = Visibility.Visible;
         VideoFloatingInput.Focus();
+        if (!string.IsNullOrEmpty(initialText))
+        {
+            VideoFloatingInput.SelectAll();
+        }
     }
 
     private void CommitFloatingText()
     {
-        if (VideoFloatingInput.Visibility != Visibility.Visible) return;
+        if (VideoFloatingTextContainer.Visibility != Visibility.Visible) return;
         string text = VideoFloatingInput.Text.Trim();
-        VideoFloatingInput.Visibility = Visibility.Collapsed;
+        VideoFloatingTextContainer.Visibility = Visibility.Collapsed;
         if (!string.IsNullOrEmpty(text))
         {
-            VideoDrawingCanvas.AddTextElement(_textInputPosition, text);
+            double posX = VideoFloatingTextContainer.Margin.Left + 6;
+            double posY = VideoFloatingTextContainer.Margin.Top + 26;
+            VideoDrawingCanvas.AddTextElement(new Point(posX, posY), text, _currentVideoTextFontSize);
         }
+    }
+
+    private void BtnConfirmVideoText_Click(object sender, RoutedEventArgs e)
+    {
+        CommitFloatingText();
+    }
+
+    private void BtnCancelVideoText_Click(object sender, RoutedEventArgs e)
+    {
+        VideoFloatingInput.Text = string.Empty;
+        VideoFloatingTextContainer.Visibility = Visibility.Collapsed;
     }
 
     private void VideoFloatingInput_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
-        if (e.Key == System.Windows.Input.Key.Enter)
+        if (e.Key == System.Windows.Input.Key.Enter && (System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Shift) == 0)
         {
             CommitFloatingText();
             e.Handled = true;
         }
         else if (e.Key == System.Windows.Input.Key.Escape)
         {
-            VideoFloatingInput.Visibility = Visibility.Collapsed;
+            VideoFloatingInput.Text = string.Empty;
+            VideoFloatingTextContainer.Visibility = Visibility.Collapsed;
             e.Handled = true;
         }
     }
 
     private void VideoFloatingInput_LostFocus(object sender, RoutedEventArgs e)
     {
-        CommitFloatingText();
+        if (!_isVideoStretchingText && !_isVideoDraggingTextContainer)
+        {
+            CommitFloatingText();
+        }
+    }
+
+    private void VideoFloatingInput_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        e.Handled = true;
+        double delta = e.Delta > 0 ? 2.0 : -2.0;
+        double newSize = Math.Max(10, Math.Min(120, _currentVideoTextFontSize + delta));
+        _currentVideoTextFontSize = newSize;
+        VideoFloatingInput.FontSize = newSize;
+        TxtVideoFontSizeIndicator.Text = $"{(int)newSize} pt";
+
+        double minH = Math.Max(60, newSize * 2.8);
+        if (VideoFloatingTextContainer.Height < minH)
+        {
+            VideoFloatingTextContainer.Height = minH;
+        }
+    }
+
+    private void VideoFloatingTextHeader_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            _isVideoDraggingTextContainer = true;
+            _videoTextDragStartMouse = e.GetPosition(this);
+            _videoTextDragStartMargin = VideoFloatingTextContainer.Margin;
+            VideoFloatingTextHeader.CaptureMouse();
+            e.Handled = true;
+        }
+    }
+
+    private void VideoFloatingTextHeader_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isVideoDraggingTextContainer && e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point cur = e.GetPosition(this);
+            double newLeft = _videoTextDragStartMargin.Left + (cur.X - _videoTextDragStartMouse.X);
+            double newTop = _videoTextDragStartMargin.Top + (cur.Y - _videoTextDragStartMouse.Y);
+            VideoFloatingTextContainer.Margin = new Thickness(newLeft, newTop, 0, 0);
+            e.Handled = true;
+        }
+    }
+
+    private void VideoFloatingTextHeader_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isVideoDraggingTextContainer)
+        {
+            _isVideoDraggingTextContainer = false;
+            VideoFloatingTextHeader.ReleaseMouseCapture();
+            e.Handled = true;
+        }
+    }
+
+    private void VideoFloatingTextResizeGrip_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            _isVideoStretchingText = true;
+            _videoTextStretchStartMouse = e.GetPosition(this);
+            _videoTextStretchStartWidth = VideoFloatingTextContainer.ActualWidth > 0 ? VideoFloatingTextContainer.ActualWidth : VideoFloatingTextContainer.Width;
+            _videoTextStretchStartHeight = VideoFloatingTextContainer.ActualHeight > 0 ? VideoFloatingTextContainer.ActualHeight : VideoFloatingTextContainer.Height;
+            VideoFloatingTextResizeGrip.CaptureMouse();
+            e.Handled = true;
+        }
+    }
+
+    private void VideoFloatingTextResizeGrip_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isVideoStretchingText && e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point current = e.GetPosition(this);
+            double deltaX = current.X - _videoTextStretchStartMouse.X;
+            double deltaY = current.Y - _videoTextStretchStartMouse.Y;
+
+            double newW = Math.Max(140, _videoTextStretchStartWidth + deltaX);
+            double newH = Math.Max(56, _videoTextStretchStartHeight + deltaY);
+
+            VideoFloatingTextContainer.Width = newW;
+            VideoFloatingTextContainer.Height = newH;
+
+            double newSize = Math.Max(10, Math.Min(120, Math.Round((newH - 24) * 0.45)));
+            _currentVideoTextFontSize = newSize;
+            VideoFloatingInput.FontSize = newSize;
+            TxtVideoFontSizeIndicator.Text = $"{(int)newSize} pt";
+
+            e.Handled = true;
+        }
+    }
+
+    private void VideoFloatingTextResizeGrip_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isVideoStretchingText)
+        {
+            _isVideoStretchingText = false;
+            VideoFloatingTextResizeGrip.ReleaseMouseCapture();
+            VideoFloatingInput.Focus();
+            e.Handled = true;
+        }
     }
 
     private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -774,14 +931,15 @@ public partial class VideoPreviewWindow : Window
 
             var btnDelete = new System.Windows.Controls.Button
             {
-                Content = new TextBlock { Text = "✕", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68)) },
+                Content = new TextBlock { Text = "✕", FontSize = 10, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 113, 113)) },
                 Width = 18,
                 Height = 18,
-                Background = System.Windows.Media.Brushes.Transparent,
-                BorderThickness = new Thickness(0),
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(35, 239, 68, 68)),
+                BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, 239, 68, 68)),
+                BorderThickness = new Thickness(1),
                 Cursor = System.Windows.Input.Cursors.Hand,
                 ToolTip = "Eliminar este objeto del video",
-                Margin = new Thickness(2, 0, 0, 0)
+                Margin = new Thickness(3, 0, 0, 0)
             };
             DockPanel.SetDock(btnDelete, Dock.Right);
             btnDelete.Click += (s, e) => VideoDrawingCanvas.RemoveElement(elem);
@@ -869,10 +1027,38 @@ public partial class VideoPreviewWindow : Window
             Grid.SetColumn(trackBorder, 1);
             rowGrid.Children.Add(trackBorder);
 
-            // Columna 2: Espaciador idéntico al panel derecho del timeline (80 px)
-            var spacer = new Border { Width = 80 };
-            Grid.SetColumn(spacer, 2);
-            rowGrid.Children.Add(spacer);
+            // Columna 2: Botón de borrar a la derecha del track (80 px)
+            var rightPanel = new Border
+            {
+                Width = 80,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            var btnDeleteRight = new System.Windows.Controls.Button
+            {
+                Content = new StackPanel
+                {
+                    Orientation = System.Windows.Controls.Orientation.Horizontal,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Children =
+                    {
+                        new TextBlock { Text = "🗑️", FontSize = 10, Margin = new Thickness(0, 0, 3, 0), VerticalAlignment = VerticalAlignment.Center },
+                        new TextBlock { Text = "Borrar", FontSize = 10, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center }
+                    }
+                },
+                Height = 22,
+                Padding = new Thickness(6, 1, 6, 1),
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(35, 239, 68, 68)),
+                BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(90, 239, 68, 68)),
+                BorderThickness = new Thickness(1),
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 113, 113)),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                ToolTip = "Eliminar este objeto del video"
+            };
+            btnDeleteRight.Click += (s, e) => VideoDrawingCanvas.RemoveElement(elem);
+            rightPanel.Child = btnDeleteRight;
+            Grid.SetColumn(rightPanel, 2);
+            rowGrid.Children.Add(rightPanel);
 
             // Bloque / Pill arrastrable y redimensionable
             var pill = new Border
@@ -1129,6 +1315,7 @@ public partial class VideoPreviewWindow : Window
 
     private async Task<string> GetEffectiveVideoPathAsync()
     {
+        CommitFloatingText();
         bool isTrimmed = _trimStart > TimeSpan.FromMilliseconds(150) || 
                          (_totalDuration - _trimEnd) > TimeSpan.FromMilliseconds(150);
         bool hasAnnotations = VideoDrawingCanvas != null && VideoDrawingCanvas.HasElements;

@@ -188,20 +188,37 @@ public record MarkerDrawingElement(Color Color, double StrokeThickness, IReadOnl
 public record TextDrawingElement(Color Color, double FontSize, Point Position, string Text)
     : DrawingElement(DrawingToolType.Text, Color, 1)
 {
+    public double FontSize { get; set; } = FontSize;
+    public Point Position { get; set; } = Position;
+    public string Text { get; set; } = Text;
+
+    public FormattedText GetFormattedText(double pixelsPerDip = 1.0)
+    {
+        var brush = new SolidColorBrush(Color);
+        brush.Freeze();
+        return new FormattedText(
+            string.IsNullOrEmpty(Text) ? " " : Text,
+            System.Globalization.CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            new Typeface("Segoe UI Semibold"),
+            Math.Max(8, FontSize),
+            brush,
+            pixelsPerDip
+        );
+    }
+
+    public Rect GetBounds(double pixelsPerDip = 1.0)
+    {
+        if (string.IsNullOrEmpty(Text)) return new Rect(Position.X, Position.Y, 0, 0);
+        var ft = GetFormattedText(pixelsPerDip);
+        return new Rect(Position.X, Position.Y, ft.WidthIncludingTrailingWhitespace, ft.Height);
+    }
+
     public override void Render(DrawingContext dc)
     {
         if (string.IsNullOrEmpty(Text)) return;
 
-        var formattedText = new FormattedText(
-            Text,
-            System.Globalization.CultureInfo.CurrentCulture,
-            FlowDirection.LeftToRight,
-            new Typeface("Segoe UI Semibold"),
-            FontSize,
-            new SolidColorBrush(Color),
-            1.0
-        );
-
+        var formattedText = GetFormattedText(1.0);
         dc.DrawText(formattedText, Position);
     }
 }

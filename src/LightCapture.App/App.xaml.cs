@@ -249,7 +249,7 @@ public partial class App : Application
                 Foreground = (System.Windows.Media.Brush)FindResource("PrimaryText"),
                 VerticalAlignment = VerticalAlignment.Center
             },
-            InputGestureText = "v2.0"
+            InputGestureText = "v1.0"
         };
         var appLogo = new WpfImage
         {
@@ -261,11 +261,10 @@ public partial class App : Application
         headerItem.Icon = appLogo;
         _trayContextMenu.Items.Add(headerItem);
 
-        // 2. 📸 Capturar pantalla
-        _captureMenuItem = new WpfMenuItem
+        // 2. 📸 Captura de pantalla (Menú padre con subelementos de captura, historial y configuración)
+        var captureMenu = new WpfMenuItem
         {
-            Header = "Capturar pantalla",
-            InputGestureText = HotkeySettingsManager.CurrentDisplayName,
+            Header = "Captura de pantalla",
             FontWeight = FontWeights.SemiBold
         };
         var camPath = new WpfPath
@@ -276,11 +275,28 @@ public partial class App : Application
             Width = 16,
             Height = 16
         };
-        _captureMenuItem.Icon = camPath;
-        _captureMenuItem.Click += (s, e) => StartCapture();
-        _trayContextMenu.Items.Add(_captureMenuItem);
+        captureMenu.Icon = camPath;
 
-        // 3. 🕒 Historial de capturas...
+        // Subítem: Capturar pantalla
+        _captureMenuItem = new WpfMenuItem
+        {
+            Header = "Capturar pantalla",
+            InputGestureText = HotkeySettingsManager.CurrentDisplayName,
+            FontWeight = FontWeights.SemiBold
+        };
+        var camSubPath = new WpfPath
+        {
+            Data = System.Windows.Media.Geometry.Parse("M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"),
+            Fill = (System.Windows.Media.Brush)FindResource("PrimaryText"),
+            Stretch = System.Windows.Media.Stretch.Uniform,
+            Width = 16,
+            Height = 16
+        };
+        _captureMenuItem.Icon = camSubPath;
+        _captureMenuItem.Click += (s, e) => StartCapture();
+        captureMenu.Items.Add(_captureMenuItem);
+
+        // Subítem: Historial de capturas...
         var historyItem = new WpfMenuItem
         {
             Header = "Historial de capturas..."
@@ -295,9 +311,9 @@ public partial class App : Application
         };
         historyItem.Icon = historyPath;
         historyItem.Click += (s, e) => OpenHistory();
-        _trayContextMenu.Items.Add(historyItem);
+        captureMenu.Items.Add(historyItem);
 
-        // 4. 📁 Abrir carpeta de capturas (Documentos\Light Capture)
+        // Subítem: Abrir carpeta de capturas (Documentos\Light Capture)
         var openFolderItem = new WpfMenuItem
         {
             Header = "Abrir carpeta de capturas"
@@ -312,9 +328,9 @@ public partial class App : Application
         };
         openFolderItem.Icon = folderPath;
         openFolderItem.Click += (s, e) => OpenCapturesFolder();
-        _trayContextMenu.Items.Add(openFolderItem);
+        captureMenu.Items.Add(openFolderItem);
 
-        // 5. ⌨️ Configurar tecla de captura...
+        // Subítem: Configurar tecla de captura...
         _hotkeyMenuItem = new WpfMenuItem
         {
             Header = $"Configurar tecla de captura ({HotkeySettingsManager.CurrentDisplayName})..."
@@ -329,7 +345,9 @@ public partial class App : Application
         };
         _hotkeyMenuItem.Icon = keyboardPath;
         _hotkeyMenuItem.Click += (s, e) => OpenHotkeyConfig();
-        _trayContextMenu.Items.Add(_hotkeyMenuItem);
+        captureMenu.Items.Add(_hotkeyMenuItem);
+
+        _trayContextMenu.Items.Add(captureMenu);
 
         _trayContextMenu.Items.Add(new WpfSeparator());
 

@@ -68,23 +68,64 @@
             <!-- Canvas de dibujo interactivo y capas Lens -->
             <controls:DrawingCanvas x:Name="MainDrawingCanvas"/>
 
-            <!-- Cuadro de texto interactivo flotante estilo Lightshot -->
-            <TextBox x:Name="FloatingInputBox"
-                     Visibility="Collapsed"
-                     Background="#33000000"
-                     BorderBrush="#3B82F6"
-                     BorderThickness="1.5"
-                     Foreground="#EF4444"
-                     FontFamily="Segoe UI Semibold"
-                     FontSize="16"
-                     Padding="4,2"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
-                     MinWidth="120"
-                     MaxWidth="600"
-                     CaretBrush="#2563EB"
-                     LostFocus="FloatingInputBox_LostFocus"
-                     KeyDown="FloatingInputBox_KeyDown"/>
+            <!-- Cuadro de texto interactivo flotante estilo Lightshot con estiramiento y cambio de tamaño -->
+            <Border x:Name="FloatingTextContainer"
+                    Visibility="Collapsed"
+                    Background="#E60F172A"
+                    BorderBrush="#38BDF8"
+                    BorderThickness="1.5"
+                    CornerRadius="6"
+                    MinWidth="140"
+                    MinHeight="56"
+                    Panel.ZIndex="85">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Barra superior del editor de texto: Mover + Indicador + Botones -->
+                    <DockPanel Grid.Row="0" x:Name="FloatingTextHeader" Background="#2638BDF8" LastChildFill="True" Cursor="SizeAll" Height="22" PreviewMouseLeftButtonDown="FloatingTextHeader_MouseDown" PreviewMouseMove="FloatingTextHeader_MouseMove" PreviewMouseLeftButtonUp="FloatingTextHeader_MouseUp">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,2,0">
+                            <!-- Indicador de tamaño en tiempo real -->
+                            <TextBlock x:Name="TxtFontSizeIndicator" Text="18 pt" FontSize="9" FontWeight="SemiBold" Foreground="#38BDF8" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <!-- Confirmar texto (✓) -->
+                            <Button x:Name="BtnConfirmText" Width="18" Height="18" Content="✓" FontSize="11" FontWeight="Bold" Foreground="#10B981" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Confirmar y estampar texto (Enter)" Click="BtnConfirmText_Click" Margin="0,0,2,0"/>
+                            <!-- Cancelar texto (✕) -->
+                            <Button x:Name="BtnCancelText" Width="18" Height="18" Content="✕" FontSize="10" FontWeight="Bold" Foreground="#EF4444" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Cancelar (Esc)" Click="BtnCancelText_Click" Margin="0,0,2,0"/>
+                        </StackPanel>
+                        <TextBlock Text="✎ Texto (Estira ↘ o usa la rueda para cambiar tamaño)" FontSize="9" Foreground="#94A3B8" FontWeight="Medium" VerticalAlignment="Center" Margin="6,0,0,0" IsHitTestVisible="False"/>
+                    </DockPanel>
+
+                    <!-- Caja de texto editable -->
+                    <TextBox Grid.Row="1" x:Name="FloatingInputBox"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Foreground="#EF4444"
+                             FontFamily="Segoe UI Semibold"
+                             FontSize="18"
+                             Padding="6,4,18,16"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             CaretBrush="#38BDF8"
+                             LostFocus="FloatingInputBox_LostFocus"
+                             KeyDown="FloatingInputBox_KeyDown"
+                             PreviewMouseWheel="FloatingInputBox_PreviewMouseWheel"/>
+
+                    <!-- Tirador de estiramiento en la esquina inferior derecha ↘ -->
+                    <Border Grid.Row="1" x:Name="FloatingTextResizeGrip"
+                            Width="18" Height="18"
+                            HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                            Background="Transparent"
+                            Cursor="SizeNWSE"
+                            ToolTip="Arrastra para estirar y agrandar/achicar el tamaño del texto"
+                            PreviewMouseLeftButtonDown="FloatingTextResizeGrip_MouseDown"
+                            PreviewMouseMove="FloatingTextResizeGrip_MouseMove"
+                            PreviewMouseLeftButtonUp="FloatingTextResizeGrip_MouseUp">
+                        <Path Data="M6 14L14 6M10 14L14 10M2 14L14 2" Stroke="#38BDF8" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,3,3"/>
+                    </Border>
+                </Grid>
+            </Border>
 
             <!-- Barras de herramientas de Lightshot -->
             <controls:LightshotToolbar x:Name="MainToolbar" Visibility="Collapsed" Panel.ZIndex="100"/>

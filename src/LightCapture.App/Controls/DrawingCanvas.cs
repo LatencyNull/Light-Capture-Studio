@@ -248,7 +248,7 @@ public class DrawingCanvas : Canvas
         InvalidateVisual();
     }
 
-    public void AddTextElement(Point position, string text)
+    public void AddTextElement(Point position, string text, double fontSize = 18)
     {
         if (string.IsNullOrWhiteSpace(text)) return;
 
@@ -258,7 +258,7 @@ public class DrawingCanvas : Canvas
             : start + DefaultDuration;
         if (end <= start) end = start + TimeSpan.FromSeconds(1);
 
-        var textElem = new TextDrawingElement(CurrentColor, 16, position, text)
+        var textElem = new TextDrawingElement(CurrentColor, Math.Max(8, fontSize), position, text)
         {
             StartTime = start,
             EndTime = end
