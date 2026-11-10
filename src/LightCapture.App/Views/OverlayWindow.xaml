@@ -91,9 +91,19 @@
                             <DropShadowEffect BlurRadius="4" ShadowDepth="1" Color="#000000" Opacity="0.6"/>
                         </Border.Effect>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Botón arrastrar / mover texto ✥ -->
+                            <Border x:Name="BtnDragText" Width="18" Height="18" CornerRadius="9"
+                                    Background="#334155" Cursor="SizeAll" Margin="1,0,3,0"
+                                    ToolTip="Arrastra aquí para mover el cuadro de texto"
+                                    PreviewMouseLeftButtonDown="BtnDragText_MouseDown"
+                                    PreviewMouseMove="BtnDragText_MouseMove"
+                                    PreviewMouseLeftButtonUp="BtnDragText_MouseUp">
+                                <TextBlock Text="✥" FontSize="11" FontWeight="Bold" Foreground="#38BDF8"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0"/>
+                            </Border>
                             <!-- Palomita verde de confirmar ✓ -->
                             <Border x:Name="BtnConfirmText" Width="18" Height="18" CornerRadius="9"
-                                    Background="#10B981" Cursor="Hand" Margin="1,0,3,0"
+                                    Background="#10B981" Cursor="Hand" Margin="0,0,3,0"
                                     ToolTip="Confirmar y añadir texto (Enter)"
                                     PreviewMouseLeftButtonDown="BtnConfirmText_MouseDown">
                                 <TextBlock Text="✓" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF"

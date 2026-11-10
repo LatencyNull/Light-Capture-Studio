@@ -707,6 +707,44 @@ public partial class VideoPreviewWindow : Window
         }
     }
 
+    private bool _isMovingVideoText = false;
+    private Point _videoTextMoveStartMouse;
+    private Thickness _videoTextMoveStartMargin;
+
+    private void BtnDragVideoText_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            _isMovingVideoText = true;
+            _videoTextMoveStartMouse = e.GetPosition(this);
+            _videoTextMoveStartMargin = VideoFloatingTextContainer.Margin;
+            BtnDragVideoText.CaptureMouse();
+            e.Handled = true;
+        }
+    }
+
+    private void BtnDragVideoText_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isMovingVideoText && e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point current = e.GetPosition(this);
+            double newLeft = Math.Max(0, Math.Min(VideoContainer.ActualWidth - 40, _videoTextMoveStartMargin.Left + (current.X - _videoTextMoveStartMouse.X)));
+            double newTop = Math.Max(0, Math.Min(VideoContainer.ActualHeight - 20, _videoTextMoveStartMargin.Top + (current.Y - _videoTextMoveStartMouse.Y)));
+            VideoFloatingTextContainer.Margin = new Thickness(newLeft, newTop, 0, 0);
+            e.Handled = true;
+        }
+    }
+
+    private void BtnDragVideoText_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isMovingVideoText)
+        {
+            _isMovingVideoText = false;
+            BtnDragVideoText.ReleaseMouseCapture();
+            e.Handled = true;
+        }
+    }
+
     private void BtnConfirmVideoText_MouseDown(object sender, MouseButtonEventArgs e)
     {
         e.Handled = true;
@@ -826,31 +864,44 @@ public partial class VideoPreviewWindow : Window
         TogglePlayPause();
     }
 
+    private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            if (e.OriginalSource is not System.Windows.Controls.Button)
+            {
+                try { DragMove(); } catch { }
+            }
+        }
+    }
+
     private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ButtonState != MouseButtonState.Pressed) return;
 
-        System.Windows.Point pos = e.GetPosition(this);
-        // Zona superior de la ventana (estilo barra de título de Windows, primeros 65 píxeles)
-        if (pos.Y <= 65)
+        if (e.OriginalSource is DependencyObject dep)
         {
-            if (e.OriginalSource is DependencyObject dep)
+            DependencyObject? current = dep;
+            while (current != null && current != this)
             {
-                DependencyObject? current = dep;
-                while (current != null && current != this)
+                if (current is System.Windows.Controls.Primitives.ButtonBase ||
+                    current is System.Windows.Controls.Primitives.RangeBase ||
+                    current is System.Windows.Controls.TextBox ||
+                    current == VideoDrawingCanvas ||
+                    current == VideoFloatingTextContainer ||
+                    current == AnnotationToolbar)
                 {
-                    if (current is System.Windows.Controls.Primitives.ButtonBase)
-                        return; // Permitir que los botones (como el botón ✕) procesen su clic
-                    current = VisualTreeHelper.GetParent(current);
+                    return;
                 }
+                current = VisualTreeHelper.GetParent(current);
             }
-
-            try
-            {
-                DragMove();
-            }
-            catch { }
         }
+
+        try
+        {
+            DragMove();
+        }
+        catch { }
     }
 
     #region Pistas de Objetos estilo CapCut

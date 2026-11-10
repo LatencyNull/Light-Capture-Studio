@@ -479,6 +479,45 @@ public partial class OverlayWindow : Window
         }
     }
 
+    private bool _isMovingText = false;
+    private Point _textMoveStartMouse;
+    private Point _textMoveStartPos;
+
+    private void BtnDragText_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            _isMovingText = true;
+            _textMoveStartMouse = e.GetPosition(this);
+            _textMoveStartPos = new Point(Canvas.GetLeft(FloatingTextContainer), Canvas.GetTop(FloatingTextContainer));
+            BtnDragText.CaptureMouse();
+            e.Handled = true;
+        }
+    }
+
+    private void BtnDragText_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isMovingText && e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point current = e.GetPosition(this);
+            double newX = _textMoveStartPos.X + (current.X - _textMoveStartMouse.X);
+            double newY = _textMoveStartPos.Y + (current.Y - _textMoveStartMouse.Y);
+            Canvas.SetLeft(FloatingTextContainer, newX);
+            Canvas.SetTop(FloatingTextContainer, newY);
+            e.Handled = true;
+        }
+    }
+
+    private void BtnDragText_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isMovingText)
+        {
+            _isMovingText = false;
+            BtnDragText.ReleaseMouseCapture();
+            e.Handled = true;
+        }
+    }
+
     private void BtnConfirmText_MouseDown(object sender, MouseButtonEventArgs e)
     {
         e.Handled = true;
