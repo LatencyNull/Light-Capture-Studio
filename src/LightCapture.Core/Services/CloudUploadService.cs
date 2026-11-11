@@ -12,11 +12,7 @@ public class CloudUploadService : ICloudUploadService
         Timeout = TimeSpan.FromSeconds(15)
     };
 
-    private static readonly string SettingsFile = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "LightCaptureStudio",
-        "cloud_settings.json"
-    );
+    private static readonly string SettingsFile = AppPaths.GetRoamingSettingsFile("cloud_settings.json");
 
     public string? FreeImageApiKey { get; set; }
 
@@ -33,8 +29,9 @@ public class CloudUploadService : ICloudUploadService
 
     private void LoadApiKey()
     {
-        // 1. Prioridad: Variable de entorno del sistema
-        FreeImageApiKey = Environment.GetEnvironmentVariable("LIGHTCAPTURE_FREEIMAGE_KEY");
+        // 1. Prioridad: Variable de entorno del sistema (nueva y retrocompatible)
+        FreeImageApiKey = Environment.GetEnvironmentVariable("MASTERCAPTURE_FREEIMAGE_KEY")
+                          ?? Environment.GetEnvironmentVariable("LIGHTCAPTURE_FREEIMAGE_KEY");
 
         // 2. Archivo de configuración local del usuario
         if (string.IsNullOrWhiteSpace(FreeImageApiKey))

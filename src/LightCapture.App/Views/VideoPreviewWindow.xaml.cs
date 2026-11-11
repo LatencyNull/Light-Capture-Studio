@@ -14,6 +14,7 @@ using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Point = System.Windows.Point;
 using LightCapture.App.Services;
 using LightCapture.Core.Models;
+using LightCapture.Core.Services;
 
 namespace LightCapture.App.Views;
 
@@ -69,7 +70,7 @@ public partial class VideoPreviewWindow : Window
         {
             TxtHeaderIcon.Text = "🎞️";
             TxtHeaderTitle.Text = "Animated GIF Preview";
-            Title = "GIF Preview - Light Capture Studio";
+            Title = "GIF Preview - Master Capture";
         }
 
         // Extraer peso del archivo
@@ -1358,8 +1359,7 @@ public partial class VideoPreviewWindow : Window
                 int natW = MediaVideoPlayer.NaturalVideoWidth > 0 ? MediaVideoPlayer.NaturalVideoWidth : (int)VideoContainer.ActualWidth;
                 int natH = MediaVideoPlayer.NaturalVideoHeight > 0 ? MediaVideoPlayer.NaturalVideoHeight : (int)VideoContainer.ActualHeight;
 
-                string tempDir = Path.Combine(Path.GetTempPath(), "LightCapture_Recordings");
-                if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
+                string tempDir = AppPaths.GetTempRecordingsDirectory();
 
                 timedOverlays = new List<TimedOverlay>();
                 foreach (var elem in VideoDrawingCanvas.Elements)
@@ -1579,11 +1579,7 @@ public partial class VideoPreviewWindow : Window
         string path = await GetEffectiveVideoPathAsync();
         bool isGif = path.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
 
-        string defaultFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture");
-        if (!Directory.Exists(defaultFolder))
-        {
-            Directory.CreateDirectory(defaultFolder);
-        }
+        string defaultFolder = AppPaths.GetCapturesDirectory();
 
         var sfd = new Microsoft.Win32.SaveFileDialog
         {

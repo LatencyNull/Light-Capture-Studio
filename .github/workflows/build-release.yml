@@ -57,24 +57,24 @@ jobs:
       - name: Package Artifacts
         shell: pwsh
         run: |
-          Compress-Archive -Path publish/framework-dependent/* -DestinationPath LightCapture-Studio-FrameworkDependent-win-x64.zip -Force
-          Compress-Archive -Path publish/standalone/* -DestinationPath LightCapture-Studio-Standalone-win-x64.zip -Force
+          Compress-Archive -Path publish/framework-dependent/* -DestinationPath MasterCapture-FrameworkDependent-win-x64.zip -Force
+          Compress-Archive -Path publish/standalone/* -DestinationPath MasterCapture-Standalone-win-x64.zip -Force
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: LightCapture-Studio-Binaries
+          name: MasterCapture-Binaries
           path: |
-            LightCapture-Studio-FrameworkDependent-win-x64.zip
-            LightCapture-Studio-Standalone-win-x64.zip
+            MasterCapture-FrameworkDependent-win-x64.zip
+            MasterCapture-Standalone-win-x64.zip
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            LightCapture-Studio-FrameworkDependent-win-x64.zip
-            LightCapture-Studio-Standalone-win-x64.zip
+            MasterCapture-FrameworkDependent-win-x64.zip
+            MasterCapture-Standalone-win-x64.zip
           draft: false
           prerelease: false
           generate_release_notes: true

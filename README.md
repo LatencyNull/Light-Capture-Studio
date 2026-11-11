@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Light Capture Studio
+# ⚡ Master Capture
 
 **The ultimate screen capture, live translation, OCR, and video recording suite for Windows.**  
 *Built with .NET 8, featuring a modern Samsung One UI Dark interface and 100% local privacy.*
@@ -10,7 +10,7 @@
 [![.NET](https://img.shields.io/badge/.NET-8.0%20WPF-512BD4.svg)](https://dotnet.microsoft.com/)
 [![CI Build &amp; Release](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/build-release.yml/badge.svg)](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/build-release.yml)
 
-[Features](#-key-features) • [Comparison](#-why-light-capture-studio-vs-classic-lightshot) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Portable Version](#-portable-version) • [Privacy](#-privacy-first-architecture)
+[Features](#-key-features) • [Comparison](#-why-master-capture-vs-classic-lightshot) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Portable Version](#-portable-version) • [Privacy](#-privacy-first-architecture)
 
 </div>
 
@@ -18,15 +18,15 @@
 
 ## 🚀 Overview
 
-**Light Capture Studio** is a modern screen capture, translation, and screen recording suite for Windows, built as a modern evolution of classic tools like Lightshot. Its goal is to consolidate everyday tasks that previously required multiple disjointed utilities into a single, lightweight, portable executable: capture regions with pixel precision, translate text immediately without leaving your screen, record video clips with audio, and extract text from images via OCR.
+**Master Capture** is a modern screen capture, translation, and screen recording suite for Windows, built as a modern evolution of classic tools like Lightshot. Its goal is to consolidate everyday tasks that previously required multiple disjointed utilities into a single, lightweight, portable executable: capture regions with pixel precision, translate text immediately without leaving your screen, record video clips with audio, and extract text from images via OCR.
 
 Unlike conventional capture software, this project follows a **100% local** architecture: it does not upload your images to public web servers or rely on third-party cloud hosting. All image processing, OCR, video encoding, and history indexing run directly on your own computer.
 
 ---
 
-## 🥊 Why Light Capture Studio? (vs. Classic Lightshot)
+## 🥊 Why Master Capture? (vs. Classic Lightshot)
 
-| Feature | ⚡ Light Capture Studio | 🐢 Classic Lightshot |
+| Feature | ⚡ Master Capture | 🐢 Classic Lightshot |
 |:---|:---:|:---:|
 | **Live On-Screen Translation** | ✅ Google Lens-style overlay integrated | ❌ Not available |
 | **Video & GIF Recording** | ✅ MP4 (system audio + mic) and lightweight animated GIFs | ❌ Static captures only |
@@ -34,7 +34,7 @@ Unlike conventional capture software, this project follows a **100% local** arch
 | **Real-Time Video Preview** | ✅ Smooth scrubbing at ~40 fps, seek bar, and Stop button | ❌ Not available |
 | **OCR Text Extraction** | ✅ Instant copy to clipboard (<kbd>Ctrl+Shift+T</kbd>) | ❌ Impossible (pixels only) |
 | **Local History with Search** | ✅ Search past captures by the text detected in them | ❌ None (lost upon closing) |
-| **Privacy & Security** | ✅ 100% local storage in `Documents\Light Capture` | ⚠️ Insecure public uploads |
+| **Privacy & Security** | ✅ 100% local storage in `Documents\Master Capture` | ⚠️ Insecure public uploads |
 | **Intelligent Censorship** | ✅ Destructive irreversible mosaic pixelation brush | ❌ Crude pen scribbles |
 | **Pin to Screen (Picture-in-Picture)**| ✅ Always-on-top floating window (<kbd>Ctrl+P</kbd>) | ❌ Requires external viewer |
 | **QR Code Recognition** | ✅ Automatic detection and one-click opening | ❌ Requires mobile phone scan |
@@ -60,7 +60,7 @@ Need to report a bug, demo a match, or build an interactive tutorial? Record any
 Copy text from anywhere: YouTube videos, locked web pages, images, or scanned documents. Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> and detected text is copied instantly to your clipboard.
 
 ### 4. 🕒 Smart Local History with Search
-Every time you copy (<kbd>Ctrl</kbd> + <kbd>C</kbd>, <kbd>Enter</kbd>, or from toolbar), your capture is saved in `Documents\Light Capture` and its text content is indexed. Open the history gallery (<kbd>F9</kbd> → clock icon) to search by keyword, copy thumbnails, or open the folder in one click.
+Every time you copy (<kbd>Ctrl</kbd> + <kbd>C</kbd>, <kbd>Enter</kbd>, or from toolbar), your capture is saved in `Documents\Master Capture` and its text content is indexed. Open the history gallery (<kbd>F9</kbd> → clock icon) to search by keyword, batch-select/delete items, copy thumbnails, or open the folder in one click.
 
 ### 5. 🛡️ Destructive Pixelation Censorship
 Hide passwords, credit card numbers, faces, or confidential data with complete peace of mind. The redaction brush applies an irreversible mosaic directly onto image pixels.
@@ -81,7 +81,7 @@ Send captures and clips directly to **WhatsApp Desktop (Windows App)**, **WhatsA
 | <kbd>Enter</kbd> or <kbd>Ctrl</kbd> + <kbd>C</kbd> | Copy capture to clipboard and save to history |
 | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> | Extract and copy OCR text to clipboard |
 | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd> | Copy translated text to clipboard |
-| <kbd>Ctrl</kbd> + <kbd>S</kbd> | Open save dialog (default folder `Documents\Light Capture`) |
+| <kbd>Ctrl</kbd> + <kbd>S</kbd> | Open save dialog (default folder `Documents\Master Capture`) |
 | <kbd>Ctrl</kbd> + <kbd>P</kbd> | Pin capture as always-on-top floating window |
 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Undo last drawing stroke or annotation |
 | <kbd>Esc</kbd> | Cancel capture / Close overlay |
@@ -90,9 +90,9 @@ Send captures and clips directly to **WhatsApp Desktop (Windows App)**, **WhatsA
 
 ## 💾 Portable Version
 
-**Light Capture Studio is 100% portable and self-contained.**
+**Master Capture is 100% portable and self-contained.**
 - **No installation:** No installer, wizard, or administrator rights required.
-- **Self-contained:** Built with all .NET 8 runtime dependencies bundled into a single executable.
+- **Self-contained:** Built with all .NET 8 runtime dependencies bundled into a single executable (`MasterCapture.exe`).
 - **Clean & lightweight:** Leaves no clutter in the Windows registry; runs straight from any folder or USB drive.
 
 Download the precompiled portable binary directly from the [**Releases**](https://github.com/LatencyNull/Light-Capture-Studio/releases) section!
@@ -101,9 +101,9 @@ Download the precompiled portable binary directly from the [**Releases**](https:
 
 ## 🔒 Privacy-First Architecture
 
-Unlike classic Lightshot and older utilities that upload screenshots to public web links (where anyone could guess sequential URLs and view sensitive data), **Light Capture Studio is 100% local**:
+Unlike classic Lightshot and older utilities that upload screenshots to public web links (where anyone could guess sequential URLs and view sensitive data), **Master Capture is 100% local**:
 
-- Captures are stored exclusively in your personal `Documents\Light Capture` folder.
+- Captures are stored exclusively in your personal `Documents\Master Capture` folder.
 - Optical Character Recognition (OCR) runs locally using native Windows APIs (`Windows.Media.Ocr`).
 - No hidden background telemetry, no required accounts, and no third-party trackers.
 
@@ -149,15 +149,15 @@ dotnet test LightCaptureStudio.sln
 dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/standalone
 ```
 
-The resulting file in `publish-standalone\LightCapture.exe` is completely portable and ready to run.
+The resulting file in `publish/standalone/MasterCapture.exe` (and `release/MasterCapture-v1.1.0-Standalone-win-x64.exe`) is completely portable and ready to run.
 
 ---
 
 ## 🔒 Optional Cloud Upload Configuration
 
-By default, Light Capture Studio operates **100% locally**. If you choose to use the *"Upload to Cloud & Copy Link"* feature, you can optionally supply your own free FreeImage.host API key:
-- Via environment variable: `LIGHTCAPTURE_FREEIMAGE_KEY="your_api_key"`
-- Or via configuration file at `%AppData%\LightCaptureStudio\cloud_settings.json`:
+By default, Master Capture operates **100% locally**. If you choose to use the *"Upload to Cloud & Copy Link"* feature, you can optionally supply your own free FreeImage.host API key:
+- Via environment variable: `MASTERCAPTURE_FREEIMAGE_KEY="your_api_key"`
+- Or via configuration file at `%AppData%\MasterCapture\cloud_settings.json`:
   ```json
   {
     "freeimage_key": "your_api_key"

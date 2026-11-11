@@ -37,11 +37,7 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
             throw new ArgumentException("The selected area is too small to record video.");
         }
 
-        string capturesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture");
-        if (!Directory.Exists(capturesFolder))
-        {
-            Directory.CreateDirectory(capturesFolder);
-        }
+        string capturesFolder = AppPaths.GetCapturesDirectory();
 
         string ext = isGif ? "gif" : "mp4";
         _currentFilePath = Path.Combine(capturesFolder, $"Clip_{DateTime.Now:yyyyMMdd_HHmmss}.{ext}");
@@ -50,7 +46,7 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
 
         // Localizar el ejecutable del grabador
         string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        string appDataBin = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCapture", "bin");
+        string appDataBin = AppPaths.GetRecorderBinDirectory();
 
         string workerExe = Path.Combine(baseDir, "LightCapture.Recorder.exe");
         if (!File.Exists(workerExe))

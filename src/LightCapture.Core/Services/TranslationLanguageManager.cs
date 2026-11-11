@@ -12,11 +12,7 @@ public static class TranslationLanguageManager
     public const string Spanish = "es";
     public const string English = "en";
 
-    private static readonly string SettingsFile = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "LightCaptureStudio",
-        "translation_settings.json"
-    );
+    private static readonly string SettingsFile = AppPaths.GetRoamingSettingsFile("translation_settings.json");
 
     private static string _currentLanguage = Spanish;
     private static readonly object _lock = new();

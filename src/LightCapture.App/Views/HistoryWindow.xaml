@@ -1,7 +1,7 @@
 <Window x:Class="LightCapture.App.Views.HistoryWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Capture History - Light Capture Studio"
+        Title="Capture History - Master Capture"
         Width="880" Height="620"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackground}" Foreground="{DynamicResource PrimaryText}"
@@ -41,7 +41,7 @@
                 <CheckBox x:Name="ChkIncognito" Content="Incognito Mode" Foreground="#A1A1AA" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Pauses saving captures to disk for privacy" Checked="ChkIncognito_Checked" Unchecked="ChkIncognito_Unchecked"/>
                 <CheckBox x:Name="ChkSelectAll" Content="Select All" Foreground="#E4E4E7" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Select or deselect all visible captures" Checked="ChkSelectAll_Checked" Unchecked="ChkSelectAll_Unchecked"/>
                 <Button x:Name="BtnDeleteSelected" Content="🗑️ Delete Selected" Background="#450A0A" Foreground="#FCA5A5" BorderBrush="#991B1B" Padding="10,6" Margin="0,0,8,0" Cursor="Hand" ToolTip="Delete selected captures from disk and history" Click="BtnDeleteSelected_Click"/>
-                <Button Content="📁 Open Folder" Background="#1E293B" Foreground="#93C5FD" BorderBrush="#3B82F6" Padding="10,6" Margin="0,0,8,0" Cursor="Hand" ToolTip="Open Documents\Light Capture folder in Windows Explorer" Click="BtnOpenFolder_Click"/>
+                <Button Content="📁 Open Folder" Background="#1E293B" Foreground="#93C5FD" BorderBrush="#3B82F6" Padding="10,6" Margin="0,0,8,0" Cursor="Hand" ToolTip="Open Documents\Master Capture folder in Windows Explorer" Click="BtnOpenFolder_Click"/>
                 <Button Content="Clear All" Background="#3F1D1D" Foreground="#FCA5A5" BorderBrush="#7F1D1D" Padding="10,6" Margin="0,0,8,0" Cursor="Hand" Click="BtnClearAll_Click"/>
                 <Button Content="Close" Background="#27272A" Foreground="#E4E4E7" BorderBrush="#3F3F46" Padding="14,6" Cursor="Hand" Click="BtnClose_Click"/>
             </StackPanel>
@@ -106,14 +106,14 @@
                     <TextBlock Text="📸" FontSize="42" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                     <TextBlock Text="No captures in history yet" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                     <TextBlock Text="Your captures are indexed and saved here automatically when copying or saving." FontSize="12" Foreground="{DynamicResource SecondaryText}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                    <Button Content="📁 Open Documents\Light Capture folder" Padding="14,8" Background="#2563EB" Foreground="#FFFFFF" BorderThickness="0" Cursor="Hand" FontWeight="SemiBold" Click="BtnOpenFolder_Click" HorizontalAlignment="Center"/>
+                    <Button Content="📁 Open Documents\Master Capture folder" Padding="14,8" Background="#2563EB" Foreground="#FFFFFF" BorderThickness="0" Cursor="Hand" FontWeight="SemiBold" Click="BtnOpenFolder_Click" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
         </Grid>
 
         <!-- Privacy note footer -->
         <Border Grid.Row="2" Margin="0,12,0,0" Padding="8,4" Background="#18181B" BorderBrush="#27272A" BorderThickness="1" CornerRadius="4">
-            <TextBlock Text="📁 Captures are automatically saved in your Documents\Light Capture folder. Privacy: 100% local on your machine." FontSize="10.5" Foreground="#71717A" HorizontalAlignment="Center"/>
+            <TextBlock Text="📁 Captures are automatically saved in your Documents\Master Capture folder. Privacy: 100% local on your machine." FontSize="10.5" Foreground="#71717A" HorizontalAlignment="Center"/>
         </Border>
     </Grid>
 </Window>

@@ -477,11 +477,6 @@ public static class VideoTrimmerService
 
     private static string GetCapturesDirectory()
     {
-        string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture");
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-        return dir;
+        return LightCapture.Core.Services.AppPaths.GetCapturesDirectory();
     }
 }

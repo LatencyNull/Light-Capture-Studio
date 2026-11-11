@@ -63,21 +63,21 @@ public partial class App : Application
 
         DispatcherUnhandledException += (s, args) =>
         {
-            MessageBox.Show($"An unexpected error occurred:\n{args.Exception}", "Light Capture Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"An unexpected error occurred:\n{args.Exception}", AppPaths.AppDisplayName, MessageBoxButton.OK, MessageBoxImage.Error);
         };
 
         AppDomain.CurrentDomain.UnhandledException += (s, args) =>
         {
-            MessageBox.Show($"An unexpected error occurred:\n{args.ExceptionObject}", "Light Capture Studio", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"An unexpected error occurred:\n{args.ExceptionObject}", AppPaths.AppDisplayName, MessageBoxButton.OK, MessageBoxImage.Error);
         };
 
-        _singleInstanceMutex = new Mutex(true, "LightCaptureStudio_SingleInstance_Mutex", out bool createdNew);
+        _singleInstanceMutex = new Mutex(true, "MasterCapture_SingleInstance_Mutex", out bool createdNew);
 
         if (!createdNew)
         {
             try
             {
-                if (EventWaitHandle.TryOpenExisting("LightCaptureStudio_WakeUp_Event", out var existingEvent))
+                if (EventWaitHandle.TryOpenExisting("MasterCapture_WakeUp_Event", out var existingEvent))
                 {
                     existingEvent.Set();
                 }
@@ -90,7 +90,7 @@ public partial class App : Application
 
         try
         {
-            _wakeUpEvent = new EventWaitHandle(false, EventResetMode.AutoReset, "LightCaptureStudio_WakeUp_Event");
+            _wakeUpEvent = new EventWaitHandle(false, EventResetMode.AutoReset, "MasterCapture_WakeUp_Event");
             var wakeUpThread = new Thread(() =>
             {
                 while (_wakeUpEvent != null)
@@ -153,7 +153,7 @@ public partial class App : Application
         _notifyIcon = new NotifyIcon
         {
             Icon = appIcon,
-            Text = $"Light Capture Studio - {HotkeySettingsManager.CurrentDisplayName} to capture screen",
+            Text = FormatTrayText(HotkeySettingsManager.CurrentDisplayName),
             Visible = true,
             ContextMenuStrip = null // Reemplazado por el menú flotante moderno WPF One UI
         };
@@ -243,13 +243,13 @@ public partial class App : Application
             Style = (Style)FindResource("ModernMenuTitleStyle"),
             Header = new WpfTextBlock
             {
-                Text = "Light Capture Studio",
+                Text = AppPaths.AppDisplayName,
                 FontWeight = FontWeights.Bold,
                 FontSize = 12,
                 Foreground = (System.Windows.Media.Brush)FindResource("PrimaryText"),
                 VerticalAlignment = VerticalAlignment.Center
             },
-            InputGestureText = typeof(App).Assembly.GetName().Version is { } v ? $"v{v.Major}.{v.Minor}.{v.Build}" : "v1.0.0"
+            InputGestureText = typeof(App).Assembly.GetName().Version is { } v ? $"v{v.Major}.{v.Minor}.{v.Build}" : "v1.1.0"
         };
         var appLogo = new WpfImage
         {
@@ -487,7 +487,7 @@ public partial class App : Application
 
     private void SetupGlobalHotkeys()
     {
-        var parameters = new HwndSourceParameters("LightCaptureHotkeyListener")
+        var parameters = new HwndSourceParameters("MasterCaptureHotkeyListener")
         {
             Width = 0,
             Height = 0,
@@ -521,7 +521,7 @@ public partial class App : Application
         {
             _notifyIcon?.ShowBalloonTip(
                 4000,
-                "Light Capture Studio",
+                AppPaths.AppDisplayName,
                 $"The key '{userDisplay}' is assigned to another program. Use 'Ctrl+Shift+X' or right-click the tray icon to change it.",
                 ToolTipIcon.Warning
             );
@@ -540,7 +540,7 @@ public partial class App : Application
         {
             _notifyIcon?.ShowBalloonTip(
                 4000,
-                "Light Capture Studio",
+                AppPaths.AppDisplayName,
                 $"The key '{displayName}' could not be registered (may be in use by Windows or another app).",
                 ToolTipIcon.Warning
             );
@@ -549,20 +549,24 @@ public partial class App : Application
         {
             _notifyIcon?.ShowBalloonTip(
                 2500,
-                "Light Capture Studio",
+                AppPaths.AppDisplayName,
                 $"✅ Capture hotkey configured: {displayName}",
                 ToolTipIcon.Info
             );
         }
     }
 
+    private static string FormatTrayText(string displayName)
+    {
+        string text = $"{AppPaths.AppDisplayName} - {displayName} to capture screen";
+        return text.Length > 63 ? text[..63] : text;
+    }
+
     private void UpdateTrayHotkeyDisplay(string displayName)
     {
         if (_notifyIcon != null)
         {
-            string text = $"Light Capture Studio - {displayName} to capture screen";
-            if (text.Length > 63) text = text[..63];
-            _notifyIcon.Text = text;
+            _notifyIcon.Text = FormatTrayText(displayName);
         }
 
         if (_captureMenuItem != null)
@@ -580,9 +584,7 @@ public partial class App : Application
     {
         try
         {
-            string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string folder = Path.Combine(docs, "Light Capture");
-            Directory.CreateDirectory(folder);
+            string folder = AppPaths.GetCapturesDirectory();
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName = folder,
@@ -692,8 +694,7 @@ public partial class App : Application
     {
         try
         {
-            string appDataBin = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCapture", "bin");
-            Directory.CreateDirectory(appDataBin);
+            string appDataBin = AppPaths.GetRecorderBinDirectory();
 
             ExtractResourceIfMissing("ScreenRecorderLib.dll", Path.Combine(appDataBin, "ScreenRecorderLib.dll"));
             ExtractResourceIfMissing("LightCapture.Recorder.exe", Path.Combine(appDataBin, "LightCapture.Recorder.exe"));

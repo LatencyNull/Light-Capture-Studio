@@ -15,11 +15,7 @@ public enum AppTheme
 
 public static class ThemeManager
 {
-    private static readonly string SettingsFile = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "LightCaptureStudio",
-        "theme.json"
-    );
+    private static readonly string SettingsFile = LightCapture.Core.Services.AppPaths.GetRoamingSettingsFile("theme.json");
 
     public static AppTheme CurrentTheme { get; private set; } = AppTheme.Dark;
 

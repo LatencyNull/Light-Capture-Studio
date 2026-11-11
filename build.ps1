@@ -17,7 +17,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "   Light Capture Studio - Build System  " -ForegroundColor Cyan
+Write-Host "      Master Capture - Build System     " -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
 # 1. Comprobar SDK de .NET
@@ -30,9 +30,9 @@ try {
 }
 
 # 2. Detener instancias activas si existen
-$running = Get-Process -Name "LightCapture", "LightCapture.Recorder" -ErrorAction SilentlyContinue
+$running = Get-Process -Name "MasterCapture", "LightCapture", "LightCapture.Recorder" -ErrorAction SilentlyContinue
 if ($running) {
-    Write-Host "[!] Se detectaron instancias activas de Light Capture en ejecucion. Cerrando..." -ForegroundColor Yellow
+    Write-Host "[!] Se detectaron instancias activas de Master Capture / Light Capture en ejecucion. Cerrando..." -ForegroundColor Yellow
     $running | Stop-Process -Force
     Start-Sleep -Milliseconds 800
 }
@@ -104,7 +104,7 @@ if ($LASTEXITCODE -ne 0) {
 # Limpiar archivos auxiliares de depuracion para dejar un unico .EXE 100% limpio
 Get-ChildItem -Path "$publishDir\*" -Include *.pdb, *.xml, *.json -File | Remove-Item -Force -ErrorAction SilentlyContinue
 
-$exePath = Join-Path $publishDir "LightCapture.exe"
+$exePath = Join-Path $publishDir "MasterCapture.exe"
 if (Test-Path $exePath) {
     $fileInfo = Get-Item $exePath
     $sizeMb = [math]::Round($fileInfo.Length / 1MB, 2)
@@ -117,7 +117,7 @@ if (Test-Path $exePath) {
     }
 
     # Extraer version dinamicamente desde LightCapture.App.csproj
-    $appVersion = "1.0.0"
+    $appVersion = "1.1.0"
     $csprojPath = Join-Path $ScriptDir "src\LightCapture.App\LightCapture.App.csproj"
     if (Test-Path $csprojPath) {
         $match = Select-String -Path $csprojPath -Pattern "<Version>(.*?)</Version>"
@@ -126,18 +126,22 @@ if (Test-Path $exePath) {
         }
     }
 
-    $zipName = "LightCapture-Studio-v$appVersion-Standalone-win-x64.zip"
-    $releaseExeName = "LightCapture-Studio-v$appVersion-Standalone-win-x64.exe"
+    $zipName = "MasterCapture-v$appVersion-Standalone-win-x64.zip"
+    $releaseExeName = "MasterCapture-v$appVersion-Standalone-win-x64.exe"
     if (-not $SelfContained) {
-        $zipName = "LightCapture-Studio-v$appVersion-FrameworkDependent-win-x64.zip"
-        $releaseExeName = "LightCapture-Studio-v$appVersion-FrameworkDependent-win-x64.exe"
+        $zipName = "MasterCapture-v$appVersion-FrameworkDependent-win-x64.zip"
+        $releaseExeName = "MasterCapture-v$appVersion-FrameworkDependent-win-x64.exe"
     }
     $zipPath = Join-Path $releaseDir $zipName
     $releaseExePath = Join-Path $releaseDir $releaseExeName
 
-    # Copiar ejecutable directo nombrado y al root del proyecto
+    # Copiar ejecutable directo nombrado y al root del proyecto; eliminar binario legacy si existe
     Copy-Item -Path $exePath -Destination $releaseExePath -Force
-    Copy-Item -Path $exePath -Destination (Join-Path $ScriptDir "LightCapture.exe") -Force
+    Copy-Item -Path $exePath -Destination (Join-Path $ScriptDir "MasterCapture.exe") -Force
+    $legacyRootExe = Join-Path $ScriptDir "LightCapture.exe"
+    if (Test-Path $legacyRootExe) {
+        Remove-Item -Path $legacyRootExe -Force -ErrorAction SilentlyContinue
+    }
 
     Write-Host "[*] Empaquetando archivo ZIP en $zipPath..." -ForegroundColor Cyan
     Compress-Archive -Path "$publishDir\*" -DestinationPath $zipPath -Force
@@ -172,7 +176,7 @@ if (Test-Path $exePath) {
 
 # 7. Ejecucion opcional
 if ($Run) {
-    Write-Host "[*] Iniciando Light Capture Studio..." -ForegroundColor Cyan
+    Write-Host "[*] Iniciando Master Capture..." -ForegroundColor Cyan
     Start-Process -FilePath $exePath
     Write-Host "[OK] Proceso iniciado." -ForegroundColor Green
 }

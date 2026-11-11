@@ -1191,7 +1191,7 @@ public partial class OverlayWindow : Window
         {
             InitialDirectory = _historyService.HistoryDirectory,
             Filter = "PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg",
-            FileName = $"LightCapture_{DateTime.Now:yyyyMMdd_HHmmss}.png"
+            FileName = $"MasterCapture_{DateTime.Now:yyyyMMdd_HHmmss}.png"
         };
 
         if (sfd.ShowDialog() == true)
@@ -1225,7 +1225,7 @@ public partial class OverlayWindow : Window
             {
                 dc.DrawImage(flattened, new Rect(0, 0, flattened.PixelWidth, flattened.PixelHeight));
             }
-            printDlg.PrintVisual(vis, "LightCapture Screenshot");
+            printDlg.PrintVisual(vis, "Master Capture Screenshot");
             Close();
         }
     }
@@ -1798,7 +1798,7 @@ public partial class OverlayWindow : Window
         try
         {
             string tempDir = Path.GetTempPath();
-            string tempPath = Path.Combine(tempDir, $"LightCapture_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+            string tempPath = Path.Combine(tempDir, $"MasterCapture_{DateTime.Now:yyyyMMdd_HHmmss}.png");
             using (var fs = File.Create(tempPath))
             {
                 var encoder = new PngBitmapEncoder();
@@ -1807,7 +1807,7 @@ public partial class OverlayWindow : Window
             }
 
             _historyService.SaveCapture(flattened, "Share via Email");
-            Process.Start(new ProcessStartInfo("mailto:?subject=Screenshot%20-%20LightCapture&body=Attached%20screenshot%20(also%20copied%20to%20clipboard%20to%20paste).") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo("mailto:?subject=Screenshot%20-%20Master%20Capture&body=Attached%20screenshot%20(also%20copied%20to%20clipboard%20to%20paste).") { UseShellExecute = true });
         }
         catch { }
 

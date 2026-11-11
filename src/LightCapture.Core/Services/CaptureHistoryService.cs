@@ -39,77 +39,15 @@ public class CaptureHistoryService : ICaptureHistoryService
         if (!string.IsNullOrWhiteSpace(customHistoryDir))
         {
             _historyDir = customHistoryDir;
+            Directory.CreateDirectory(_historyDir);
             _metadataFile = Path.Combine(_historyDir, "history.json");
         }
         else
         {
-            string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            _historyDir = Path.Combine(docs, "Light Capture");
-
-            string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCapture");
-            Directory.CreateDirectory(appData);
-            _metadataFile = Path.Combine(appData, "history.json");
-
-            // Migración y limpieza para no dejar archivos .json técnicos en Documentos\Light Capture
-            string legacyInDocs = Path.Combine(_historyDir, "history.json");
-            if (File.Exists(legacyInDocs))
-            {
-                try
-                {
-                    if (!File.Exists(_metadataFile))
-                    {
-                        File.Move(legacyInDocs, _metadataFile);
-                    }
-                    else
-                    {
-                        File.Delete(legacyInDocs);
-                    }
-                }
-                catch { }
-            }
+            _historyDir = AppPaths.GetCapturesDirectory();
+            _metadataFile = AppPaths.GetHistoryMetadataFile(_historyDir);
+            AppPaths.MigrateLegacyCapturesOnce(_historyDir);
         }
-
-        Directory.CreateDirectory(_historyDir);
-
-        // Migración transparente de capturas de rutas anteriores si existieran
-        try
-        {
-            var oldDirs = new[]
-            {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture Studio"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCaptureTranslator", "History"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LightCaptureStudio", "History")
-            };
-
-            foreach (var oldDir in oldDirs)
-            {
-                if (Directory.Exists(oldDir) && !oldDir.Equals(_historyDir, StringComparison.OrdinalIgnoreCase))
-                {
-                    foreach (var file in Directory.GetFiles(oldDir))
-                    {
-                        string fileName = Path.GetFileName(file);
-                        if (fileName.Equals("history.json", StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue; // Jamás copiar archivos JSON a la carpeta de capturas del usuario
-                        }
-
-                        string dest = Path.Combine(_historyDir, fileName);
-                        if (!File.Exists(dest))
-                        {
-                            File.Copy(file, dest, false);
-                        }
-                    }
-                }
-            }
-
-            // Asegurar que no quede ningún history.json dentro de _historyDir
-            string lingeringInDocs = Path.Combine(_historyDir, "history.json");
-            if (File.Exists(lingeringInDocs))
-            {
-                File.Delete(lingeringInDocs);
-            }
-        }
-        catch { }
 
         LoadMetadata();
     }
@@ -201,7 +139,7 @@ public class CaptureHistoryService : ICaptureHistoryService
             }
 
             string id = Guid.NewGuid().ToString("N");
-            string fileName = $"LightCapture_{DateTime.Now:yyyyMMdd_HHmmss}_{id[..6]}.png";
+            string fileName = $"MasterCapture_{DateTime.Now:yyyyMMdd_HHmmss}_{id[..6]}.png";
             string filePath = Path.Combine(_historyDir, fileName);
 
             // Guardar PNG a disco
@@ -347,14 +285,17 @@ public class CaptureHistoryService : ICaptureHistoryService
                 TryDeleteFileWithRetry(path);
             }
 
-            // 2. Limpieza exhaustiva de cualquier remanente LightCapture_*.*
+            // 2. Limpieza exhaustiva de cualquier remanente MasterCapture_*.* o LightCapture_*.*
             try
             {
                 if (Directory.Exists(_historyDir))
                 {
-                    foreach (var file in Directory.GetFiles(_historyDir, "LightCapture_*.*"))
+                    foreach (var pattern in new[] { "MasterCapture_*.*", "LightCapture_*.*" })
                     {
-                        TryDeleteFileWithRetry(file);
+                        foreach (var file in Directory.GetFiles(_historyDir, pattern))
+                        {
+                            TryDeleteFileWithRetry(file);
+                        }
                     }
                 }
             }

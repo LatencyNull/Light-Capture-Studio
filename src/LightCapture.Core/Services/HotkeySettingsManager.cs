@@ -15,11 +15,7 @@ public record HotkeyConfig(
 /// </summary>
 public static class HotkeySettingsManager
 {
-    private static readonly string SettingsFile = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "LightCaptureStudio",
-        "hotkey_settings.json"
-    );
+    private static readonly string SettingsFile = AppPaths.GetRoamingSettingsFile("hotkey_settings.json");
 
     // Predeterminado de fábrica: F9 (VK_F9 = 0x78, sin modificadores)
     public const uint DefaultVk = 0x78;

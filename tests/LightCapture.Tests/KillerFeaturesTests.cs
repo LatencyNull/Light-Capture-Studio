@@ -61,7 +61,7 @@ public class KillerFeaturesTests
         // Assert
         Assert.NotEmpty(results);
         Assert.Contains(uniqueKey, results[0].OcrText);
-        Assert.Equal(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Light Capture"), historyService.HistoryDirectory);
+        Assert.Equal(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Master Capture"), historyService.HistoryDirectory);
 
         // Cleanup
         historyService.DeleteEntry(results[0].Id);
@@ -287,5 +287,14 @@ public class KillerFeaturesTests
         Assert.DoesNotContain(after, i => i.Id == b2.Id);
         Assert.False(File.Exists(p1));
         Assert.False(File.Exists(p2));
+    }
+
+    [Fact]
+    public void AppPaths_ReturnsMasterCaptureBrandingAndDirectories()
+    {
+        Assert.Equal("Master Capture", AppPaths.AppDisplayName);
+        Assert.Equal("MasterCapture", AppPaths.AppInternalName);
+        Assert.EndsWith("Master Capture", AppPaths.GetCapturesDirectory());
+        Assert.Contains("MasterCapture", AppPaths.GetRoamingSettingsFile("test_settings.json"));
     }
 }
