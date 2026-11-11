@@ -26,13 +26,13 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore Dependencies
-        run: dotnet restore LightCaptureStudio.sln
+        run: dotnet restore MasterCapture.sln
 
       - name: Build Solution (Release)
-        run: dotnet build LightCaptureStudio.sln -c Release --no-restore --nologo
+        run: dotnet build MasterCapture.sln -c Release --no-restore --nologo
 
       - name: Run Tests
-        run: dotnet test LightCaptureStudio.sln -c Release --no-build --nologo --verbosity normal
+        run: dotnet test MasterCapture.sln -c Release --no-build --nologo --verbosity normal
 
       - name: Publish Framework-Dependent (~25MB)
         run: |

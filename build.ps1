@@ -45,7 +45,7 @@ if (-not $SelfContained) {
 
 if ($Clean) {
     Write-Host "[*] Limpiando artefactos previos..." -ForegroundColor Yellow
-    dotnet clean LightCaptureStudio.sln -c $Configuration --nologo -v q
+    dotnet clean MasterCapture.sln -c $Configuration --nologo -v q
     $folders = @("publish", "release")
     foreach ($f in $folders) {
         $dir = Join-Path $ScriptDir $f
@@ -57,8 +57,8 @@ if ($Clean) {
 }
 
 # 4. Compilacion de la Solucion Completa
-Write-Host "[*] Compilando solucion LightCaptureStudio.sln ($Configuration)..." -ForegroundColor Cyan
-dotnet build LightCaptureStudio.sln -c $Configuration --nologo
+Write-Host "[*] Compilando solucion MasterCapture.sln ($Configuration)..." -ForegroundColor Cyan
+dotnet build MasterCapture.sln -c $Configuration --nologo
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Error durante la compilacion de la solucion."
     exit $LASTEXITCODE

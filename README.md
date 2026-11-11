@@ -140,10 +140,10 @@ git clone https://github.com/LatencyNull/Master-Capture.git
 cd Master-Capture
 
 # Restore and build the complete solution
-dotnet build LightCaptureStudio.sln
+dotnet build MasterCapture.sln
 
 # Run automated tests
-dotnet test LightCaptureStudio.sln
+dotnet test MasterCapture.sln
 
 # Publish self-contained portable executable (x64)
 dotnet publish src/LightCapture.App/LightCapture.App.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish/standalone
