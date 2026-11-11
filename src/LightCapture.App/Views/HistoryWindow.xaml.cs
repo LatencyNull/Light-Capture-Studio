@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using LightCapture.App.Services;
 using LightCapture.Core.Services;
 using Clipboard = System.Windows.Clipboard;
 using Button = System.Windows.Controls.Button;
@@ -54,6 +55,8 @@ public partial class HistoryWindow : Window
             ChkIncognito.IsChecked = !_historyService.IsHistoryEnabled;
             RefreshList();
         };
+
+        LanguageManager.LanguageChanged += _ => Dispatcher.Invoke(() => RefreshList(TxtSearch.Text));
     }
 
     private static BitmapSource? LoadThumbnailWithoutLock(string filePath, int decodeWidth = 320)
@@ -109,7 +112,7 @@ public partial class HistoryWindow : Window
         }).ToList();
 
         HistoryItemsList.ItemsSource = _currentItems;
-        TxtTotalCount.Text = $"{_currentItems.Count} {(_currentItems.Count == 1 ? "capture" : "captures")}";
+        TxtTotalCount.Text = LanguageManager.Get("History_CapturesCount", _currentItems.Count);
 
         if (EmptyHistoryPlaceholder != null)
         {
@@ -143,11 +146,11 @@ public partial class HistoryWindow : Window
                 bitmap.Freeze();
 
                 ClipboardHelper.CopyImageToClipboard(bitmap);
-                MessageBox.Show("Image copied to clipboard.", "Capture History", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(LanguageManager.Get("Toast_ImageCopied"), LanguageManager.Get("History_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Could not copy image: {ex.Message}", "Capture History", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Could not copy image: {ex.Message}", LanguageManager.Get("History_Title"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
@@ -159,11 +162,11 @@ public partial class HistoryWindow : Window
             if (!string.IsNullOrWhiteSpace(item.FullOcrText))
             {
                 Clipboard.SetText(item.FullOcrText);
-                MessageBox.Show("Text copied to clipboard.", "Capture History", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(LanguageManager.Get("Toast_TextCopied"), LanguageManager.Get("History_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("This capture contains no detected text.", "Capture History", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(LanguageManager.Get("Toast_NoText"), LanguageManager.Get("History_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }
@@ -182,13 +185,19 @@ public partial class HistoryWindow : Window
         var selected = _currentItems.Where(i => i.IsSelected).ToList();
         if (selected.Count == 0)
         {
-            MessageBox.Show("Please select one or more captures to delete.", "Capture History", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                LanguageManager.CurrentLanguage == AppLanguage.Spanish ? "Por favor selecciona una o más capturas para eliminar." : "Please select one or more captures to delete.",
+                LanguageManager.Get("History_Title"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
             return;
         }
 
         var result = MessageBox.Show(
-            $"Are you sure you want to delete {selected.Count} selected {(selected.Count == 1 ? "capture" : "captures")} from disk and history?",
-            "Delete Selected",
+            LanguageManager.CurrentLanguage == AppLanguage.Spanish
+                ? $"¿Seguro que deseas eliminar {selected.Count} {(selected.Count == 1 ? "captura seleccionada" : "capturas seleccionadas")} del disco y del historial?"
+                : $"Are you sure you want to delete {selected.Count} selected {(selected.Count == 1 ? "capture" : "captures")} from disk and history?",
+            LanguageManager.Get("History_DeleteSelected"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question
         );
@@ -228,7 +237,7 @@ public partial class HistoryWindow : Window
     private void UpdateSelectionButton()
     {
         int count = _currentItems.Count(i => i.IsSelected);
-        BtnDeleteSelected.Content = count > 0 ? $"🗑️ Delete Selected ({count})" : "🗑️ Delete Selected";
+        BtnDeleteSelected.Content = count > 0 ? $"{LanguageManager.Get("History_DeleteSelected")} ({count})" : LanguageManager.Get("History_DeleteSelected");
 
         _isUpdatingSelectAll = true;
         ChkSelectAll.IsChecked = _currentItems.Count > 0 && count == _currentItems.Count;
@@ -273,13 +282,19 @@ public partial class HistoryWindow : Window
     {
         if (_currentItems.Count == 0)
         {
-            MessageBox.Show("Capture history is already empty.", "Capture History", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                LanguageManager.CurrentLanguage == AppLanguage.Spanish ? "El historial de capturas ya está vacío." : "Capture history is already empty.",
+                LanguageManager.Get("History_Title"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
             return;
         }
 
         var result = MessageBox.Show(
-            $"Are you sure you want to completely clear the entire capture history ({_currentItems.Count} items)?\nThis will permanently delete the images from your Documents folder.",
-            "Clear History",
+            LanguageManager.CurrentLanguage == AppLanguage.Spanish
+                ? $"¿Seguro que deseas vaciar completamente todo el historial ({_currentItems.Count} elementos)?\nEsto eliminará permanentemente las imágenes de tu carpeta de capturas."
+                : $"Are you sure you want to completely clear the entire capture history ({_currentItems.Count} items)?\nThis will permanently delete the images from your captures folder.",
+            LanguageManager.Get("History_ClearConfirmTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning
         );

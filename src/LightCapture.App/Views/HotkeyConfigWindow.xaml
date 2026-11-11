@@ -1,7 +1,7 @@
 <Window x:Class="LightCapture.App.Views.HotkeyConfigWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Configure Capture Hotkey - Master Capture"
+        Title="{DynamicResource Hotkey_Title}"
         Width="520" Height="440"
         WindowStartupLocation="CenterScreen"
         Topmost="True"
@@ -21,16 +21,16 @@
         <StackPanel Grid.Row="0" Margin="0,0,0,16">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="⌨️" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                <TextBlock Text="Screen Capture Hotkey" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                <TextBlock Text="{DynamicResource Hotkey_Header}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
             </StackPanel>
-            <TextBlock Text="Customize the global key or shortcut to start screen capture anytime."
+            <TextBlock Text="{DynamicResource Hotkey_Desc}"
                        FontSize="12" Foreground="{DynamicResource SecondaryText}" Margin="32,4,0,0"/>
         </StackPanel>
 
         <!-- Main Content -->
         <Border Grid.Row="1" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1.5" CornerRadius="12" Padding="20">
             <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="CURRENTLY ASSIGNED HOTKEY" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                <TextBlock Text="{DynamicResource Hotkey_Current}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
 
                 <!-- Interactive Key Detector Box -->
                 <Border x:Name="KeyCaptureBox"
@@ -45,15 +45,15 @@
                         <Border x:Name="KeyBadge" Background="#1D4ED8" CornerRadius="8" Padding="20,8" HorizontalAlignment="Center">
                             <TextBlock x:Name="TxtCurrentKeyBadge" Text="F9" FontSize="26" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center"/>
                         </Border>
-                        <TextBlock x:Name="TxtKeyInstruction" Text="👉 Click here and press any key on your keyboard" FontSize="11.5" Foreground="#93C5FD" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                        <TextBlock x:Name="TxtKeyInstruction" Text="{DynamicResource Hotkey_Instruction}" FontSize="11.5" Foreground="#93C5FD" HorizontalAlignment="Center" Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Popular presets -->
-                <TextBlock Text="Or choose a popular preset shortcut:" FontSize="11.5" Foreground="{DynamicResource SecondaryText}" Margin="0,8,0,6" HorizontalAlignment="Center"/>
+                <TextBlock Text="{DynamicResource Hotkey_Presets}" FontSize="11.5" Foreground="{DynamicResource SecondaryText}" Margin="0,8,0,6" HorizontalAlignment="Center"/>
                 <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,8">
-                    <Button Content="F9 (Default)" Margin="3" Padding="10,4" Background="#1E293B" Foreground="#E2E8F0" BorderBrush="#334155" Cursor="Hand" Click="PresetF9_Click"/>
-                    <Button Content="Print Screen" Margin="3" Padding="10,4" Background="#1E293B" Foreground="#E2E8F0" BorderBrush="#334155" Cursor="Hand" Click="PresetPrintScreen_Click"/>
+                    <Button Content="{DynamicResource Hotkey_PresetDefault}" Margin="3" Padding="10,4" Background="#1E293B" Foreground="#E2E8F0" BorderBrush="#334155" Cursor="Hand" Click="PresetF9_Click"/>
+                    <Button Content="{DynamicResource Hotkey_PresetPrintScreen}" Margin="3" Padding="10,4" Background="#1E293B" Foreground="#E2E8F0" BorderBrush="#334155" Cursor="Hand" Click="PresetPrintScreen_Click"/>
                     <Button Content="F10" Margin="3" Padding="10,4" Background="#1E293B" Foreground="#E2E8F0" BorderBrush="#334155" Cursor="Hand" Click="PresetF10_Click"/>
                     <Button Content="F8" Margin="3" Padding="10,4" Background="#1E293B" Foreground="#E2E8F0" BorderBrush="#334155" Cursor="Hand" Click="PresetF8_Click"/>
                     <Button Content="F7" Margin="3" Padding="10,4" Background="#1E293B" Foreground="#E2E8F0" BorderBrush="#334155" Cursor="Hand" Click="PresetF7_Click"/>
@@ -71,10 +71,10 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0" Content="Reset to F9" Background="Transparent" Foreground="#94A3B8" BorderThickness="0" Cursor="Hand" Padding="8,6" Click="BtnReset_Click"/>
+            <Button Grid.Column="0" Content="{DynamicResource Hotkey_Reset}" Background="Transparent" Foreground="#94A3B8" BorderThickness="0" Cursor="Hand" Padding="8,6" Click="BtnReset_Click"/>
             
-            <Button Grid.Column="2" Content="Cancel" Background="#27272A" Foreground="#E4E4E7" BorderBrush="#3F3F46" Padding="16,7" Margin="0,0,8,0" Cursor="Hand" Click="BtnCancel_Click"/>
-            <Button Grid.Column="3" Content="Save and Apply" Background="#2563EB" Foreground="#FFFFFF" BorderThickness="0" FontWeight="SemiBold" Padding="18,7" Cursor="Hand" Click="BtnSave_Click"/>
+            <Button Grid.Column="2" Content="{DynamicResource Hotkey_Cancel}" Background="#27272A" Foreground="#E4E4E7" BorderBrush="#3F3F46" Padding="16,7" Margin="0,0,8,0" Cursor="Hand" Click="BtnCancel_Click"/>
+            <Button Grid.Column="3" Content="{DynamicResource Hotkey_Save}" Background="#2563EB" Foreground="#FFFFFF" BorderThickness="0" FontWeight="SemiBold" Padding="18,7" Cursor="Hand" Click="BtnSave_Click"/>
         </Grid>
     </Grid>
 </Window>

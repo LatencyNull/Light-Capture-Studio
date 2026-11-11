@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:LightCapture.App.Controls"
-        Title="Clip Preview - Master Capture"
+        Title="{DynamicResource Video_Title}"
         Width="720" Height="580"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
@@ -211,13 +211,13 @@
             <Grid Grid.Row="0" Margin="0,0,0,12" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtHeaderIcon" Text="🎥" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="TxtHeaderTitle" Text="Clip Preview" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtHeaderTitle" Text="{DynamicResource Video_Header}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
                     <Border Background="{DynamicResource CardBackground}" CornerRadius="6" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
                         <TextBlock x:Name="TxtVideoInfo" Text="00:00 • 0.0 MB" FontSize="11" FontWeight="Medium" Foreground="#38BDF8"/>
                     </Border>
                 </StackPanel>
 
-                <Button Width="28" Height="28" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SecondaryText}" Cursor="Hand" Click="BtnClose_Click" ToolTip="Close">
+                <Button Width="28" Height="28" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SecondaryText}" Cursor="Hand" Click="BtnClose_Click" ToolTip="{DynamicResource Video_Close}">
                     <TextBlock Text="✕" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Button>
             </Grid>
@@ -362,27 +362,27 @@
                             </RadioButton>
 
                             <!-- 2. Arrow -->
-                            <RadioButton x:Name="BtnToolArrow" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Pointer Arrow [↗️]" Click="BtnToolArrow_Click">
+                            <RadioButton x:Name="BtnToolArrow" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="{DynamicResource Video_ToolArrowTooltip}" Click="BtnToolArrow_Click">
                                 <Image Source="/Assets/Icons/arrow.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
                             <!-- 3. Text -->
-                            <RadioButton x:Name="BtnToolText" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Add Text [🔤]&#x0a;Click on video to type" Click="BtnToolText_Click">
+                            <RadioButton x:Name="BtnToolText" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="{DynamicResource Video_ToolTextTooltip}" Click="BtnToolText_Click">
                                 <Image Source="/Assets/Icons/text.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
                             <!-- 4. Freehand Pen -->
-                            <RadioButton x:Name="BtnToolPen" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Freehand Pen [✏️]" Click="BtnToolPen_Click">
+                            <RadioButton x:Name="BtnToolPen" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="{DynamicResource Video_ToolPenTooltip}" Click="BtnToolPen_Click">
                                 <Image Source="/Assets/Icons/pen.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
                             <!-- 5. Rectangle -->
-                            <RadioButton x:Name="BtnToolRect" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Rectangle Frame [🔲]" Click="BtnToolRect_Click">
+                            <RadioButton x:Name="BtnToolRect" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="{DynamicResource Video_ToolRectTooltip}" Click="BtnToolRect_Click">
                                 <Image Source="/Assets/Icons/rect.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
                             <!-- 6. Knox Redaction -->
-                            <RadioButton x:Name="BtnToolRedact" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="Knox Redaction [🔒]&#x0a;Solid opaque block to conceal private info" Click="BtnToolRedact_Click">
+                            <RadioButton x:Name="BtnToolRedact" GroupName="VideoAnnotationTools" Style="{StaticResource AnnotationToggleBtnStyle}" ToolTip="{DynamicResource Video_ToolRedactTooltip}" Click="BtnToolRedact_Click">
                                 <Image Source="/Assets/Icons/lock.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </RadioButton>
 
@@ -390,7 +390,7 @@
                             <Rectangle Width="1" Fill="{DynamicResource ToolbarSeparator}" Margin="4,2"/>
 
                             <!-- 7. Color -->
-                            <Button x:Name="BtnToolColor" Style="{StaticResource AnnotationActionBtnStyle}" ToolTip="Annotation Color [🎨]" Click="BtnToolColor_Click">
+                            <Button x:Name="BtnToolColor" Style="{StaticResource AnnotationActionBtnStyle}" ToolTip="{DynamicResource Video_ToolColorTooltip}" Click="BtnToolColor_Click">
                                 <Grid Width="20" Height="20">
                                     <Image Source="/Assets/Icons/palette.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <Border x:Name="VideoColorIndicator" Width="6" Height="6" CornerRadius="3" Background="#EF4444" BorderBrush="#FFFFFF" BorderThickness="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-1,-1"/>
@@ -398,12 +398,12 @@
                             </Button>
 
                             <!-- 8. Undo -->
-                            <Button x:Name="BtnToolUndo" Style="{StaticResource AnnotationActionBtnStyle}" ToolTip="Undo Stroke [↩️ Ctrl+Z]" Click="BtnToolUndo_Click">
+                            <Button x:Name="BtnToolUndo" Style="{StaticResource AnnotationActionBtnStyle}" ToolTip="{DynamicResource Video_ToolUndoTooltip}" Click="BtnToolUndo_Click">
                                 <Image Source="/Assets/Icons/undo.png" Width="17" Height="17" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </Button>
 
                             <!-- 9. Clear -->
-                            <Button x:Name="BtnToolClear" Style="{StaticResource AnnotationActionBtnStyle}" ToolTip="Clear All Annotations [🗑️]" Click="BtnToolClear_Click">
+                            <Button x:Name="BtnToolClear" Style="{StaticResource AnnotationActionBtnStyle}" ToolTip="{DynamicResource Video_ToolClearTooltip}" Click="BtnToolClear_Click">
                                 <TextBlock Text="🗑️" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Button>
                         </StackPanel>
@@ -424,7 +424,7 @@
                     <!-- Botones de Control de Reproducción -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- Play/Pause -->
-                        <Button x:Name="BtnPlayPause" Width="30" Height="30" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnPlayPause_Click" ToolTip="Play / Pause (Space)">
+                        <Button x:Name="BtnPlayPause" Width="30" Height="30" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnPlayPause_Click" ToolTip="{DynamicResource Video_PlayPauseTooltip}">
                             <TextBlock x:Name="TxtPlayPauseIcon" Text="⏸" FontSize="13" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
 
@@ -498,12 +498,12 @@
                     <Grid Margin="0,0,0,6">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="⏱️" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Timeline" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource Video_Timeline}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
                             <Border Background="{DynamicResource ActionBtnBackground}" CornerRadius="4" Padding="6,1" Margin="8,0,0,0">
-                                <TextBlock x:Name="TxtObjectTracksCount" Text="0 objects" FontSize="10" Foreground="#38BDF8"/>
+                                <TextBlock x:Name="TxtObjectTracksCount" Text="0" FontSize="10" Foreground="#38BDF8"/>
                             </Border>
                         </StackPanel>
-                        <TextBlock Text="Drag blocks to adjust appearance and duration" FontSize="11" Foreground="{DynamicResource SecondaryText}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Video_TimelineHint}" FontSize="11" Foreground="{DynamicResource SecondaryText}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Scrollable object tracks list -->
@@ -523,20 +523,20 @@
                 <!-- Main Actions (Left) -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Share button -->
-                    <Button x:Name="BtnMoreSocial" Style="{StaticResource ActionBtnStyle}" Margin="0,0,10,0" Click="BtnMoreSocial_Click" ToolTip="Share to WhatsApp, Discord, TikTok, Instagram, Facebook, Telegram, X...">
+                    <Button x:Name="BtnMoreSocial" Style="{StaticResource ActionBtnStyle}" Margin="0,0,10,0" Click="BtnMoreSocial_Click" ToolTip="{DynamicResource Tool_Share}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Path Data="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"
                                   Fill="{DynamicResource PrimaryText}" Width="14" Height="14" Stretch="Uniform" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Share ▾" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource Video_Share}" VerticalAlignment="Center"/>
                         </StackPanel>
                         <Button.ContextMenu>
                             <ContextMenu Style="{StaticResource DarkContextMenuStyle}" Placement="Top" VerticalOffset="-6">
-                                <MenuItem Header="WhatsApp (Windows App)" Click="ShareWhatsAppApp_Click">
+                                <MenuItem Header="{DynamicResource Share_WhatsAppApp}" Click="ShareWhatsAppApp_Click">
                                     <MenuItem.Icon>
                                         <Image Source="/Assets/Icons/whatsapp.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Header="WhatsApp Web" Click="ShareWhatsAppWeb_Click">
+                                <MenuItem Header="{DynamicResource Share_WhatsAppWeb}" Click="ShareWhatsAppWeb_Click">
                                     <MenuItem.Icon>
                                         <Image Source="/Assets/Icons/whatsapp.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </MenuItem.Icon>
@@ -552,23 +552,23 @@
                                         <Image Source="/Assets/Icons/tiktok.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Header="Instagram" Click="ShareInstagram_Click">
+                                <MenuItem Header="{DynamicResource Share_Instagram}" Click="ShareInstagram_Click">
                                     <MenuItem.Icon>
                                         <Image Source="/Assets/Icons/instagram.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Header="Facebook" Click="ShareFacebook_Click">
+                                <MenuItem Header="{DynamicResource Share_Facebook}" Click="ShareFacebook_Click">
                                     <MenuItem.Icon>
                                         <Image Source="/Assets/Icons/facebook.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
                                 <Separator Background="{DynamicResource ToolbarSeparator}" Margin="4,2"/>
-                                <MenuItem Header="Telegram" Click="ShareTelegram_Click">
+                                <MenuItem Header="{DynamicResource Share_Telegram}" Click="ShareTelegram_Click">
                                     <MenuItem.Icon>
                                         <Image Source="/Assets/Icons/telegram.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Header="X (Twitter)" Click="ShareTwitter_Click">
+                                <MenuItem Header="{DynamicResource Share_Twitter}" Click="ShareTwitter_Click">
                                     <MenuItem.Icon>
                                         <Image Source="/Assets/Icons/x.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </MenuItem.Icon>
@@ -578,27 +578,27 @@
                     </Button>
 
                     <!-- Copy Clip File -->
-                    <Button Style="{StaticResource PrimaryActionBtnStyle}" Margin="0,0,10,0" Click="BtnCopyClip_Click" ToolTip="Copy video or GIF to clipboard (Ctrl+V in any app)">
+                    <Button Style="{StaticResource PrimaryActionBtnStyle}" Margin="0,0,10,0" Click="BtnCopyClip_Click" ToolTip="{DynamicResource Video_CopyClipTooltip}">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="/Assets/Icons/copy.png" Width="16" Height="16" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock x:Name="TxtCopyClipLabel" Text="Copy Clip" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtCopyClipLabel" Text="{DynamicResource Video_CopyClip}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
                     <!-- Save -->
-                    <Button Style="{StaticResource ActionBtnStyle}" Click="BtnSaveClip_Click" ToolTip="Save file to disk (Ctrl+S)">
+                    <Button Style="{StaticResource ActionBtnStyle}" Click="BtnSaveClip_Click" ToolTip="{DynamicResource Video_SaveClipTooltip}">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="/Assets/Icons/save.png" Width="16" Height="16" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock x:Name="TxtSaveClipLabel" Text="Save..." VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtSaveClipLabel" Text="{DynamicResource Video_SaveClip}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
 
                 <!-- Discard (Right) -->
-                <Button Grid.Column="1" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Foreground="#EF4444" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Padding="10,6" Click="BtnDiscard_Click" ToolTip="Discard this clip">
+                <Button Grid.Column="1" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Foreground="#EF4444" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Padding="10,6" Click="BtnDiscard_Click" ToolTip="{DynamicResource Video_DiscardTooltip}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="🗑️" FontSize="13" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Discard" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Video_Discard}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </Grid>

@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using System.Windows.Interop;
 using Microsoft.Win32;
 using LightCapture.App.Controls;
+using LightCapture.App.Services;
 using LightCapture.Core.Models;
 using LightCapture.Core.Services;
 using Color = System.Windows.Media.Color;
@@ -908,7 +909,7 @@ public partial class OverlayWindow : Window
                 QrTextPreview.Text = qrResult;
                 QrCodeBanner.Visibility = Visibility.Visible;
                 UpdateQrBannerPosition();
-                ShowToast("QR Code detected in capture!");
+                ShowToast(LanguageManager.Get("Toast_QrDetected"));
             }
         }
         catch { }
@@ -919,7 +920,7 @@ public partial class OverlayWindow : Window
         if (!string.IsNullOrEmpty(_detectedQrCode))
         {
             Clipboard.SetText(_detectedQrCode);
-            ShowToast("QR content copied to clipboard 📋");
+            ShowToast(LanguageManager.Get("Toast_QrCopied"));
         }
     }
 
@@ -948,12 +949,12 @@ public partial class OverlayWindow : Window
 
         if (string.IsNullOrWhiteSpace(textToSpeak))
         {
-            ShowToast("Click Translate or Copy Text before listening.");
+            ShowToast(LanguageManager.CurrentLanguage == AppLanguage.Spanish ? "Haz clic en Traducir o Copiar Texto antes de escuchar." : "Click Translate or Copy Text before listening.");
             return;
         }
 
         _speechService.Speak(textToSpeak);
-        ShowToast("🔊 Reading text aloud...");
+        ShowToast(LanguageManager.Get("Toast_ReadingAloud"));
     }
 
     private void PinCaptureToScreen()
@@ -972,7 +973,7 @@ public partial class OverlayWindow : Window
     {
         if (!_hasSelection) return;
 
-        ShowToast("Extracting screen text (OCR)...");
+        ShowToast(LanguageManager.Get("Toast_OcrRunning"));
 
         try
         {
@@ -986,7 +987,7 @@ public partial class OverlayWindow : Window
             var blocks = await _ocrService.RecognizeTextAsync(cropped);
             if (blocks == null || blocks.Count == 0)
             {
-                ShowToast("No text detected in selected area.");
+                ShowToast(LanguageManager.Get("Toast_NoText"));
                 return;
             }
 
@@ -996,7 +997,7 @@ public partial class OverlayWindow : Window
             var flattened = MainDrawingCanvas.RenderFlattenedBitmap(_frozenScreen, _selectionBounds);
             _historyService.SaveCapture(flattened, _lastExtractedOcrText);
 
-            ShowToast("Extracted text copied to clipboard 📋");
+            ShowToast(LanguageManager.Get("Toast_TextCopied"));
         }
         catch (Exception ex)
         {
@@ -1050,7 +1051,7 @@ public partial class OverlayWindow : Window
     {
         if (!_hasSelection) return;
 
-        ShowToast("Extracting text with OCR...");
+        ShowToast(LanguageManager.Get("Toast_OcrRunning"));
 
         try
         {
@@ -1064,14 +1065,14 @@ public partial class OverlayWindow : Window
             var blocks = await _ocrService.RecognizeTextAsync(cropped);
             if (blocks == null || blocks.Count == 0)
             {
-                ShowToast("No text detected in selection.");
+                ShowToast(LanguageManager.Get("Toast_NoText"));
                 return;
             }
 
             string targetLang = TranslationLanguageManager.CurrentLanguage;
             string targetName = TranslationLanguageManager.CurrentLanguageDisplayName;
 
-            ShowToast($"Translating to {targetName} ({blocks.Count} blocks)...");
+            ShowToast(LanguageManager.Get("Toast_Translating", targetName));
 
             var textsToTranslate = blocks.Select(b => b.Text).ToList();
             var results = await _translationService.TranslateBatchAsync(textsToTranslate, targetLang: targetLang, sourceLang: "auto");
@@ -1134,7 +1135,7 @@ public partial class OverlayWindow : Window
 
             if (successCount > 0)
             {
-                ShowToast($"Traducción al {targetName} lista! 🌐 (Copiada al portapapeles)");
+                ShowToast(LanguageManager.Get("Toast_TranslateDone", targetName));
             }
             else
             {
@@ -1157,7 +1158,7 @@ public partial class OverlayWindow : Window
 
         _historyService.SaveCapture(flattened, _lastTranslatedPlainText + " " + _lastExtractedOcrText);
 
-        ToastNotificationWindow.ShowToast("Capture copied to clipboard 📑", "pack://application:,,,/Assets/Icons/copy.png");
+        ToastNotificationWindow.ShowToast(LanguageManager.Get("Toast_ImageCopied"), "pack://application:,,,/Assets/Icons/copy.png");
         Close();
     }
 
@@ -1165,7 +1166,7 @@ public partial class OverlayWindow : Window
     {
         if (string.IsNullOrWhiteSpace(_lastTranslatedPlainText))
         {
-            ShowToast("No translated text yet. Click Translate first.");
+            ShowToast(LanguageManager.CurrentLanguage == AppLanguage.Spanish ? "No hay texto traducido aún. Haz clic en Traducir primero." : "No translated text yet. Click Translate first.");
             return;
         }
 
@@ -1177,7 +1178,7 @@ public partial class OverlayWindow : Window
             _historyService.SaveCapture(flattened, "Translation: " + _lastTranslatedPlainText);
         }
 
-        ShowToast("Translated text copied to clipboard 📋");
+        ShowToast(LanguageManager.Get("Toast_TextCopied"));
     }
 
     private void SaveCaptureToFile()
@@ -1206,7 +1207,7 @@ public partial class OverlayWindow : Window
 
             _historyService.SaveCapture(flattened, _lastTranslatedPlainText + " " + _lastExtractedOcrText);
 
-            ShowToast("Image saved and indexed in history");
+            ShowToast(LanguageManager.Get("Toast_Saved"));
             Close();
         }
     }

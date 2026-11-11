@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using LightCapture.App.Services;
 using LightCapture.Core.Models;
 using LightCapture.Core.Services;
 using Color = System.Windows.Media.Color;
@@ -77,6 +78,7 @@ public partial class LightshotToolbar : UserControl
         InitializeComponent();
         Loaded += (s, e) => UpdateLanguageUi();
         TranslationLanguageManager.LanguageChanged += _ => Dispatcher.Invoke(UpdateLanguageUi);
+        LanguageManager.LanguageChanged += _ => Dispatcher.Invoke(UpdateLanguageUi);
 
         if (BtnShare.ContextMenu != null)
         {
@@ -153,18 +155,25 @@ public partial class LightshotToolbar : UserControl
     {
         string langName = TranslationLanguageManager.CurrentLanguageDisplayName;
         string otherName = TranslationLanguageManager.OtherLanguageDisplayName;
+        bool isEsUi = LanguageManager.CurrentLanguage == AppLanguage.Spanish;
 
         if (_lastIsTranslated && _lastIsShowingTranslation)
         {
-            BtnTranslate.ToolTip = $"Showing Translation to {langName}. Click to return to Original text.\nRight-click: Change language to {otherName} or copy text.";
+            BtnTranslate.ToolTip = isEsUi
+                ? $"Mostrando traducción al {langName}. Clic para volver al texto Original.\nClic derecho: Cambiar idioma a {otherName} o copiar texto."
+                : $"Showing Translation to {langName}. Click to return to Original text.\nRight-click: Change language to {otherName} or copy text.";
         }
         else if (_lastIsTranslated && !_lastIsShowingTranslation)
         {
-            BtnTranslate.ToolTip = $"Showing Original. Click to view Translated text ({langName}).\nRight-click: Change language to {otherName} or copy text.";
+            BtnTranslate.ToolTip = isEsUi
+                ? $"Mostrando texto original. Clic para ver traducción ({langName}).\nClic derecho: Cambiar idioma a {otherName} o copiar texto."
+                : $"Showing Original. Click to view Translated text ({langName}).\nRight-click: Change language to {otherName} or copy text.";
         }
         else
         {
-            BtnTranslate.ToolTip = $"Galaxy AI Translate [🌐 Ctrl+T]\nTarget: {langName} (Click to translate / toggle original)\nRight-click: Change language to {otherName} or copy text.";
+            BtnTranslate.ToolTip = isEsUi
+                ? $"Galaxy AI Traducir [🌐 Ctrl+T]\nDestino: {langName} (Clic para traducir / alternar original)\nClic derecho: Cambiar idioma a {otherName} o copiar"
+                : $"Galaxy AI Translate [🌐 Ctrl+T]\nTarget: {langName} (Click to translate / toggle original)\nRight-click: Change language to {otherName} or copy";
         }
     }
 

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using LightCapture.App.Services;
 using LightCapture.Core.Services;
 
 namespace LightCapture.App.Views;
@@ -36,14 +37,14 @@ public partial class HotkeyConfigWindow : Window
     private void KeyCaptureBox_GotFocus(object sender, RoutedEventArgs e)
     {
         KeyCaptureBox.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246));
-        TxtKeyInstruction.Text = "⌨️ Listening! Press your desired key on keyboard...";
+        TxtKeyInstruction.Text = LanguageManager.Get("Hotkey_Listening");
         TxtKeyInstruction.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(96, 165, 250));
     }
 
     private void KeyCaptureBox_LostFocus(object sender, RoutedEventArgs e)
     {
         KeyCaptureBox.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(37, 99, 235));
-        TxtKeyInstruction.Text = "👉 Click here and press any key on your keyboard";
+        TxtKeyInstruction.Text = LanguageManager.Get("Hotkey_Instruction");
         TxtKeyInstruction.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(147, 197, 253));
     }
 

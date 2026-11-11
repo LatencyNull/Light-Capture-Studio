@@ -29,13 +29,23 @@ public partial class App : Application
     private HwndSource? _messageHwndSource;
 
     private WpfContextMenu? _trayContextMenu;
+    private WpfMenuItem? _captureMenu;
     private WpfMenuItem? _captureMenuItem;
+    private WpfMenuItem? _historyItem;
+    private WpfMenuItem? _openFolderItem;
     private WpfMenuItem? _hotkeyMenuItem;
     private WpfMenuItem? _menuItemTheme;
+    private WpfMenuItem? _uiLangMenu;
+    private WpfMenuItem? _menuUiLangEs;
+    private WpfMenuItem? _menuUiLangEn;
+    private WpfTextBlock? _checkUiLangEs;
+    private WpfTextBlock? _checkUiLangEn;
+    private WpfMenuItem? _ocrLangMenu;
     private WpfMenuItem? _menuLangEs;
     private WpfMenuItem? _menuLangEn;
     private WpfTextBlock? _checkLangEs;
     private WpfTextBlock? _checkLangEn;
+    private WpfMenuItem? _exitItem;
     private WpfPath? _themeIconPath;
 
     [DllImport("user32.dll")]
@@ -59,6 +69,7 @@ public partial class App : Application
         base.OnStartup(e);
 
         ThemeManager.Initialize();
+        LanguageManager.Initialize();
         EnsureNativeDependencies();
 
         DispatcherUnhandledException += (s, args) =>
@@ -262,9 +273,9 @@ public partial class App : Application
         _trayContextMenu.Items.Add(headerItem);
 
         // 2. 📸 Screen Capture (Parent menu with subitems for capture, history and settings)
-        var captureMenu = new WpfMenuItem
+        _captureMenu = new WpfMenuItem
         {
-            Header = "Screen Capture",
+            Header = LanguageManager.Get("Menu_ScreenCapture"),
             FontWeight = FontWeights.SemiBold
         };
         var camPath = new WpfPath
@@ -275,12 +286,12 @@ public partial class App : Application
             Width = 16,
             Height = 16
         };
-        captureMenu.Icon = camPath;
+        _captureMenu.Icon = camPath;
 
         // Subitem: Capture Screen
         _captureMenuItem = new WpfMenuItem
         {
-            Header = "Capture Screen",
+            Header = LanguageManager.Get("Menu_TakeCapture"),
             InputGestureText = HotkeySettingsManager.CurrentDisplayName,
             FontWeight = FontWeights.SemiBold
         };
@@ -294,12 +305,12 @@ public partial class App : Application
         };
         _captureMenuItem.Icon = camSubPath;
         _captureMenuItem.Click += (s, e) => StartCapture();
-        captureMenu.Items.Add(_captureMenuItem);
+        _captureMenu.Items.Add(_captureMenuItem);
 
         // Subitem: Capture History...
-        var historyItem = new WpfMenuItem
+        _historyItem = new WpfMenuItem
         {
-            Header = "Capture History..."
+            Header = LanguageManager.Get("Menu_History")
         };
         var historyPath = new WpfPath
         {
@@ -309,14 +320,14 @@ public partial class App : Application
             Width = 16,
             Height = 16
         };
-        historyItem.Icon = historyPath;
-        historyItem.Click += (s, e) => OpenHistory();
-        captureMenu.Items.Add(historyItem);
+        _historyItem.Icon = historyPath;
+        _historyItem.Click += (s, e) => OpenHistory();
+        _captureMenu.Items.Add(_historyItem);
 
         // Subitem: Open Captures Folder
-        var openFolderItem = new WpfMenuItem
+        _openFolderItem = new WpfMenuItem
         {
-            Header = "Open Captures Folder"
+            Header = LanguageManager.Get("Menu_OpenFolder")
         };
         var folderPath = new WpfPath
         {
@@ -326,14 +337,14 @@ public partial class App : Application
             Width = 16,
             Height = 16
         };
-        openFolderItem.Icon = folderPath;
-        openFolderItem.Click += (s, e) => OpenCapturesFolder();
-        captureMenu.Items.Add(openFolderItem);
+        _openFolderItem.Icon = folderPath;
+        _openFolderItem.Click += (s, e) => OpenCapturesFolder();
+        _captureMenu.Items.Add(_openFolderItem);
 
         // Subitem: Configure Capture Hotkey...
         _hotkeyMenuItem = new WpfMenuItem
         {
-            Header = $"Configure Capture Hotkey ({HotkeySettingsManager.CurrentDisplayName})..."
+            Header = LanguageManager.Get("Menu_HotkeyConfig", HotkeySettingsManager.CurrentDisplayName)
         };
         var keyboardPath = new WpfPath
         {
@@ -345,9 +356,9 @@ public partial class App : Application
         };
         _hotkeyMenuItem.Icon = keyboardPath;
         _hotkeyMenuItem.Click += (s, e) => OpenHotkeyConfig();
-        captureMenu.Items.Add(_hotkeyMenuItem);
+        _captureMenu.Items.Add(_hotkeyMenuItem);
 
-        _trayContextMenu.Items.Add(captureMenu);
+        _trayContextMenu.Items.Add(_captureMenu);
 
         _trayContextMenu.Items.Add(new WpfSeparator());
 
@@ -369,19 +380,75 @@ public partial class App : Application
         };
         _trayContextMenu.Items.Add(_menuItemTheme);
 
-        // 5. 🌐 Translation Language (Modern flyout submenu)
-        var langMenu = new WpfMenuItem
+        // 5. 🌐 Idioma de la interfaz (Español / Inglés)
+        _uiLangMenu = new WpfMenuItem
         {
-            Header = "Translation Language"
+            Header = LanguageManager.Get("Menu_UiLanguage")
         };
-        var globeImg = new WpfImage
+        var uiGlobeImg = new WpfImage
         {
             Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/Icons/globe.png")),
             Width = 16,
             Height = 16
         };
-        System.Windows.Media.RenderOptions.SetBitmapScalingMode(globeImg, System.Windows.Media.BitmapScalingMode.HighQuality);
-        langMenu.Icon = globeImg;
+        System.Windows.Media.RenderOptions.SetBitmapScalingMode(uiGlobeImg, System.Windows.Media.BitmapScalingMode.HighQuality);
+        _uiLangMenu.Icon = uiGlobeImg;
+
+        _checkUiLangEs = new WpfTextBlock
+        {
+            Text = "✔",
+            FontWeight = FontWeights.Bold,
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246)),
+            FontSize = 13,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+        };
+        _menuUiLangEs = new WpfMenuItem
+        {
+            Header = LanguageManager.Get("Lang_Spanish"),
+            Icon = _checkUiLangEs
+        };
+        _menuUiLangEs.Click += (s, e) =>
+        {
+            LanguageManager.SetLanguage(AppLanguage.Spanish);
+            UpdateTrayMenuItems();
+        };
+
+        _checkUiLangEn = new WpfTextBlock
+        {
+            Text = "✔",
+            FontWeight = FontWeights.Bold,
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246)),
+            FontSize = 13,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+        };
+        _menuUiLangEn = new WpfMenuItem
+        {
+            Header = LanguageManager.Get("Lang_English"),
+            Icon = _checkUiLangEn
+        };
+        _menuUiLangEn.Click += (s, e) =>
+        {
+            LanguageManager.SetLanguage(AppLanguage.English);
+            UpdateTrayMenuItems();
+        };
+
+        _uiLangMenu.Items.Add(_menuUiLangEs);
+        _uiLangMenu.Items.Add(_menuUiLangEn);
+        _trayContextMenu.Items.Add(_uiLangMenu);
+
+        // 6. 🔄 Translation Language OCR / Lens (Modern flyout submenu)
+        _ocrLangMenu = new WpfMenuItem
+        {
+            Header = LanguageManager.Get("Menu_OcrLanguage")
+        };
+        var ocrGlobeImg = new WpfImage
+        {
+            Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/Icons/globe.png")),
+            Width = 16,
+            Height = 16
+        };
+        System.Windows.Media.RenderOptions.SetBitmapScalingMode(ocrGlobeImg, System.Windows.Media.BitmapScalingMode.HighQuality);
+        _ocrLangMenu.Icon = ocrGlobeImg;
 
         _checkLangEs = new WpfTextBlock
         {
@@ -393,7 +460,7 @@ public partial class App : Application
         };
         _menuLangEs = new WpfMenuItem
         {
-            Header = "🇪🇸  Spanish",
+            Header = LanguageManager.Get("Lang_Spanish"),
             Icon = _checkLangEs
         };
         _menuLangEs.Click += (s, e) =>
@@ -412,7 +479,7 @@ public partial class App : Application
         };
         _menuLangEn = new WpfMenuItem
         {
-            Header = "🇺🇸  English (Default)",
+            Header = LanguageManager.Get("Lang_English"),
             Icon = _checkLangEn
         };
         _menuLangEn.Click += (s, e) =>
@@ -421,16 +488,16 @@ public partial class App : Application
             UpdateTrayMenuItems();
         };
 
-        langMenu.Items.Add(_menuLangEs);
-        langMenu.Items.Add(_menuLangEn);
-        _trayContextMenu.Items.Add(langMenu);
+        _ocrLangMenu.Items.Add(_menuLangEs);
+        _ocrLangMenu.Items.Add(_menuLangEn);
+        _trayContextMenu.Items.Add(_ocrLangMenu);
 
         _trayContextMenu.Items.Add(new WpfSeparator());
 
-        // 6. ❌ Exit
-        var exitItem = new WpfMenuItem
+        // 7. ❌ Exit
+        _exitItem = new WpfMenuItem
         {
-            Header = "Exit"
+            Header = LanguageManager.Get("Menu_Exit")
         };
         var exitPath = new WpfPath
         {
@@ -440,20 +507,54 @@ public partial class App : Application
             Width = 14,
             Height = 14
         };
-        exitItem.Icon = exitPath;
-        exitItem.Click += (s, e) => ExitApplication();
-        _trayContextMenu.Items.Add(exitItem);
+        _exitItem.Icon = exitPath;
+        _exitItem.Click += (s, e) => ExitApplication();
+        _trayContextMenu.Items.Add(_exitItem);
 
         ThemeManager.ThemeChanged += _ => Dispatcher.Invoke(UpdateTrayMenuItems);
         TranslationLanguageManager.LanguageChanged += _ => Dispatcher.Invoke(UpdateTrayMenuItems);
+        LanguageManager.LanguageChanged += _ => Dispatcher.Invoke(UpdateTrayMenuItems);
     }
 
     private void UpdateTrayMenuItems()
     {
+        if (_notifyIcon != null)
+        {
+            _notifyIcon.Text = FormatTrayText(HotkeySettingsManager.CurrentDisplayName);
+        }
+
+        if (_captureMenu != null) _captureMenu.Header = LanguageManager.Get("Menu_ScreenCapture");
+        if (_captureMenuItem != null) _captureMenuItem.Header = LanguageManager.Get("Menu_TakeCapture");
+        if (_historyItem != null) _historyItem.Header = LanguageManager.Get("Menu_History");
+        if (_openFolderItem != null) _openFolderItem.Header = LanguageManager.Get("Menu_OpenFolder");
+        if (_hotkeyMenuItem != null) _hotkeyMenuItem.Header = LanguageManager.Get("Menu_HotkeyConfig", HotkeySettingsManager.CurrentDisplayName);
+        if (_uiLangMenu != null) _uiLangMenu.Header = LanguageManager.Get("Menu_UiLanguage");
+        if (_ocrLangMenu != null) _ocrLangMenu.Header = LanguageManager.Get("Menu_OcrLanguage");
+        if (_exitItem != null) _exitItem.Header = LanguageManager.Get("Menu_Exit");
+
+        if (_menuUiLangEs != null) _menuUiLangEs.Header = LanguageManager.Get("Lang_Spanish");
+        if (_menuUiLangEn != null) _menuUiLangEn.Header = LanguageManager.Get("Lang_English");
+        if (_menuLangEs != null) _menuLangEs.Header = LanguageManager.Get("Lang_Spanish");
+        if (_menuLangEn != null) _menuLangEn.Header = LanguageManager.Get("Lang_English");
+
+        if (_checkUiLangEs != null && _checkUiLangEn != null)
+        {
+            bool isEsUi = LanguageManager.CurrentLanguage == AppLanguage.Spanish;
+            _checkUiLangEs.Visibility = isEsUi ? Visibility.Visible : Visibility.Collapsed;
+            _checkUiLangEn.Visibility = !isEsUi ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        if (_checkLangEs != null && _checkLangEn != null)
+        {
+            bool isEs = TranslationLanguageManager.CurrentLanguage == TranslationLanguageManager.Spanish;
+            _checkLangEs.Visibility = isEs ? Visibility.Visible : Visibility.Collapsed;
+            _checkLangEn.Visibility = !isEs ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         if (_menuItemTheme != null && _themeIconPath != null)
         {
             bool isDark = ThemeManager.CurrentTheme == AppTheme.Dark;
-            _menuItemTheme.Header = isDark ? "Theme: Dark (Switch to Light)" : "Theme: Light (Switch to Dark)";
+            _menuItemTheme.Header = isDark ? LanguageManager.Get("Menu_ThemeDarkToLight") : LanguageManager.Get("Menu_ThemeLightToDark");
             _themeIconPath.Data = isDark
                 ? System.Windows.Media.Geometry.Parse("M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z") // Luna cuando está en modo oscuro
                 : System.Windows.Media.Geometry.Parse("M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zm10-9a1 1 0 0 1-1 1h-2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1zM5 12a1 1 0 0 1-1 1H2a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1z"); // Sol cuando está en modo claro
@@ -558,7 +659,7 @@ public partial class App : Application
 
     private static string FormatTrayText(string displayName)
     {
-        string text = $"{AppPaths.AppDisplayName} - {displayName} to capture screen";
+        string text = LanguageManager.Get("Tray_Tooltip", displayName);
         return text.Length > 63 ? text[..63] : text;
     }
 
@@ -576,7 +677,7 @@ public partial class App : Application
 
         if (_hotkeyMenuItem != null)
         {
-            _hotkeyMenuItem.Header = $"Configure Capture Hotkey ({displayName})...";
+            _hotkeyMenuItem.Header = LanguageManager.Get("Menu_HotkeyConfig", displayName);
         }
     }
 
