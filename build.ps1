@@ -135,8 +135,9 @@ if (Test-Path $exePath) {
     $zipPath = Join-Path $releaseDir $zipName
     $releaseExePath = Join-Path $releaseDir $releaseExeName
 
-    # Copiar ejecutable directo nombrado
+    # Copiar ejecutable directo nombrado y al root del proyecto
     Copy-Item -Path $exePath -Destination $releaseExePath -Force
+    Copy-Item -Path $exePath -Destination (Join-Path $ScriptDir "LightCapture.exe") -Force
 
     Write-Host "[*] Empaquetando archivo ZIP en $zipPath..." -ForegroundColor Cyan
     Compress-Archive -Path "$publishDir\*" -DestinationPath $zipPath -Force

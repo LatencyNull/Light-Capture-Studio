@@ -83,6 +83,8 @@ public partial class HistoryWindow : Window
 
     private void RefreshList(string query = "")
     {
+        HistoryItemsList.ItemsSource = null;
+
         var entries = string.IsNullOrWhiteSpace(query)
             ? _historyService.GetHistory()
             : _historyService.Search(query);

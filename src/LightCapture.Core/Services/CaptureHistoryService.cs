@@ -263,6 +263,41 @@ public class CaptureHistoryService : ICaptureHistoryService
         return Path.Combine(_historyDir, entry.ImageFileName);
     }
 
+    private static bool TryDeleteFileWithRetry(string path, int maxRetries = 3)
+    {
+        if (!File.Exists(path)) return true;
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                File.SetAttributes(path, FileAttributes.Normal);
+                File.Delete(path);
+                return true;
+            }
+            catch (IOException)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                Thread.Sleep(50);
+            }
+            catch
+            {
+                break;
+            }
+        }
+
+        try
+        {
+            File.Delete(path);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public void DeleteEntry(string id)
     {
         lock (_lock)
@@ -271,18 +306,7 @@ public class CaptureHistoryService : ICaptureHistoryService
             if (entry != null)
             {
                 string path = Path.Combine(_historyDir, entry.ImageFileName);
-                if (File.Exists(path))
-                {
-                    try
-                    {
-                        File.SetAttributes(path, FileAttributes.Normal);
-                        File.Delete(path);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[CaptureHistoryService] Failed to delete file '{path}': {ex.Message}");
-                    }
-                }
+                TryDeleteFileWithRetry(path);
                 _entries.Remove(entry);
                 SaveMetadata();
             }
@@ -301,18 +325,7 @@ public class CaptureHistoryService : ICaptureHistoryService
             foreach (var entry in toRemove)
             {
                 string path = Path.Combine(_historyDir, entry.ImageFileName);
-                if (File.Exists(path))
-                {
-                    try
-                    {
-                        File.SetAttributes(path, FileAttributes.Normal);
-                        File.Delete(path);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[CaptureHistoryService] Failed to delete file '{path}': {ex.Message}");
-                    }
-                }
+                TryDeleteFileWithRetry(path);
                 _entries.Remove(entry);
             }
 
@@ -331,15 +344,7 @@ public class CaptureHistoryService : ICaptureHistoryService
             foreach (var entry in _entries)
             {
                 string path = Path.Combine(_historyDir, entry.ImageFileName);
-                if (File.Exists(path))
-                {
-                    try
-                    {
-                        File.SetAttributes(path, FileAttributes.Normal);
-                        File.Delete(path);
-                    }
-                    catch { }
-                }
+                TryDeleteFileWithRetry(path);
             }
 
             // 2. Limpieza exhaustiva de cualquier remanente LightCapture_*.*
@@ -349,12 +354,7 @@ public class CaptureHistoryService : ICaptureHistoryService
                 {
                     foreach (var file in Directory.GetFiles(_historyDir, "LightCapture_*.*"))
                     {
-                        try
-                        {
-                            File.SetAttributes(file, FileAttributes.Normal);
-                            File.Delete(file);
-                        }
-                        catch { }
+                        TryDeleteFileWithRetry(file);
                     }
                 }
             }
