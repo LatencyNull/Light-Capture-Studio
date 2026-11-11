@@ -29,9 +29,8 @@ public class CloudUploadService : ICloudUploadService
 
     private void LoadApiKey()
     {
-        // 1. Prioridad: Variable de entorno del sistema (nueva y retrocompatible)
-        FreeImageApiKey = Environment.GetEnvironmentVariable("MASTERCAPTURE_FREEIMAGE_KEY")
-                          ?? Environment.GetEnvironmentVariable("LIGHTCAPTURE_FREEIMAGE_KEY");
+        // 1. Prioridad: Variable de entorno del sistema
+        FreeImageApiKey = Environment.GetEnvironmentVariable("MASTERCAPTURE_FREEIMAGE_KEY");
 
         // 2. Archivo de configuración local del usuario
         if (string.IsNullOrWhiteSpace(FreeImageApiKey))

@@ -30,9 +30,9 @@ try {
 }
 
 # 2. Detener instancias activas si existen
-$running = Get-Process -Name "MasterCapture", "MasterCapture.Recorder", "LightCapture", "LightCapture.Recorder" -ErrorAction SilentlyContinue
+$running = Get-Process -Name "MasterCapture", "MasterCapture.Recorder" -ErrorAction SilentlyContinue
 if ($running) {
-    Write-Host "[!] Se detectaron instancias activas de Master Capture / Light Capture en ejecucion. Cerrando..." -ForegroundColor Yellow
+    Write-Host "[!] Se detectaron instancias activas de Master Capture en ejecucion. Cerrando..." -ForegroundColor Yellow
     $running | Stop-Process -Force
     Start-Sleep -Milliseconds 800
 }

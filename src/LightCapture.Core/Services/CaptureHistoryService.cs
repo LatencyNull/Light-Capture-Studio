@@ -45,8 +45,7 @@ public class CaptureHistoryService : ICaptureHistoryService
         else
         {
             _historyDir = AppPaths.GetCapturesDirectory();
-            _metadataFile = AppPaths.GetHistoryMetadataFile(_historyDir);
-            AppPaths.MigrateLegacyCapturesOnce(_historyDir);
+            _metadataFile = AppPaths.GetHistoryMetadataFile();
         }
 
         LoadMetadata();
@@ -285,17 +284,14 @@ public class CaptureHistoryService : ICaptureHistoryService
                 TryDeleteFileWithRetry(path);
             }
 
-            // 2. Limpieza exhaustiva de cualquier remanente MasterCapture_*.* o LightCapture_*.*
+            // 2. Limpieza exhaustiva de cualquier remanente MasterCapture_*.*
             try
             {
                 if (Directory.Exists(_historyDir))
                 {
-                    foreach (var pattern in new[] { "MasterCapture_*.*", "LightCapture_*.*" })
+                    foreach (var file in Directory.GetFiles(_historyDir, "MasterCapture_*.*"))
                     {
-                        foreach (var file in Directory.GetFiles(_historyDir, pattern))
-                        {
-                            TryDeleteFileWithRetry(file);
-                        }
+                        TryDeleteFileWithRetry(file);
                     }
                 }
             }
