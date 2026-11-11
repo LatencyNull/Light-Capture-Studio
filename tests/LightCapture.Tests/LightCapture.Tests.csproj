@@ -26,9 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\src\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.exe;
-                     ..\..\src\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.dll;
-                     ..\..\src\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.runtimeconfig.json;
+    <Content Include="..\..\src\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.exe;
+                     ..\..\src\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.dll;
+                     ..\..\src\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.runtimeconfig.json;
                      ..\..\src\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\ScreenRecorderLib.dll">
       <Link>%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

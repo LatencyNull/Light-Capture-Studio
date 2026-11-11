@@ -48,20 +48,20 @@ public class ScreenRecorderService : IVideoRecordingService, IDisposable
         string baseDir = AppDomain.CurrentDomain.BaseDirectory;
         string appDataBin = AppPaths.GetRecorderBinDirectory();
 
-        string workerExe = Path.Combine(baseDir, "LightCapture.Recorder.exe");
+        string workerExe = Path.Combine(baseDir, "MasterCapture.Recorder.exe");
         if (!File.Exists(workerExe))
         {
-            workerExe = Path.Combine(appDataBin, "LightCapture.Recorder.exe");
+            workerExe = Path.Combine(appDataBin, "MasterCapture.Recorder.exe");
         }
 
         if (!File.Exists(workerExe))
         {
             string[] possiblePaths = new[]
             {
-                Path.Combine(baseDir, "..", "..", "..", "LightCapture.Recorder", "bin", "x64", "Debug", "net8.0-windows10.0.19041.0", "LightCapture.Recorder.exe"),
-                Path.Combine(baseDir, "..", "..", "..", "LightCapture.Recorder", "bin", "x64", "Release", "net8.0-windows10.0.19041.0", "LightCapture.Recorder.exe"),
-                Path.Combine(baseDir, "..", "..", "..", "..", "src", "LightCapture.Recorder", "bin", "x64", "Debug", "net8.0-windows10.0.19041.0", "LightCapture.Recorder.exe"),
-                Path.Combine(baseDir, "..", "..", "..", "..", "src", "LightCapture.Recorder", "bin", "x64", "Release", "net8.0-windows10.0.19041.0", "LightCapture.Recorder.exe")
+                Path.Combine(baseDir, "..", "..", "..", "LightCapture.Recorder", "bin", "x64", "Debug", "net8.0-windows10.0.19041.0", "MasterCapture.Recorder.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "LightCapture.Recorder", "bin", "x64", "Release", "net8.0-windows10.0.19041.0", "MasterCapture.Recorder.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "..", "src", "LightCapture.Recorder", "bin", "x64", "Debug", "net8.0-windows10.0.19041.0", "MasterCapture.Recorder.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "..", "src", "LightCapture.Recorder", "bin", "x64", "Release", "net8.0-windows10.0.19041.0", "MasterCapture.Recorder.exe")
             };
 
             string? found = possiblePaths.FirstOrDefault(File.Exists);

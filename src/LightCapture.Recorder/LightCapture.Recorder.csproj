@@ -11,7 +11,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>..\..\app.ico</ApplicationIcon>
-    <AssemblyName>LightCapture.Recorder</AssemblyName>
+    <AssemblyName>MasterCapture.Recorder</AssemblyName>
+    <RootNamespace>LightCapture.Recorder</RootNamespace>
+    <AssemblyTitle>Master Capture Recorder</AssemblyTitle>
+    <Product>Master Capture</Product>
+    <Company>Antigravity</Company>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <Target Name="ForceX64Platform" BeforeTargets="PlatformCheck;InjectReference;ResolveAssemblyReferences">

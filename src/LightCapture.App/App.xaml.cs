@@ -697,9 +697,9 @@ public partial class App : Application
             string appDataBin = AppPaths.GetRecorderBinDirectory();
 
             ExtractResourceIfMissing("ScreenRecorderLib.dll", Path.Combine(appDataBin, "ScreenRecorderLib.dll"));
-            ExtractResourceIfMissing("LightCapture.Recorder.exe", Path.Combine(appDataBin, "LightCapture.Recorder.exe"));
-            ExtractResourceIfMissing("LightCapture.Recorder.dll", Path.Combine(appDataBin, "LightCapture.Recorder.dll"));
-            ExtractResourceIfMissing("LightCapture.Recorder.runtimeconfig.json", Path.Combine(appDataBin, "LightCapture.Recorder.runtimeconfig.json"));
+            ExtractResourceIfMissing("MasterCapture.Recorder.exe", Path.Combine(appDataBin, "MasterCapture.Recorder.exe"));
+            ExtractResourceIfMissing("MasterCapture.Recorder.dll", Path.Combine(appDataBin, "MasterCapture.Recorder.dll"));
+            ExtractResourceIfMissing("MasterCapture.Recorder.runtimeconfig.json", Path.Combine(appDataBin, "MasterCapture.Recorder.runtimeconfig.json"));
         }
         catch (Exception ex)
         {

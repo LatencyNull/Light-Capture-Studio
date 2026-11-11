@@ -32,9 +32,9 @@
 
   <!-- En desarrollo local copia los binarios a bin/Debug -->
   <ItemGroup Condition="'$(PublishSingleFile)' != 'true'">
-    <Content Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.exe;
-                     ..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.dll;
-                     ..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.runtimeconfig.json;
+    <Content Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.exe;
+                     ..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.dll;
+                     ..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.runtimeconfig.json;
                      ..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\ScreenRecorderLib.dll">
       <Link>%(FileName)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -44,9 +44,9 @@
 
   <!-- Para Single-File Standalone: Todo se incrusta dentro del .EXE principal -->
   <ItemGroup>
-    <EmbeddedResource Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.exe" Link="Resources\LightCapture.Recorder.exe" />
-    <EmbeddedResource Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.dll" Link="Resources\LightCapture.Recorder.dll" />
-    <EmbeddedResource Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\LightCapture.Recorder.runtimeconfig.json" Link="Resources\LightCapture.Recorder.runtimeconfig.json" />
+    <EmbeddedResource Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.exe" Link="Resources\MasterCapture.Recorder.exe" />
+    <EmbeddedResource Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.dll" Link="Resources\MasterCapture.Recorder.dll" />
+    <EmbeddedResource Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\MasterCapture.Recorder.runtimeconfig.json" Link="Resources\MasterCapture.Recorder.runtimeconfig.json" />
     <EmbeddedResource Include="..\LightCapture.Recorder\bin\x64\$(Configuration)\net8.0-windows10.0.19041.0\ScreenRecorderLib.dll" Link="Resources\ScreenRecorderLib.dll" />
     <EmbeddedResource Include="app.ico" />
     <Resource Include="Assets\Icons\*.png" />
