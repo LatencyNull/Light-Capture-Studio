@@ -8,9 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20(x64)-0078D6.svg)](https://microsoft.com)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20WPF-512BD4.svg)](https://dotnet.microsoft.com/)
-[![CI Build &amp; Release](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/build-release.yml/badge.svg)](https://github.com/LatencyNull/Light-Capture-Studio/actions/workflows/build-release.yml)
+[![CI Build &amp; Release](https://github.com/LatencyNull/Master-Capture/actions/workflows/build-release.yml/badge.svg)](https://github.com/LatencyNull/Master-Capture/actions/workflows/build-release.yml)
 
-[Features](#-key-features) • [Comparison](#-why-master-capture-vs-classic-lightshot) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Portable Version](#-portable-version) • [Privacy](#-privacy-first-architecture)
+[Features](#-key-features) • [Comparison](#-master-capture-vs-lightshot) • [Keyboard Shortcuts](#-keyboard-shortcuts) • [Portable Version](#-portable-version) • [Privacy](#-privacy-first-architecture)
 
 </div>
 
@@ -24,7 +24,7 @@ Unlike conventional capture software, this project follows a **100% local** arch
 
 ---
 
-## 🥊 Why Master Capture? (vs. Classic Lightshot)
+## 🥊 Master Capture vs Lightshot
 
 | Feature | ⚡ Master Capture | 🐢 Classic Lightshot |
 |:---|:---:|:---:|
@@ -95,7 +95,7 @@ Send captures and clips directly to **WhatsApp Desktop (Windows App)**, **WhatsA
 - **Self-contained:** Built with all .NET 8 runtime dependencies bundled into a single executable (`MasterCapture.exe`).
 - **Clean & lightweight:** Leaves no clutter in the Windows registry; runs straight from any folder or USB drive.
 
-Download the precompiled portable binary directly from the [**Releases**](https://github.com/LatencyNull/Light-Capture-Studio/releases) section!
+Download the precompiled portable binary directly from the [**Releases**](https://github.com/LatencyNull/Master-Capture/releases) section!
 
 ---
 
@@ -136,8 +136,8 @@ You can build the full standalone portable release with one command:
 ### Option 2: Standard .NET CLI
 ```powershell
 # Clone the repository
-git clone https://github.com/LatencyNull/Light-Capture-Studio.git
-cd Light-Capture-Studio
+git clone https://github.com/LatencyNull/Master-Capture.git
+cd Master-Capture
 
 # Restore and build the complete solution
 dotnet build LightCaptureStudio.sln
